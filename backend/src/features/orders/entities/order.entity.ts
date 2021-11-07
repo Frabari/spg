@@ -6,6 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { IsNotEmpty } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
 import { OrderEntry } from './order-entry.entity';
 
@@ -68,7 +69,8 @@ export class Order {
    * The status of the order. An order with status == DRAFT
    * is the active basket
    */
-  @Column({ default: OrderStatus.DRAFT })
+  @Column({ default: OrderStatus.DRAFT, nullable: false })
+  @IsNotEmpty()
   status: OrderStatus;
 
   /**
@@ -81,7 +83,7 @@ export class Order {
    * The date when the user wants the order to be delivered
    * or to pick it up at the warehouse
    */
-  @Column()
+  @Column({ default: null })
   deliverAt: Date;
 
   /**

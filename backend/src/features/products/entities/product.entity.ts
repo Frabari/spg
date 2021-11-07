@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { IsInt, IsNotEmpty, Min } from 'class-validator';
 import { Category } from '../../categories/entities/category.entity';
-import { IsNotEmpty, Min } from 'class-validator';
 
 export type ProductId = number;
 
@@ -36,6 +36,7 @@ export class Product {
    * to be sold right now
    */
   @Column({ default: 0 })
+  @IsInt()
   @IsNotEmpty()
   @Min(0)
   available: number;
@@ -44,6 +45,7 @@ export class Product {
    * The number of units currently in customer orders
    */
   @Column({ default: 0 })
+  @IsInt()
   @IsNotEmpty()
   @Min(0)
   reserved: number;
@@ -52,6 +54,7 @@ export class Product {
    * The number of sold units
    */
   @Column({ default: 0 })
+  @IsInt()
   @IsNotEmpty()
   @Min(0)
   sold: number;

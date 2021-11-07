@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { IsInt, IsNotEmpty, Min } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
 import { Product } from '../../products/entities/product.entity';
-import { IsNotEmpty, Min } from 'class-validator';
 
 export type StockUnitId = number;
 
@@ -33,6 +33,7 @@ export class StockUnit {
    * The number of units in this stock
    */
   @Column({ default: 0 })
+  @IsInt()
   @IsNotEmpty()
   @Min(0)
   available: number;
@@ -41,6 +42,7 @@ export class StockUnit {
    * The number of units currently in customer orders
    */
   @Column({ default: 0 })
+  @IsInt()
   @IsNotEmpty()
   @Min(0)
   reserved: number;
@@ -49,6 +51,7 @@ export class StockUnit {
    * The number of sold units
    */
   @Column({ default: 0 })
+  @IsInt()
   @IsNotEmpty()
   @Min(0)
   sold: number;

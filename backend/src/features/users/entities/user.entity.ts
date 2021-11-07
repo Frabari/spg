@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { StockUnit } from '../../stock/entities/stock-unit.entity';
@@ -20,15 +21,31 @@ export class User {
   @PrimaryGeneratedColumn()
   id: UserId;
 
+  /**
+   * First name
+   */
   @Column()
+  @IsNotEmpty()
   name: string;
 
+  /**
+   * Last name
+   */
   @Column()
+  @IsNotEmpty()
   surname: string;
 
+  /**
+   * The email (username)
+   */
   @Column()
+  @IsNotEmpty()
+  @IsEmail()
   email: string;
 
+  /**
+   * The password hash
+   */
   @Column()
   password: string;
 
@@ -36,6 +53,7 @@ export class User {
    * The role of this user
    */
   @Column({ default: Role.CUSTOMER })
+  @IsNotEmpty()
   role: Role;
 
   /**
@@ -43,7 +61,7 @@ export class User {
    *
    * @role CUSTOMER, FARMER
    */
-  @Column({ default: 0 })
+  @Column({ default: 0, nullable: false })
   balance: number;
 
   /**

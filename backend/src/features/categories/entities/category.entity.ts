@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { IsNotEmpty } from 'class-validator';
 import { Product } from '../../products/entities/product.entity';
 
 export type CategoryId = number;
@@ -19,12 +20,14 @@ export class Category {
    * @example Fruit & vegetables
    */
   @Column()
+  @IsNotEmpty()
   name: string;
 
   /**
    * A slug representing this category
    * @example fruit-vegetables
    */
-  @Column()
+  @Column({ unique: true })
+  @IsNotEmpty()
   slug: string;
 }
