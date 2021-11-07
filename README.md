@@ -26,6 +26,7 @@ npm run start
 ## Global scripts
 
 - `start`: starts the frontend and the backend development servers in parallel
+- `start:dev`: starts the frontend and the backend development servers in parallel (in watch mode)
 - `test`: executes all the available tests
 
 ## Contributing guidelines
