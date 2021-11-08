@@ -48,7 +48,7 @@ export class User {
    * The password hash
    */
   @Column()
-  @Exclude()
+  @Exclude({ toPlainOnly: true })
   password?: string;
 
   /**
