@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 import { version } from '../package.json';
 import { AppModule } from './app.module';
 import { User } from './features/users/entities/user.entity';
@@ -10,6 +11,7 @@ import { Transaction } from './features/transactions/entities/transaction.entity
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
     .setTitle('Basil API')
     .setDescription('Solidarity purchase groups')

@@ -40,7 +40,6 @@ export class User {
    * The email (username)
    */
   @Column()
-  @IsNotEmpty()
   @IsEmail()
   email: string;
 
