@@ -1,5 +1,5 @@
-import { Controller, Post, UseGuards, Request, Body } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Crud,
   CrudController,
@@ -13,6 +13,8 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Roles } from './roles.decorator';
 import { LoginDto } from './dtos/login.dto';
+import { CreateUserDto } from './dtos/create-user.dto';
+import { RolesGuard } from './guards/roles.guard';
 
 const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
 
@@ -34,14 +36,16 @@ export class UsersController implements CrudController<User> {
   }
 
   @Override()
-  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE)
   getMany(@ParsedRequest() req: CrudRequest) {
     return this.base.getManyBase(req) as Promise<User[]>;
   }
 
   @Override()
-  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE)
   getOne(@ParsedRequest() req: CrudRequest) {
     return this.base.getOneBase(req);
@@ -52,7 +56,10 @@ export class UsersController implements CrudController<User> {
    */
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Request() req, @Body() body: LoginDto) {
+  @UseGuards(LocalAuthGuard)
+  @ApiOperation({ summary: 'Logs in a user with local credentials' })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  login(@Request() req, @Body() dto: LoginDto) {
     return this.service.login(req.user);
   }
 }
