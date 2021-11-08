@@ -1,12 +1,13 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IsEmail, IsNotEmpty } from 'class-validator';
+import { Exclude } from 'class-transformer';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { StockUnit } from '../../stock/entities/stock-unit.entity';
 
 export type UserId = number;
 
-export const enum Role {
+export enum Role {
   CUSTOMER,
   FARMER,
   RIDER,
@@ -47,7 +48,8 @@ export class User {
    * The password hash
    */
   @Column()
-  password: string;
+  @Exclude()
+  password?: string;
 
   /**
    * The role of this user
