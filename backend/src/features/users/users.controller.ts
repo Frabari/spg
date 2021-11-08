@@ -7,6 +7,7 @@ import {
   Override,
   ParsedRequest,
 } from '@nestjsx/crud';
+import * as bcrypt from 'bcrypt';
 import { Role, User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -23,7 +24,7 @@ const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
     type: User,
   },
   routes: {
-    only: ['getOneBase', 'getManyBase'],
+    only: ['getOneBase', 'getManyBase', 'createOneBase'],
   },
 })
 @ApiTags(User.name)
@@ -51,10 +52,15 @@ export class UsersController implements CrudController<User> {
     return this.base.getOneBase(req);
   }
 
-  /**
-   * Logs in a user with local credentials
-   */
-  @UseGuards(LocalAuthGuard)
+  @Override()
+  async createOne(
+    @ParsedRequest() req: CrudRequest,
+    @Body() dto: CreateUserDto,
+  ) {
+    dto.password = await bcrypt.hash(dto.password, 10);
+    return this.base.createOneBase(req, dto as User);
+  }
+
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Logs in a user with local credentials' })

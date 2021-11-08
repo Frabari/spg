@@ -14,6 +14,7 @@ async function bootstrap() {
     .setTitle('Basil API')
     .setDescription('Solidarity purchase groups')
     .setVersion(version)
+    .addBearerAuth()
     .addTag(User.name, 'Users management and authentication')
     .addTag(Product.name, 'Products management')
     .addTag(Category.name, 'Products categorization')
