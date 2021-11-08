@@ -7,8 +7,7 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JWT_DURATION, JWT_SECRET } from './constants';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './guards/roles.guard';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -22,14 +21,7 @@ import { RolesGuard } from './guards/roles.guard';
     }),
   ],
   controllers: [UsersController],
-  providers: [
-    UsersService,
-    LocalStrategy,
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-  ],
+  providers: [UsersService, LocalStrategy, JwtStrategy],
   exports: [UsersService],
 })
 export class UsersModule {}
