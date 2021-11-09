@@ -5,7 +5,7 @@
   "scripts": {
     "start": "npm run -w backend start & npm run -w frontend start",
     "start:dev": "npm run -w backend start:dev & npm run -w frontend start",
-    "test": "npm run -w backend test",
+    "test": "npm run -w backend test  && npm run -w backend test:e2e",
     "prepare": "husky install"
   },
   "repository": {
