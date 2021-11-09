@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Basil webapp monorepo",
   "scripts": {
-    "start": "npm run -w backend start & npm run -w frontend start",
-    "start:dev": "npm run -w backend start:dev & npm run -w frontend start",
+    "start": "concurrently -n \"backend,frontend\" \"npm run -w backend start\" \"npm run -w frontend start\"",
+    "start:dev": "concurrently -n \"backend,frontend\" \"npm run -w backend start:dev\" \"npm run -w frontend start\"",
     "test": "npm run -w backend test",
     "prepare": "husky install"
   },
@@ -27,6 +27,7 @@
     "@commitlint/config-conventional": "^13.2.0",
     "husky": "^7.0.2",
     "prettier": "^2.4.1",
-    "pretty-quick": "^3.1.1"
+    "pretty-quick": "^3.1.1",
+    "concurrently": "^6.3.0"
   }
 }
