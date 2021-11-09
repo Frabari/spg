@@ -6,7 +6,7 @@ import { Product } from '../../products/entities/product.entity';
 
 export type UserId = number;
 
-export const enum Role {
+export enum Role {
   CUSTOMER,
   FARMER,
   RIDER,
