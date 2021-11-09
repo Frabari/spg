@@ -54,6 +54,7 @@ export class UsersController implements CrudController<User> {
   @Get('me')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: `Gets the current authenticated user's profile` })
   getMe(@Request() req) {
     return this.service.findOne(req.user.id);
   }
