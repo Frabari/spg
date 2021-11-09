@@ -38,3 +38,4 @@ lerna-debug.log*
 .env
 dist
 db.sqlite
+test-report.xml
