@@ -85,7 +85,8 @@
       "!**/*.guard.(t|j)s",
       "!**/*.decorator.(t|j)s",
       "!**/*.middleware.(t|j)s",
-      "!**/*.strategy.(t|j)s"
+      "!**/*.strategy.(t|j)s",
+      "!**/constants.(t|j)s"
     ],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
