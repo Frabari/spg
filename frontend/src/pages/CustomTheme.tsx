@@ -13,7 +13,7 @@ export const themeOptions = createTheme({
     },
   },
   typography: {
-    fontFamily: 'DM Sans',
+    fontFamily: ['DM Sans','-apple-system','Arial'].join(','),
     h6: {
       color: '#757575',
     },

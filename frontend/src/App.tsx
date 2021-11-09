@@ -3,6 +3,7 @@ import './App.css';
 import Homepage from './pages/Homepage';
 import { ThemeProvider} from '@mui/material/styles';
 import { themeOptions } from './pages/CustomTheme';
+import Login from './pages/Login';
 
 function App() {
   return (
@@ -16,6 +17,10 @@ function App() {
 
           <Route exact path="/home">
             <Homepage/>
+          </Route>
+
+          <Route exact path="/login">
+            <Login/>
           </Route>
 
         </div>
