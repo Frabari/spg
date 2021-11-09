@@ -78,6 +78,7 @@
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
+      "!main.ts",
       "!**/*.dto.(t|j)s",
       "!**/*.entity.(t|j)s",
       "!**/*.module.(t|j)s",
