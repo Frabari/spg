@@ -8,6 +8,9 @@ export const themeOptions = createTheme({
     secondary: {
       main: '#fff',
     },
+    info: {
+      main: '#737373',
+    }
   },
   typography: {
     fontFamily: 'DM Sans',
@@ -25,6 +28,16 @@ export const themeOptions = createTheme({
         root: {
           borderRadius: '30px'
         }
+      },
+    },
+    MuiBadge: {
+      defaultProps:{
+        color: "primary",
+      },
+    },
+    MuiIconButton: {
+      defaultProps:{
+        color: "info",
       },
     },
   },
