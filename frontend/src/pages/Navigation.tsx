@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Box,Tabs, Tab, AppBar, Toolbar, Typography, IconButton, Badge, Avatar, Button} from '@mui/material';
+import { Box,Tabs, Tab, AppBar, Toolbar, Typography, IconButton, Badge, Avatar, Button } from '@mui/material';
 import Person from '@mui/icons-material/Person';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
