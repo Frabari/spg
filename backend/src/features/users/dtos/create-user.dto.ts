@@ -7,6 +7,5 @@ export class CreateUserDto extends OmitType(User, [
   'orders',
   'transactions',
   'deliveries',
-  'stockUnits',
   'role',
 ]) {}

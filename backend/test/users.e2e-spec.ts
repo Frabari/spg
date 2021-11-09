@@ -8,7 +8,6 @@ import { UsersModule } from '../src/features/users/users.module';
 import { OrdersModule } from '../src/features/orders/orders.module';
 import { ProductsModule } from '../src/features/products/products.module';
 import { CategoriesModule } from '../src/features/categories/categories.module';
-import { StockModule } from '../src/features/stock/stock.module';
 import { TransactionsModule } from '../src/features/transactions/transactions.module';
 import { Role, User } from '../src/features/users/entities/user.entity';
 
@@ -28,7 +27,6 @@ describe('UsersController (e2e)', () => {
         UsersModule,
         ProductsModule,
         CategoriesModule,
-        StockModule,
         TransactionsModule,
         OrdersModule,
       ],
@@ -141,7 +139,7 @@ describe('UsersController (e2e)', () => {
         .expect(400);
     });
 
-    it('should fail if some fields are absent', () => {
+    it('should fail if some fields are missing', () => {
       return request(app.getHttpServer())
         .post('/users')
         .send({

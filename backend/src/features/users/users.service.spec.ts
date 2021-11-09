@@ -4,13 +4,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users.module';
 import { ProductsModule } from '../products/products.module';
 import { CategoriesModule } from '../categories/categories.module';
-import { StockModule } from '../stock/stock.module';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { OrdersModule } from '../orders/orders.module';
 import { hash } from 'bcrypt';
 import { EntityManager } from 'typeorm';
 import { User } from './entities/user.entity';
-import { INestApplication } from '@nestjs/common';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -29,7 +27,6 @@ describe('UsersService', () => {
         UsersModule,
         ProductsModule,
         CategoriesModule,
-        StockModule,
         TransactionsModule,
         OrdersModule,
       ],
