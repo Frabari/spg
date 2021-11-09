@@ -72,7 +72,7 @@ describe('UsersService', () => {
         email: 'test@example.com',
       } as User);
       expect(typeof tokens.token).toBe('string');
-      expect(tokens.token.length > 1);
+      expect(tokens.token.length > 1).toBe(true);
     });
   });
 
