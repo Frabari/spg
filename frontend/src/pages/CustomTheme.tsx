@@ -1,10 +1,9 @@
-import { createTheme } from '@material-ui/core/styles'
+import { createTheme } from '@mui/material/styles';
 
 export const themeOptions = createTheme({
   palette: {
-    type: 'light',
     primary: {
-      main: '#5DD886',
+      main: '#5dd886',
     },
     secondary: {
       main: '#fff',
@@ -13,20 +12,20 @@ export const themeOptions = createTheme({
   typography: {
     fontFamily: 'DM Sans',
     h6: {
-      color: '#757575'
-    }
-  },
-  props: {
-    MuiButton: {
-      color: 'primary',
-      variant: 'outlined',
+      color: '#757575',
     },
   },
-  overrides: {
+  components: {
     MuiButton: {
-        root:{
-            borderRadius: '30',
+      defaultProps:{
+        color: "primary",
+        variant: "outlined",
+      },
+      styleOverrides: {
+        root: {
+          borderRadius: '30px'
         }
+      },
     },
   },
-})
+});
