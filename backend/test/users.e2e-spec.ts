@@ -86,16 +86,18 @@ describe('UsersController (e2e)', () => {
         .expect(200)
         .expect(r => r.body.length === 1);
     });
+  });
 
-    it('should return the user if the requester is authenticated yet', async () => {
+  describe('GET /users/me', () => {
+    it('should return the user if the requester is authenticated', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
       await entityManager.insert(User, {
-        email,
-        password: await hash(password, 10),
         name: 'John',
         surname: 'Doe',
+        email,
+        password: await hash(password, 10),
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -106,7 +108,9 @@ describe('UsersController (e2e)', () => {
         .get('/users/me')
         .auth(authToken, { type: 'bearer' })
         .expect(200)
-        .expect(r => r.body.length === 1 && r.body.toEqual(User));
+        .expect(response => {
+          expect(response.body.email).toEqual(email);
+        });
     });
   });
 
