@@ -4,7 +4,6 @@ import * as DbConfig from '../ormconfig.json';
 import { UsersModule } from './features/users/users.module';
 import { ProductsModule } from './features/products/products.module';
 import { CategoriesModule } from './features/categories/categories.module';
-import { StockModule } from './features/stock/stock.module';
 import { OrdersModule } from './features/orders/orders.module';
 import { TransactionsModule } from './features/transactions/transactions.module';
 
@@ -20,7 +19,6 @@ const { entities, ...dbConfig } = DbConfig;
     UsersModule,
     ProductsModule,
     CategoriesModule,
-    StockModule,
     OrdersModule,
     TransactionsModule,
   ],

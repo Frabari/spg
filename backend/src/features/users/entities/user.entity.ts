@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty } from 'class-validator';
 import { Exclude } from 'class-transformer';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { Order } from '../../orders/entities/order.entity';
-import { StockUnit } from '../../stock/entities/stock-unit.entity';
+import { Product } from '../../products/entities/product.entity';
 
 export type UserId = number;
 
@@ -91,10 +91,10 @@ export class User {
   deliveries: Order[];
 
   /**
-   * The stock units created by this farmer
+   * The products produced by this farmer
    *
    * @roles FARMER
    */
-  @OneToMany(() => StockUnit, su => su.farmer)
-  stockUnits: StockUnit[];
+  @OneToMany(() => Product, su => su.farmer)
+  products: Product[];
 }

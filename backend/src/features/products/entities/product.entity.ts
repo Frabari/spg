@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsInt, IsNotEmpty, Min } from 'class-validator';
 import { Category } from '../../categories/entities/category.entity';
+import { User } from '../../users/entities/user.entity';
 
 export type ProductId = number;
 
@@ -8,6 +9,13 @@ export type ProductId = number;
 export class Product {
   @PrimaryGeneratedColumn()
   id: ProductId;
+
+  /**
+   * If true this product is visible and saleable
+   */
+  @Column({ default: false })
+  @IsNotEmpty()
+  public: boolean;
 
   /**
    * A short name
@@ -64,4 +72,10 @@ export class Product {
    */
   @ManyToOne(() => Category, cat => cat.products)
   category: Category;
+
+  /**
+   * The farmer who produces this product
+   */
+  @ManyToOne(() => User, user => user.products)
+  farmer: User;
 }
