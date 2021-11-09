@@ -81,8 +81,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function NavBar(props: any) {
 
-  const loggedIn=0;
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" color="secondary" >
@@ -95,7 +93,7 @@ function NavBar(props: any) {
           <Typography variant="h6" component="div" marginLeft="10px">
             Basil
           </Typography>
-          {loggedIn ? <>
+          {props.loggedIn===0 ? <>
           <Box sx={{ flexGrow: 1 }} />
           <Button>Login</Button></>
           : 
@@ -103,7 +101,7 @@ function NavBar(props: any) {
           <Box marginX="auto" >
           <Search>
             <SearchIconWrapper>
-              <SearchIcon style={{color: '#737373', justifySelf: 'center'}}/>
+              <SearchIcon style={{color: '#737373'}}/>
             </SearchIconWrapper>
             <StyledInputBase
               placeholder="Search…"
@@ -132,4 +130,3 @@ function NavBar(props: any) {
 
 const NavigationBox = { NavTabs, NavBar };
 export default NavigationBox;
-  

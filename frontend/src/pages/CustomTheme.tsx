@@ -10,7 +10,7 @@ export const themeOptions = createTheme({
     },
     info: {
       main: '#737373',
-    }
+    },
   },
   typography: {
     fontFamily: 'DM Sans',
@@ -19,6 +19,13 @@ export const themeOptions = createTheme({
     },
   },
   components: {
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          padding:30,
+        },
+      },
+    },
     MuiButton: {
       defaultProps:{
         color: "primary",
