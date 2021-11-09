@@ -8,16 +8,14 @@ function App() {
   return (
     <ThemeProvider theme={themeOptions}>
       <Router>
-        <div className="App">
-
+        <div className="App" style={{backgroundColor: '#fafafa'}}>
           <Route exact path="/">    
             <Redirect to="/home" />
           </Route>
 
           <Route exact path="/home">
-            <Homepage />
+            <Homepage/>
           </Route>
-
         </div>
       </Router>
     </ThemeProvider>
