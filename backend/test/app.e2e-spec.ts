@@ -86,6 +86,28 @@ describe('UsersController (e2e)', () => {
         .expect(200)
         .expect(r => r.body.length === 1);
     });
+
+    it('should return the user if the requester is authenticated yet', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      await entityManager.insert(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      return request(server)
+        .get('/users/me')
+        .auth(authToken, { type: 'bearer' })
+        .expect(200)
+        .expect(r => r.body.length === 1 && r.body.toEqual(User));
+    });
   });
 
   describe('POST /users', () => {

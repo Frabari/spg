@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Crud,
@@ -42,6 +49,13 @@ export class UsersController implements CrudController<User> {
   @Roles(MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE)
   getMany(@ParsedRequest() req: CrudRequest) {
     return this.base.getManyBase(req) as Promise<User[]>;
+  }
+
+  @Get('me')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  getMe(@Request() req) {
+    return this.service.findOne(req.user.id);
   }
 
   @Override()
