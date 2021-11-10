@@ -9,7 +9,9 @@ import { OrdersModule } from '../src/features/orders/orders.module';
 import { ProductsModule } from '../src/features/products/products.module';
 import { CategoriesModule } from '../src/features/categories/categories.module';
 import { TransactionsModule } from '../src/features/transactions/transactions.module';
-import { Role, User } from '../src/features/users/entities/user.entity';
+import { User } from '../src/features/users/entities/user.entity';
+import { Role } from '../src/features/users/roles.enum';
+import { validation } from '../src/constants';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -32,7 +34,7 @@ describe('UsersController (e2e)', () => {
       ],
     }).compile();
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new ValidationPipe(validation));
     await app.init();
   });
 
@@ -82,7 +84,9 @@ describe('UsersController (e2e)', () => {
         .get('/users')
         .auth(authToken, { type: 'bearer' })
         .expect(200)
-        .expect(r => r.body.length === 1);
+        .expect(r => {
+          expect(r.body.length).toEqual(1);
+        });
     });
   });
 
