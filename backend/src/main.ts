@@ -22,7 +22,6 @@ async function bootstrap() {
     .addTag(Product.name, 'Products management')
     .addTag(Category.name, 'Products categorization')
     .addTag(Order.name, 'Orders and basket management')
-    .addTag('Stock', 'Stock management')
     .addTag(Transaction.name, 'Transactions and payments')
     .build();
   const document = SwaggerModule.createDocument(app, config);
