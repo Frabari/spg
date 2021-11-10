@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { Exclude } from 'class-transformer';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
 
@@ -15,6 +16,7 @@ export class Product {
    */
   @Column({ default: false })
   @IsNotEmpty()
+  @Exclude({ toPlainOnly: true })
   public: boolean;
 
   /**
@@ -56,6 +58,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
+  @Exclude({ toPlainOnly: true })
   reserved: number;
 
   /**
@@ -65,6 +68,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
+  @Exclude({ toPlainOnly: true })
   sold: number;
 
   /**
