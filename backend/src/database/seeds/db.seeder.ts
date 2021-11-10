@@ -2,20 +2,44 @@ import { Factory, Seeder } from 'typeorm-seeding';
 import { Connection } from 'typeorm';
 import { Product } from '../../features/products/entities/product.entity';
 import { Category } from '../../features/categories/entities/category.entity';
-import { User } from '../../features/users/entities/user.entity';
+import { Role, User } from '../../features/users/entities/user.entity';
+import * as faker from 'faker';
+import { passwordTest } from '../constants';
+
+let firstN = -1;
+
+function checkFarmer(role: any, n: number, products: Product[]) {
+  let prods = [];
+
+  if(firstN === -1)
+    firstN = n;
+  if( role === Role.FARMER && firstN === n) {
+    prods = products.slice(0, 25);
+  } else if( role === Role.FARMER && firstN !== n)
+    prods = products.slice(25, 50);
+
+  return prods;
+}
+
 
 export default class DbSeeder implements Seeder {
   public async run(factory: Factory, connection: Connection) {
     const entityManager = connection.createEntityManager();
-    const users = await factory(User)().createMany(15);
     const products = await entityManager.save(await factory(Product)().createMany(50));
 
-    users[14].role = 1;
-    users[13].role = 1;
-    users[14].products = products.slice(0,25);
-    users[13].products = products.slice(25,50);
+    Object.entries(Role).forEach(([roleName, role]) => {
+      [1, 2].forEach(n => {
+        entityManager.save(User, {
+          role: role,
+          email: `${roleName.toLowerCase()}${n}@example.com`,
+          name: faker.name.firstName(),
+          surname: faker.name.lastName(),
+          password: passwordTest,
+          products: checkFarmer(role, n, products)
+        });
+      })
+    })
 
-    await entityManager.save(users);
     await entityManager.save(Category, [
       { id: 1, name: 'Vegetables', slug: 'vegetables', products: products.slice(0, 10)},
       { id: 2, name: 'Fruits', slug: 'fruits', products: products.slice(10, 20)},
