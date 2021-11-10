@@ -1,10 +1,18 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Crud,
   CrudController,
   CrudRequest,
   Override,
+  ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
 import * as bcrypt from 'bcrypt';
@@ -16,6 +24,7 @@ import { Roles } from './roles.decorator';
 import { LoginDto } from './dtos/login.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { RolesGuard } from './guards/roles.guard';
+import { validation } from '../../constants';
 
 const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
 
@@ -26,6 +35,10 @@ const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
   routes: {
     only: ['getOneBase', 'getManyBase', 'createOneBase'],
   },
+  dto: {
+    create: CreateUserDto,
+  },
+  validation,
 })
 @ApiTags(User.name)
 @Controller('users')
@@ -44,6 +57,14 @@ export class UsersController implements CrudController<User> {
     return this.base.getManyBase(req) as Promise<User[]>;
   }
 
+  @Get('me')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: `Gets the current authenticated user's profile` })
+  getMe(@Request() req) {
+    return this.service.findOne(req.user.id);
+  }
+
   @Override()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -55,7 +76,7 @@ export class UsersController implements CrudController<User> {
   @Override()
   async createOne(
     @ParsedRequest() req: CrudRequest,
-    @Body() dto: CreateUserDto,
+    @ParsedBody() dto: CreateUserDto,
   ) {
     dto.password = await bcrypt.hash(dto.password, 10);
     return this.base.createOneBase(req, dto as User);

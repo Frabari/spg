@@ -5,7 +5,7 @@
   "scripts": {
     "start": "concurrently -n \"backend,frontend\" \"npm run -w backend start\" \"npm run -w frontend start\"",
     "start:dev": "concurrently -n \"backend,frontend\" \"npm run -w backend start:dev\" \"npm run -w frontend start\"",
-    "test": "npm run -w backend test",
+    "test": "npm run -w backend test:cov && npm run -w backend test:e2e",
     "prepare": "husky install"
   },
   "repository": {
@@ -26,6 +26,7 @@
     "@commitlint/cli": "^13.2.1",
     "@commitlint/config-conventional": "^13.2.0",
     "husky": "^7.0.2",
+    "jest-sonar": "^0.2.12",
     "prettier": "^2.4.1",
     "pretty-quick": "^3.1.1",
     "concurrently": "^6.3.0"

@@ -1,20 +1,20 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { IsEmail, IsNotEmpty } from 'class-validator';
-import { Exclude } from 'class-transformer';
+import { IsEmail, IsIn, IsNotEmpty, IsString } from 'class-validator';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Product } from '../../products/entities/product.entity';
+import { Exclude } from 'class-transformer';
 
 export type UserId = number;
 
 export enum Role {
-  CUSTOMER,
-  FARMER,
-  RIDER,
-  EMPLOYEE,
-  WAREHOUSE_WORKER,
-  WAREHOUSE_MANAGER,
-  MANAGER,
+  CUSTOMER = 'customer',
+  FARMER = 'farmer',
+  RIDER = 'rider',
+  EMPLOYEE = 'employee',
+  WAREHOUSE_WORKER = 'warehouse_worker',
+  WAREHOUSE_MANAGER = 'warehouse_manager',
+  MANAGER = 'manager',
 }
 
 @Entity()
@@ -39,7 +39,8 @@ export class User {
   /**
    * The email (username)
    */
-  @Column()
+  @Column({ unique: true })
+  @IsNotEmpty()
   @IsEmail()
   email: string;
 
@@ -47,14 +48,17 @@ export class User {
    * The password hash
    */
   @Column()
+  @IsString()
   @Exclude({ toPlainOnly: true })
-  password?: string;
+  password: string;
 
   /**
    * The role of this user
    */
   @Column({ default: Role.CUSTOMER })
+  @IsString()
   @IsNotEmpty()
+  @IsIn(Object.values(Role))
   role: Role;
 
   /**
