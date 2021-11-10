@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom';
 import './App.css';
+import UsersPage from './pages/Users';
+import { Container } from '@mui/material';
 import Homepage from './pages/Homepage';
 import { ThemeProvider} from '@mui/material/styles';
 import { themeOptions } from './pages/CustomTheme';
@@ -22,6 +24,10 @@ function App() {
           <Route exact path="/login">
             <Login/>
           </Route>
+
+		<Route exact path="/users">
+			<UsersPage/>
+		</Route>
 
         </div>
       </Router>
