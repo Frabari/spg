@@ -23,10 +23,8 @@ import { Roles } from './roles.decorator';
 import { LoginDto } from './dtos/login.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { RolesGuard } from './guards/roles.guard';
-import { Role } from './roles.enum';
+import { Role, ADMINS } from './roles.enum';
 import { Crud } from '../../core/decorators/crud.decorator';
-
-const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
 
 @Crud(User, {
   routes: {
@@ -48,7 +46,7 @@ export class UsersController implements CrudController<User> {
   @Override()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE)
+  @Roles(...ADMINS)
   getMany(@ParsedRequest() req: CrudRequest) {
     return this.base.getManyBase(req) as Promise<User[]>;
   }
@@ -64,7 +62,7 @@ export class UsersController implements CrudController<User> {
   @Override()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE)
+  @Roles(...ADMINS)
   getOne(@ParsedRequest() req: CrudRequest) {
     return this.base.getOneBase(req);
   }
