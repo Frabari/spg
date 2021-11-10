@@ -93,9 +93,9 @@
       "!**/*.decorator.(t|j)s",
       "!**/*.middleware.(t|j)s",
       "!**/*.strategy.(t|j)s",
-      "!**/*.controller.(t|j)s",
-      "!**/enum.(t|j)s",
       "!**/constants.(t|j)s",
+      "!**/enum.(t|j)s"
+      "!**/*.controller.(t|j)s",
       "!**/database/**/*"
     ],
     "coveragePathIgnorePatterns": [
