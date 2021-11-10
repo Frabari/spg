@@ -7,8 +7,9 @@ import { themeOptions } from './pages/CustomTheme';
 function App() {
   return (
     <ThemeProvider theme={themeOptions}>
-      <Router>
+      <Router >
         <div className="App" style={{backgroundColor: '#fafafa'}}>
+
           <Route exact path="/">    
             <Redirect to="/home" />
           </Route>
@@ -16,6 +17,7 @@ function App() {
           <Route exact path="/home">
             <Homepage/>
           </Route>
+
         </div>
       </Router>
     </ThemeProvider>
