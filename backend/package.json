@@ -93,7 +93,8 @@
       "!**/*.decorator.(t|j)s",
       "!**/*.middleware.(t|j)s",
       "!**/*.strategy.(t|j)s",
-      "!**/constants.(t|j)s"
+      "!**/constants.(t|j)s",
+      "!**/database/**/*"
     ],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
