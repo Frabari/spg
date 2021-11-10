@@ -6,7 +6,7 @@ export const themeOptions = createTheme({
       main: '#5dd886',
     },
     secondary: {
-      main: '#fff',
+      main: '#ffffff',
     },
     info: {
       main: '#737373',
@@ -19,10 +19,22 @@ export const themeOptions = createTheme({
     },
   },
   components: {
+    MuiAppBar: {
+      defaultProps:{
+        color: "secondary",
+      },
+    },
+    MuiTabs: {
+      styleOverrides:{
+        root:{
+          backgroundColor: "#ffffff",
+        },
+      },
+    },
     MuiContainer: {
       styleOverrides: {
         root: {
-          padding:30,
+          padding:50,
         },
       },
     },
