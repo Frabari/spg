@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { Box,Tabs, Tab, AppBar, Toolbar, Typography, IconButton, Badge, Button, InputBase } from '@mui/material';
+import {  Link } from 'react-router-dom';
+import { Box,Tabs, Tab, AppBar, Toolbar, Typography, IconButton, Badge, Button, InputBase, Menu, MenuItem } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Person from '@mui/icons-material/Person';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 interface LinkTabProps {
     label?: string;
@@ -31,7 +33,7 @@ function NavTabs() {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Tabs value={value} onChange={handleChange} aria-label="nav tabs example">
+      <Tabs value={value} onChange={handleChange}>
         <LinkTab label="Fruits" href="/fruits" />
         <LinkTab label="Vegetables" href="/vegetables" />
       </Tabs>
@@ -80,10 +82,19 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 function NavBar(props: any) {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" color="secondary" >
+    <Box sx={{ flexGrow: 1 }}  >
+      <AppBar position="static">
         <Toolbar>
           <svg width="32" height="32" viewBox="0 0 456 456" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="228" cy="228" r="228" fill="#5DD886"/>
@@ -95,7 +106,7 @@ function NavBar(props: any) {
           </Typography>
           {props.loggedIn===0 ? <>
           <Box sx={{ flexGrow: 1 }} />
-          <Button>Login</Button></>
+          <Button component={Link} to={"/login"}>Login</Button></>
           : 
           <>
           <Box marginX="auto" >
@@ -111,9 +122,28 @@ function NavBar(props: any) {
           </Box>
           
           <Box sx={{ display: { md: 'flex' } }}>
-            <IconButton size="large" >
+            <IconButton size="large" onClick={handleMenu} >
                 <Person />
             </IconButton>
+            <Menu
+                id="menu-appbar"
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem onClick={handleClose}>Profile</MenuItem>
+                <MenuItem onClick={handleClose}>My orders</MenuItem>
+                <MenuItem component={Link} to={"/home"}><LogoutIcon /> Logout</MenuItem>
+              </Menu>
             <IconButton size="large" aria-label="show cart">
               <Badge badgeContent={4}>
                 <ShoppingCart />

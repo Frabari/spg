@@ -8,7 +8,7 @@ export default function Homepage(props: any) {
         <>
         <NavigationBox.NavBar loggedIn={0}/>
         <Container>
-            <ImageHome height="500"/>
+            <ImageHome width="400" height="500"/>
             <Typography variant="h6">
                 The solidarity purchase
             </Typography>
