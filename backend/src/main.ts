@@ -8,10 +8,11 @@ import { Category } from './features/categories/entities/category.entity';
 import { Order } from './features/orders/entities/order.entity';
 import { Product } from './features/products/entities/product.entity';
 import { Transaction } from './features/transactions/entities/transaction.entity';
+import { validation } from './constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe(validation));
   const config = new DocumentBuilder()
     .setTitle('Basil API')
     .setDescription('Solidarity purchase groups')

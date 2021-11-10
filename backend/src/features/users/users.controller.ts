@@ -12,6 +12,7 @@ import {
   CrudController,
   CrudRequest,
   Override,
+  ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
 import * as bcrypt from 'bcrypt';
@@ -23,6 +24,7 @@ import { Roles } from './roles.decorator';
 import { LoginDto } from './dtos/login.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { RolesGuard } from './guards/roles.guard';
+import { validation } from '../../constants';
 
 const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
 
@@ -33,6 +35,10 @@ const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
   routes: {
     only: ['getOneBase', 'getManyBase', 'createOneBase'],
   },
+  dto: {
+    create: CreateUserDto,
+  },
+  validation,
 })
 @ApiTags(User.name)
 @Controller('users')
@@ -70,7 +76,7 @@ export class UsersController implements CrudController<User> {
   @Override()
   async createOne(
     @ParsedRequest() req: CrudRequest,
-    @Body() dto: CreateUserDto,
+    @ParsedBody() dto: CreateUserDto,
   ) {
     dto.password = await bcrypt.hash(dto.password, 10);
     return this.base.createOneBase(req, dto as User);
