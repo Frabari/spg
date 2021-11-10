@@ -3,7 +3,7 @@ import { IsInt, IsNotEmpty, Min } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
-import { Role } from '../../users/roles.enum';
+import { Role, STAFF } from '../../users/roles.enum';
 
 export type ProductId = number;
 
@@ -19,7 +19,7 @@ export class Product {
    */
   @Column({ default: false })
   @IsNotEmpty()
-  @Expose({ groups: Object.values(Role).filter(r => r === Role.CUSTOMER) })
+  @Expose({ groups: STAFF })
   public: boolean;
 
   /**
@@ -65,7 +65,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
-  @Expose({ groups: Object.values(Role).filter(r => r === Role.CUSTOMER) })
+  @Expose({ groups: STAFF })
   reserved: number;
 
   /**
@@ -75,7 +75,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
-  @Expose({ groups: Object.values(Role).filter(r => r === Role.CUSTOMER) })
+  @Expose({ groups: STAFF })
   sold: number;
 
   /**

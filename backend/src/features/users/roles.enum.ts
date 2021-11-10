@@ -7,3 +7,12 @@ export enum Role {
   WAREHOUSE_MANAGER = 'warehouse_manager',
   MANAGER = 'manager',
 }
+
+export const ADMINS = [
+  Role.MANAGER,
+  Role.WAREHOUSE_MANAGER,
+  Role.WAREHOUSE_WORKER,
+  Role.EMPLOYEE,
+];
+
+export const STAFF = ADMINS.concat(Role.RIDER);

@@ -1,4 +1,9 @@
-import { Controller, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  NotFoundException,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   Crud,
@@ -23,8 +28,10 @@ import { ProductsService } from './products.service';
   },
   validation,
 })
-@Controller('products')
 @ApiTags(Product.name)
+@ApiBearerAuth()
+@Controller('products')
+@UseGuards(JwtAuthGuard)
 export class ProductsController implements CrudController<Product> {
   constructor(public readonly service: ProductsService) {}
 
@@ -33,29 +40,28 @@ export class ProductsController implements CrudController<Product> {
   }
 
   @Override()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   getMany(@ParsedRequest() crudReq: CrudRequest, @Request() req) {
-    const user = (req as any).user as User;
+    const user = req.user as User;
     if (user.role === Role.CUSTOMER) {
-      let publicFilter = crudReq.parsed.filter.find(f => f.field === 'public');
-      console.log(publicFilter);
-      if (!publicFilter) {
-        publicFilter = {} as any;
-        publicFilter.field = 'public';
-        crudReq.parsed.filter.push(publicFilter);
-      }
-      publicFilter.operator = '$eq';
-      publicFilter.value = true;
-      console.log(crudReq.parsed.filter);
+      crudReq.parsed.search = {
+        $and: crudReq.parsed.search.$and.concat({
+          public: true,
+          available: {
+            $gt: 0,
+          },
+        }),
+      };
     }
     return this.base.getManyBase(crudReq) as Promise<Product[]>;
   }
 
   @Override()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  getOne(@ParsedRequest() req: CrudRequest) {
-    return this.base.getOneBase(req);
+  getOne(@ParsedRequest() crudReq: CrudRequest, @Request() req) {
+    const user = req.user as User;
+    return this.base.getOneBase(crudReq).then(p => {
+      if (user.role === Role.CUSTOMER && (!p.public || p.available)) {
+        throw new NotFoundException(`Product ${p.id} not found`);
+      }
+    });
   }
 }
