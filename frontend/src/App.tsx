@@ -3,8 +3,9 @@ import './App.css';
 import UsersPage from './pages/Users';
 import { Container } from '@mui/material';
 import Homepage from './pages/Homepage';
-import { ThemeProvider} from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './pages/CustomTheme';
+import UsersInfo from './pages/UsersInfo';
 import Login from './pages/Login';
 
 function App() {
@@ -29,6 +30,9 @@ function App() {
 			<UsersPage/>
 		</Route>
 
+          <Route exact path="/UsersInfo/">
+            <UsersInfo />
+          </Route>
         </div>
       </Router>
     </ThemeProvider>
