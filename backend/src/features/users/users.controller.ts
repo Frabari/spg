@@ -16,7 +16,7 @@ import {
   ParsedRequest,
 } from '@nestjsx/crud';
 import * as bcrypt from 'bcrypt';
-import { Role, User } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -25,6 +25,7 @@ import { LoginDto } from './dtos/login.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { RolesGuard } from './guards/roles.guard';
 import { validation } from '../../constants';
+import { Role } from './roles.enum';
 
 const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
 

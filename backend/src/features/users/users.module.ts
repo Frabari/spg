@@ -8,6 +8,8 @@ import { User } from './entities/user.entity';
 import { LocalStrategy } from './strategies/local.strategy';
 import { jwtDuration, jwtSecret } from './constants';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { RoleBasedSerializerInterceptor } from './interceptors/role-based-serializer.interceptor';
 
 @Module({
   imports: [
@@ -21,7 +23,15 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService, LocalStrategy, JwtStrategy],
+  providers: [
+    UsersService,
+    LocalStrategy,
+    JwtStrategy,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RoleBasedSerializerInterceptor,
+    },
+  ],
   exports: [UsersService],
 })
 export class UsersModule {}

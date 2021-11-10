@@ -4,18 +4,9 @@ import { Transaction } from '../../transactions/entities/transaction.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Product } from '../../products/entities/product.entity';
 import { Exclude } from 'class-transformer';
+import { Role } from '../roles.enum';
 
 export type UserId = number;
-
-export enum Role {
-  CUSTOMER = 'customer',
-  FARMER = 'farmer',
-  RIDER = 'rider',
-  EMPLOYEE = 'employee',
-  WAREHOUSE_WORKER = 'warehouse_worker',
-  WAREHOUSE_MANAGER = 'warehouse_manager',
-  MANAGER = 'manager',
-}
 
 @Entity()
 export class User {

@@ -2,7 +2,8 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsInt, IsNotEmpty, Min } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
 import { Category } from '../../categories/entities/category.entity';
-import { Role, User } from '../../users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
+import { Role } from '../../users/roles.enum';
 
 export type ProductId = number;
 
@@ -81,11 +82,13 @@ export class Product {
    * The category to which this product belongs
    */
   @ManyToOne(() => Category, cat => cat.products)
+  @Expose()
   category: Category;
 
   /**
    * The farmer who produces this product
    */
   @ManyToOne(() => User, user => user.products)
+  @Expose()
   farmer: User;
 }
