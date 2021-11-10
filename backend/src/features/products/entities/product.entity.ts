@@ -1,14 +1,16 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsInt, IsNotEmpty, Min } from 'class-validator';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { Category } from '../../categories/entities/category.entity';
-import { User } from '../../users/entities/user.entity';
+import { Role, User } from '../../users/entities/user.entity';
 
 export type ProductId = number;
 
 @Entity()
+@Exclude()
 export class Product {
   @PrimaryGeneratedColumn()
+  @Expose()
   id: ProductId;
 
   /**
@@ -16,7 +18,7 @@ export class Product {
    */
   @Column({ default: false })
   @IsNotEmpty()
-  @Exclude({ toPlainOnly: true })
+  @Expose({ groups: Object.values(Role).filter(r => r === Role.CUSTOMER) })
   public: boolean;
 
   /**
@@ -24,6 +26,7 @@ export class Product {
    */
   @Column()
   @IsNotEmpty()
+  @Expose()
   name: string;
 
   /**
@@ -31,6 +34,7 @@ export class Product {
    */
   @Column()
   @IsNotEmpty()
+  @Expose()
   description: string;
 
   /**
@@ -39,6 +43,7 @@ export class Product {
   @Column()
   @IsNotEmpty()
   @Min(0)
+  @Expose()
   price: number;
 
   /**
@@ -49,6 +54,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
+  @Expose()
   available: number;
 
   /**
@@ -58,7 +64,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
-  @Exclude({ toPlainOnly: true })
+  @Expose({ groups: Object.values(Role).filter(r => r === Role.CUSTOMER) })
   reserved: number;
 
   /**
@@ -68,7 +74,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
-  @Exclude({ toPlainOnly: true })
+  @Expose({ groups: Object.values(Role).filter(r => r === Role.CUSTOMER) })
   sold: number;
 
   /**
