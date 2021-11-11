@@ -13,28 +13,28 @@ export const themeOptions = createTheme({
     },
   },
   typography: {
-    fontFamily: ['DM Sans','-apple-system','Arial'].join(','),
+    fontFamily: ['DM Sans', '-apple-system', 'Arial'].join(','),
     h6: {
       color: '#757575',
     },
   },
   components: {
     MuiAppBar: {
-      defaultProps:{
-        color: "secondary",
+      defaultProps: {
+        color: 'secondary',
       },
     },
     MuiTabs: {
-      styleOverrides:{
-        root:{
-          backgroundColor: "#ffffff",
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff',
         },
       },
     },
     MuiContainer: {
       styleOverrides: {
         root: {
-          padding:50,
+          padding: 50,
         },
       },
     },
@@ -67,5 +67,4 @@ export const themeOptions = createTheme({
       },
     },
   },
-});
 });
