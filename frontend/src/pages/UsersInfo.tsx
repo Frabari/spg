@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import NavigationBox from './Navigation';
-import { TextField, Grid, Button } from '@material-ui/core';
+import { TextField, Grid, Button } from '@mui/material';
 
 function UsersInfo() {
   const [edit, setEdit] = React.useState(true);
-  const [mail, setmail] = React.useState(true);
-  const [nome, setnome] = React.useState(true);
-  const [cognome, setcognome] = React.useState(true);
+  const [mail, setMail] = React.useState(true);
+  const [name, setName] = React.useState(true);
+  const [surname, setSurname] = React.useState(true);
+  const [balance, setBalance] = React.useState(true);
 
   let info = {
     userid: 'SAMJ22',
@@ -30,22 +31,27 @@ function UsersInfo() {
       info.balance = (
         document.getElementById('balance') as HTMLInputElement
       ).value;
-      var validRegex =
+      var validEmailRegex =
         /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-      if (!info.email.match(validRegex)) {
+      if (!info.email.match(validEmailRegex)) {
         check = false;
-        setmail(false);
-      } else setmail(true);
+        setMail(false);
+      } else setMail(true);
+      var validBalanceRegex = /^[0-9]+/;
+      if (!info.balance.match(validBalanceRegex)) {
+        check = false;
+        setBalance(false);
+      } else setBalance(true);
     }
     if (info.surname.length < 2) {
       check = false;
-      setcognome(false);
-    } else setcognome(true);
+      setSurname(false);
+    } else setSurname(true);
 
     if (info.username.length < 2) {
       check = false;
-      setnome(false);
-    } else setnome(true);
+      setName(false);
+    } else setName(true);
     if (info.balance === undefined) info.balance = '0';
 
     info.balance = (
@@ -62,13 +68,14 @@ function UsersInfo() {
         direction="column"
         justifyContent="center"
         alignItems="center"
-        style={{ width: 250, marginLeft: '10%' }}
+        marginX="auto"
+        style={{ width: 250 }}
       >
         <h2>UserID: {info.userid}</h2>
         <TextField
           id="name"
-          error={!nome}
-          helperText={nome ? '' : 'invalid name'}
+          error={!name}
+          helperText={name ? '' : 'invalid name'}
           size="medium"
           fullWidth={true}
           label="Name"
@@ -80,9 +87,9 @@ function UsersInfo() {
         <TextField
           id="surname"
           label="Surname"
-          error={!cognome}
+          error={!surname}
           fullWidth={true}
-          helperText={cognome ? '' : 'invalid surname'}
+          helperText={surname ? '' : 'invalid surname'}
           defaultValue={info.surname}
           InputProps={{
             readOnly: edit,
@@ -121,11 +128,7 @@ function UsersInfo() {
         >
           $
         </TextField>
-        <Button
-          variant="contained"
-          style={{ marginTop: '10%', backgroundColor: '#5dd886' }}
-          onClick={handleMouseEvent}
-        >
+        <Button onClick={handleMouseEvent}>
           {edit ? 'Edit info' : 'save'}
         </Button>
       </Grid>

@@ -39,24 +39,31 @@ export const themeOptions = createTheme({
       },
     },
     MuiButton: {
-      defaultProps:{
-        color: "primary",
-        variant: "outlined",
+      defaultProps: {
+        color: 'primary',
+        variant: 'outlined',
       },
       styleOverrides: {
         root: {
-          borderRadius: '30px'
-        }
+          borderRadius: '30px',
+        },
       },
     },
     MuiBadge: {
-      defaultProps:{
-        color: "primary",
+      defaultProps: {
+        color: 'primary',
       },
     },
     MuiIconButton: {
-      defaultProps:{
-        color: "info",
+      defaultProps: {
+        color: 'info',
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          paddingBottom: '16px',
+        },
       },
     },
   },
