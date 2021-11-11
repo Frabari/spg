@@ -1,5 +1,12 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { IsEmail, IsIn, IsNotEmpty, IsString, IsUrl } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Product } from '../../products/entities/product.entity';
@@ -98,5 +105,6 @@ export class User {
    */
   @Column({ default: null })
   @IsUrl()
+  @IsOptional()
   avatar: string;
 }
