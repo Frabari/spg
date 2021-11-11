@@ -49,11 +49,11 @@ export class OrdersController {
   @Override()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYEE)
-  createOne(
+  async createOne(
     @ParsedRequest() request: CrudRequest,
     @ParsedBody() dto: CreateOrderDto,
   ) {
-    const order = this.service.checkOrder(dto);
+    const order = await this.service.checkOrder(dto);
     return this.base.createOneBase(request, order as Order);
   }
 }

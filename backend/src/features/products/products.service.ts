@@ -12,4 +12,19 @@ export class ProductsService extends TypeOrmCrudService<Product> {
   ) {
     super(productsRepository);
   }
+
+  /**
+   * Reserves `quantity` of `products`
+   */
+  reserveProductAmount(product: Product, quantity: number) {
+    return this.productsRepository.update(
+      {
+        id: product.id,
+      },
+      {
+        available: product.available - quantity,
+        reserved: product.reserved + quantity,
+      },
+    );
+  }
 }
