@@ -1,5 +1,12 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { IsEmail, IsIn, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Product } from '../../products/entities/product.entity';
@@ -92,4 +99,12 @@ export class User {
    */
   @OneToMany(() => Product, su => su.farmer)
   products: Product[];
+
+  /**
+   * Url pointing to the user avatar
+   */
+  @Column({ default: null })
+  @IsUrl()
+  @IsOptional()
+  avatar: string;
 }
