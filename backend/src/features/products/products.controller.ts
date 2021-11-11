@@ -22,6 +22,12 @@ import { Crud } from '../../core/decorators/crud.decorator';
   routes: {
     only: ['getOneBase', 'getManyBase'],
   },
+  query: {
+    join: {
+      farmer: {},
+      category: {},
+    },
+  },
 })
 @ApiTags(Product.name)
 @ApiBearerAuth()
@@ -53,6 +59,10 @@ export class ProductsController implements CrudController<Product> {
   @Override()
   getOne(@ParsedRequest() crudReq: CrudRequest, @Request() req) {
     const user = req.user as User;
+    crudReq.parsed.join = [
+      { field: 'farmer', select: ['id', 'name', 'surname', 'avatar'] },
+      { field: 'category' },
+    ];
     return this.base.getOneBase(crudReq).then(p => {
       if (user.role === Role.CUSTOMER && !p.public) {
         throw new NotFoundException(`Product ${p.id} not found`);
