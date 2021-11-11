@@ -1,10 +1,11 @@
 import { Factory, Seeder } from 'typeorm-seeding';
 import { Connection } from 'typeorm';
+import * as faker from 'faker';
 import { Product } from '../../features/products/entities/product.entity';
 import { Category } from '../../features/categories/entities/category.entity';
-import { Role, User } from '../../features/users/entities/user.entity';
-import * as faker from 'faker';
+import { User } from '../../features/users/entities/user.entity';
 import { passwordTest } from '../constants';
+import { Role } from '../../features/users/roles.enum';
 
 let firstN = -1;
 

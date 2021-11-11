@@ -44,6 +44,66 @@ describe('ProductssController (e2e)', () => {
       return request(app.getHttpServer()).get('/products').expect(401);
     });
 
+    it('should fail if the role is customer with product that is not public', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      await entityManager.insert(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      await entityManager.insert(Product, {
+        name: 'Name',
+        description: 'Description',
+        public: false,
+        price: 10,
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      return request(server)
+        .get('/products')
+        .auth(authToken, { type: 'bearer' })
+        .expect(r => {
+          expect(r.body.length).toEqual(0);
+        });
+    });
+
+    it('should fail if the product availability is 0 (both for private and public products)', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      await entityManager.insert(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      await entityManager.insert(Product, {
+        name: 'Name',
+        description: 'Description',
+        public: true,
+        price: 10,
+        available: 0,
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      return request(server)
+        .get('/products')
+        .auth(authToken, { type: 'bearer' })
+        .expect(r => {
+          expect(r.body.length).toEqual(0);
+        });
+    });
+
     it('should return the products', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
@@ -56,7 +116,7 @@ describe('ProductssController (e2e)', () => {
         role: Role.MANAGER,
       });
       await entityManager.insert(Product, {
-        name: 'John',
+        name: 'Name',
         description: 'Description',
         public: true,
         price: 10,
