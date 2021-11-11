@@ -59,6 +59,7 @@ let i = 0;
 
 define(Product, (faker: typeof Faker) => {
   const product = new Product();
+  product.public = true;
   product.name = faker.commerce.productName();
   product.description = 'description';
   product.price = +faker.commerce.price(1, 50);
