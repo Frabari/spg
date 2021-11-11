@@ -28,10 +28,11 @@ function OutlinedCard() {
     showPassword: false,
   });
 
-  const handleChange =
-    (prop: keyof State) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValues({ ...values, [prop]: event.target.value });
-    };
+  const handleChange = (prop: keyof State) => (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setValues({ ...values, [prop]: event.target.value });
+  };
 
   const handleClickShowPassword = () => {
     setValues({
@@ -116,7 +117,7 @@ export default function Login(props: any) {
       direction="column"
       alignItems="center"
       justifyContent="center"
-      style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}
+      style={{ minHeight: '100vh', backgroundColor: "#fafafa" }}
     >
       <Grid item xs={4}>
         <Box sx={{ flexGrow: 1 }} style={{ width: 'fit-content' }}>
