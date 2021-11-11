@@ -30,8 +30,9 @@ import { CreateOrderDto } from './dtos/create-order.dto';
   validation,
 })
 @ApiTags(Order.name)
-@Controller('orders')
 @ApiBearerAuth()
+@Controller('orders')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdersController {
   constructor(public readonly service: OrdersService) {}
 
@@ -40,14 +41,12 @@ export class OrdersController {
   }
 
   @Override()
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...STAFF)
   getMany(@ParsedRequest() request: CrudRequest) {
     return this.base.getManyBase(request);
   }
 
   @Override()
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYEE)
   async createOne(
     @ParsedRequest() request: CrudRequest,

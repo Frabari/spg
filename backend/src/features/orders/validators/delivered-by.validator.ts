@@ -8,7 +8,7 @@ import { Role } from '../../users/roles.enum';
 @ValidatorConstraint({ name: 'deliveredBy', async: false })
 export class DeliveredBy implements ValidatorConstraintInterface {
   validate(user: User) {
-    return user.role === Role.RIDER;
+    return !user || user.role === Role.RIDER;
   }
 
   defaultMessage() {

@@ -18,12 +18,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   async checkOrder(dto: CreateOrderDto) {
-    if (!dto.entries?.length) {
-      throw new BadRequestException(
-        'OrderWithoutEntries',
-        'Cannot create an empty order. Please provide at least one entry.',
-      );
-    }
+    console.log('Checking', dto);
     if (dto.deliverAt) {
       const deliveryDate = DateTime.fromJSDate(dto.deliverAt);
       const from = DateTime.now()

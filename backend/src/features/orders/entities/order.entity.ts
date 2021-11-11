@@ -6,10 +6,17 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { IsIn, IsNotEmpty, IsString, Validate } from 'class-validator';
+import {
+  Allow,
+  ArrayMinSize,
+  IsIn,
+  IsNotEmpty,
+  IsString,
+  Validate,
+} from 'class-validator';
 import { User } from '../../users/entities/user.entity';
 import { OrderEntry } from './order-entry.entity';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { DeliveredBy } from '../validators/delivered-by.validator';
 
 export type OrderId = number;
@@ -65,6 +72,7 @@ export class Order {
    * The user who will receive this order
    */
   @ManyToOne(() => User, user => user.orders)
+  @IsNotEmpty()
   user: User;
 
   /**
@@ -81,6 +89,8 @@ export class Order {
    * An array of products with their respective quantities
    */
   @OneToMany(() => OrderEntry, entry => entry.order, { cascade: true })
+  @IsNotEmpty()
+  @ArrayMinSize(1)
   entries: OrderEntry[];
 
   /**
@@ -88,7 +98,7 @@ export class Order {
    * or to pick it up at the warehouse
    */
   @Column({ default: null })
-  @Transform(() => Date)
+  @Type(() => Date)
   deliverAt: Date;
 
   /**
@@ -110,6 +120,6 @@ export class Order {
    * The date when this order was created
    */
   @CreateDateColumn()
-  @Transform(() => Date)
+  @Type(() => Date)
   createdAt: Date;
 }

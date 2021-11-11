@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export type TransactionId = number;
 
@@ -34,6 +34,6 @@ export class Transaction {
    * The date when this transaction was created
    */
   @CreateDateColumn()
-  @Transform(() => Date)
+  @Type(() => Date)
   createdAt: Date;
 }
