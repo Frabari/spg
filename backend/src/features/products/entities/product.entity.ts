@@ -1,13 +1,17 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { Exclude, Expose } from 'class-transformer';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
+import { Role, STAFF } from '../../users/roles.enum';
 
 export type ProductId = number;
 
 @Entity()
+@Exclude()
 export class Product {
   @PrimaryGeneratedColumn()
+  @Expose()
   id: ProductId;
 
   /**
@@ -15,6 +19,7 @@ export class Product {
    */
   @Column({ default: false })
   @IsNotEmpty()
+  @Expose({ groups: STAFF })
   public: boolean;
 
   /**
@@ -22,6 +27,7 @@ export class Product {
    */
   @Column()
   @IsNotEmpty()
+  @Expose()
   name: string;
 
   /**
@@ -29,6 +35,7 @@ export class Product {
    */
   @Column()
   @IsNotEmpty()
+  @Expose()
   description: string;
 
   /**
@@ -37,6 +44,7 @@ export class Product {
   @Column()
   @IsNotEmpty()
   @Min(0)
+  @Expose()
   price: number;
 
   /**
@@ -47,6 +55,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
+  @Expose()
   available: number;
 
   /**
@@ -56,6 +65,7 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
+  @Expose({ groups: STAFF })
   reserved: number;
 
   /**
@@ -65,17 +75,20 @@ export class Product {
   @IsInt()
   @IsNotEmpty()
   @Min(0)
+  @Expose({ groups: STAFF })
   sold: number;
 
   /**
    * The category to which this product belongs
    */
   @ManyToOne(() => Category, cat => cat.products)
+  @Expose()
   category: Category;
 
   /**
    * The farmer who produces this product
    */
   @ManyToOne(() => User, user => user.products)
+  @Expose()
   farmer: User;
 }
