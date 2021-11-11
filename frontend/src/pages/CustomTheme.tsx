@@ -59,5 +59,12 @@ export const themeOptions = createTheme({
         color: 'info',
       },
     },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          paddingBottom: '16px',
+        },
+      },
+    },
   },
 });
