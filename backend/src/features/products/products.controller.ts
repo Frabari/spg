@@ -6,27 +6,22 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
-  Crud,
   CrudController,
   CrudRequest,
   Override,
   ParsedRequest,
 } from '@nestjsx/crud';
-import { validation } from '../../constants';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { Role } from '../users/roles.enum';
 import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
+import { Crud } from '../../core/decorators/crud.decorator';
 
-@Crud({
-  model: {
-    type: Product,
-  },
+@Crud(Product, {
   routes: {
     only: ['getOneBase', 'getManyBase'],
   },
-  validation,
 })
 @ApiTags(Product.name)
 @ApiBearerAuth()

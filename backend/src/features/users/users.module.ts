@@ -9,7 +9,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { jwtDuration, jwtSecret } from './constants';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { RoleBasedSerializerInterceptor } from './interceptors/role-based-serializer.interceptor';
+import { RoleBasedSerializerInterceptor } from '../interceptors/role-based-serializer.interceptor';
 
 @Module({
   imports: [
