@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  Crud,
   CrudController,
   CrudRequest,
   Override,
@@ -16,7 +15,7 @@ import {
   ParsedRequest,
 } from '@nestjsx/crud';
 import * as bcrypt from 'bcrypt';
-import { Role, User } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -24,21 +23,18 @@ import { Roles } from './roles.decorator';
 import { LoginDto } from './dtos/login.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { RolesGuard } from './guards/roles.guard';
-import { validation } from '../../constants';
+import { Role } from './roles.enum';
+import { Crud } from '../../core/decorators/crud.decorator';
 
 const { MANAGER, WAREHOUSE_MANAGER, WAREHOUSE_WORKER, EMPLOYEE } = Role;
 
-@Crud({
-  model: {
-    type: User,
-  },
+@Crud(User, {
   routes: {
     only: ['getOneBase', 'getManyBase', 'createOneBase'],
   },
   dto: {
     create: CreateUserDto,
   },
-  validation,
 })
 @ApiTags(User.name)
 @Controller('users')

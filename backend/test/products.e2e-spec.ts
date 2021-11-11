@@ -12,8 +12,9 @@ import { TransactionsModule } from '../src/features/transactions/transactions.mo
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { validation } from '../src/constants';
+import { Product } from '../src/features/products/entities/product.entity';
 
-describe('UsersController (e2e)', () => {
+describe('ProductssController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -38,12 +39,42 @@ describe('UsersController (e2e)', () => {
     await app.init();
   });
 
-  describe('GET /users', () => {
+  describe('GET /products', () => {
     it('should fail if the user is not authenticated', () => {
-      return request(app.getHttpServer()).get('/users').expect(401);
+      return request(app.getHttpServer()).get('/products').expect(401);
     });
 
-    it('should fail if the requester is an unauthorized role', async () => {
+    it('should fail if the role is customer with product that is not public', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      await entityManager.insert(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      await entityManager.insert(Product, {
+        name: 'Name',
+        description: 'Description',
+        public: false,
+        price: 10,
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      return request(server)
+        .get('/products')
+        .auth(authToken, { type: 'bearer' })
+        .expect(r => {
+          expect(r.body.length).toEqual(0);
+        });
+    });
+
+    it('should fail if the product availability is 0 (both for private and public products)', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
@@ -53,18 +84,27 @@ describe('UsersController (e2e)', () => {
         name: 'John',
         surname: 'Doe',
       });
+      await entityManager.insert(Product, {
+        name: 'Name',
+        description: 'Description',
+        public: true,
+        price: 10,
+        available: 0,
+      });
       const server = app.getHttpServer();
       const response = await request(server)
         .post('/users/login')
         .send({ username: email, password });
       const authToken = response.body.token;
       return request(server)
-        .get('/users')
+        .get('/products')
         .auth(authToken, { type: 'bearer' })
-        .expect(403);
+        .expect(r => {
+          expect(r.body.length).toEqual(0);
+        });
     });
 
-    it('should return the users if the requester is an authorized role', async () => {
+    it('should return the products', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
@@ -75,31 +115,12 @@ describe('UsersController (e2e)', () => {
         surname: 'Doe',
         role: Role.MANAGER,
       });
-      const server = app.getHttpServer();
-      const response = await request(server)
-        .post('/users/login')
-        .send({ username: email, password });
-      const authToken = response.body.token;
-      return request(server)
-        .get('/users')
-        .auth(authToken, { type: 'bearer' })
-        .expect(200)
-        .expect(r => {
-          expect(r.body.length).toEqual(1);
-        });
-    });
-  });
-
-  describe('GET /users/me', () => {
-    it('should return the user if the requester is authenticated', async () => {
-      const email = 'test@example.com';
-      const password = 'testpwd';
-      const entityManager = app.get(EntityManager);
-      await entityManager.insert(User, {
-        name: 'John',
-        surname: 'Doe',
-        email,
-        password: await hash(password, 10),
+      await entityManager.insert(Product, {
+        name: 'Name',
+        description: 'Description',
+        public: true,
+        price: 10,
+        available: 5,
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -107,49 +128,12 @@ describe('UsersController (e2e)', () => {
         .send({ username: email, password });
       const authToken = response.body.token;
       return request(server)
-        .get('/users/me')
+        .get('/products')
         .auth(authToken, { type: 'bearer' })
         .expect(200)
-        .expect(response => {
-          expect(response.body.email).toEqual(email);
+        .expect(r => {
+          expect(r.body.length).toEqual(1);
         });
-    });
-  });
-
-  describe('POST /users', () => {
-    it('should create a new user', async () => {
-      await request(app.getHttpServer())
-        .post('/users')
-        .send({
-          name: 'John',
-          surname: 'Doe',
-          email: 'test@example.com',
-          password: 'testpwd',
-        })
-        .expect(201);
-      const entityManager = app.get(EntityManager);
-      expect((await entityManager.find(User)).length).toEqual(1);
-    });
-
-    it('should fail if the email is not valid', () => {
-      return request(app.getHttpServer())
-        .post('/users')
-        .send({
-          name: 'John',
-          surname: 'Doe',
-          email: 'not an email',
-          password: 'testpwd',
-        })
-        .expect(400);
-    });
-
-    it('should fail if some fields are missing', () => {
-      return request(app.getHttpServer())
-        .post('/users')
-        .send({
-          email: 'test@example.com',
-        })
-        .expect(400);
     });
   });
 
