@@ -6,12 +6,16 @@ import { ProductsModule } from './products.module';
 import { CategoriesModule } from '../categories/categories.module';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { OrdersModule } from '../orders/orders.module';
+import { Product } from './entities/product.entity';
+import { EntityManager } from 'typeorm';
+import { Not } from 'typeorm';
 
 describe('ProductsService', () => {
   let service: ProductsService;
+  let module: TestingModule;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
           type: 'sqlite',
@@ -31,7 +35,20 @@ describe('ProductsService', () => {
     service = module.get<ProductsService>(ProductsService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  describe('handleUpdateAvailability', () => {
+    it('should validate if the concerned fields in the db have 0 value', async () => {
+      const entityManager = module.get(EntityManager);
+      await service.resetProductAvailability();
+      const products = await entityManager.find(Product, {
+        available: Not(0),
+        reserved: Not(0),
+        sold: Not(0),
+      });
+      expect(products.length > 0).toBe(false);
+    });
+  });
+
+  afterEach(() => {
+    return module.close();
   });
 });

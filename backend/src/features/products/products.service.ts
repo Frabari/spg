@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Repository } from 'typeorm';
@@ -24,6 +25,21 @@ export class ProductsService extends TypeOrmCrudService<Product> {
       {
         available: product.available - quantity,
         reserved: product.reserved + quantity,
+      },
+    );
+  }
+
+  /**
+   * Resets the product availability weekly
+   */
+  @Cron('0 23 * * 0')
+  resetProductAvailability() {
+    return this.productsRepository.update(
+      {},
+      {
+        available: 0,
+        reserved: 0,
+        sold: 0,
       },
     );
   }
