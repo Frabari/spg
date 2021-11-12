@@ -5,7 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './pages/CustomTheme';
 import UsersInfo from './pages/UsersInfo';
 import Login from './pages/Login';
-import Admin from './pages/Admin';
+import { Admin } from './pages/Admin';
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
 
             <Route path="/login" element={<Login />} />
 
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/*" element={<Admin />} />
 
             <Route path="/UsersInfo/" element={<UsersInfo />} />
           </Routes>

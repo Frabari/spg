@@ -14,15 +14,15 @@ import {
   Typography,
 } from '@mui/material';
 import * as React from 'react';
-import { AccountCircle } from '@mui/icons-material';
-import MenuIcon from '@mui/icons-material/Menu';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Users from './Users';
+import { Link, Routes } from 'react-router-dom';
+import { AccountCircle } from '@mui/icons-material';
+import { Route } from 'react-router';
+import MenuIcon from '@mui/icons-material/Menu';
 
 const drawerWidth = 240;
 
-function Admin(props: any) {
-  const { window } = props;
+export function Admin(props: any) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const handleDrawerToggle = () => {
@@ -49,9 +49,6 @@ function Admin(props: any) {
     </div>
   );
 
-  const container =
-    window !== undefined ? () => window().document.body : undefined;
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -72,7 +69,10 @@ function Admin(props: any) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div"></Typography>
+          <Typography variant="h6" noWrap component="div">
+            {' '}
+            Users{' '}
+          </Typography>
         </Toolbar>
       </AppBar>
       <Box
@@ -82,7 +82,6 @@ function Admin(props: any) {
       >
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Drawer
-          container={container}
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
@@ -113,20 +112,11 @@ function Admin(props: any) {
           {drawer}
         </Drawer>
       </Box>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-        }}
-      ></Box>
       <Routes>
-        <Route path="/" element={<Navigate to="/admin/users" />} />
+        <Route path="/" element={<Link to="/admin/users" />} />
         <Route path="/admin/users" element={<Users />} />
+        <Route path="/admin/products" element={<Users />} />
       </Routes>
     </Box>
   );
 }
-
-export default Admin;
