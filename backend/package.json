@@ -34,6 +34,7 @@
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
+    "luxon": "^2.1.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -52,6 +53,7 @@
     "@types/express": "^4.17.13",
     "@types/faker": "^5.5.9",
     "@types/jest": "^27.0.1",
+    "@types/luxon": "^2.0.7",
     "@types/node": "^16.0.0",
     "@types/passport-jwt": "^3.0.6",
     "@types/passport-local": "^1.0.34",
@@ -96,9 +98,9 @@
       "!**/*.decorator.(t|j)s",
       "!**/*.middleware.(t|j)s",
       "!**/*.strategy.(t|j)s",
-      "!**/*.controller.(t|j)s",
-      "!**/enum.(t|j)s",
       "!**/constants.(t|j)s",
+      "!**/enum.(t|j)s",
+      "!**/*.controller.(t|j)s",
       "!**/database/**/*"
     ],
     "coveragePathIgnorePatterns": [

@@ -45,27 +45,26 @@ export interface Transaction {
 }
 
 export interface User {
-    userId: number;
-    name: string;
-    surname: string;
-    email: string;
-    password: string;
-    role: number;
-    balance: number;
-    orders: Order[];
-    transactions: Transaction[];
-    deliveries: Order[];
-    products: Product[];
+  userId: number;
+  name: string;
+  surname: string;
+  email: string;
+  password: string;
+  role: number;
+  balance: number;
+  orders: Order[];
+  transactions: Transaction[];
+  deliveries: Order[];
+  products: Product[];
 }
 
 async function getUserInfo(userId: number) {
-    const response = await fetch(`/users/${userId}`);
-    const user = await response.json();
-    if (response.ok) return user;
-    else throw response.statusText;
+  const response = await fetch(`/users/${userId}`);
+  const user = await response.json();
+  if (response.ok) return user;
+  else throw response.statusText;
 }
 
-
-const API = { getUserInfo};
+const API = { getUserInfo };
 
 export default API;
