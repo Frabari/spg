@@ -3,7 +3,7 @@ import NavigationBox from './Navigation';
 import React, { useContext } from 'react';
 import { UserContext } from '../contexts/user';
 
-export default function Products(props: any) {
+export default function Products() {
   const { user } = useContext(UserContext);
 
   return (

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, Save } from '@mui/icons-material';
+import { Save } from '@mui/icons-material';
 import {
   Box,
   Button,

@@ -1,5 +1,4 @@
 import { createHttpClient } from './createHttpClient';
-import { useNavigate } from 'react-router';
 
 export type CategoryId = number;
 
