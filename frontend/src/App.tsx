@@ -1,11 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
-import UsersPage from './pages/Users';
 import Homepage from './pages/Homepage';
 import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './pages/CustomTheme';
 import UsersInfo from './pages/UsersInfo';
 import Login from './pages/Login';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
 
             <Route path="/login" element={<Login />} />
 
-            <Route path="/users" element={<UsersPage />} />
+            <Route path="/admin" element={<Admin />} />
 
             <Route path="/UsersInfo/" element={<UsersInfo />} />
           </Routes>
