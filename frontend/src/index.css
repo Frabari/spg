@@ -16,3 +16,18 @@ code {
   max-width: 1200px;
   margin: 0 auto;
 }
+
+.relative {
+  position: relative;
+}
+
+.AdminUser:before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: #e6faed;
+}

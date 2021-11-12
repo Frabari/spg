@@ -56,7 +56,6 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
       if (by != null) {
         const mul = dir === 'asc' ? -1 : 1;
         const sorted = [...users].sort((a, b) => (a[by] < b[by] ? mul : -mul));
-        console.log('Setting sorted users', sorted);
         setSortedUsers(sorted);
       } else {
         setSortedUsers(users);

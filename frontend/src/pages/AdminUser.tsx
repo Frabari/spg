@@ -74,7 +74,10 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
-        <Paper sx={{ p: { xs: 2, sm: 3 }, py: { sm: 8 } }}>
+        <Paper
+          className="AdminUser"
+          sx={{ p: { xs: 2, sm: 3 }, py: { sm: 8 }, position: 'relative' }}
+        >
           <ThemeProvider
             theme={createTheme({
               components: {
@@ -86,9 +89,10 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
               },
             })}
           >
-            <div className="container">
+            <div className="container relative">
               <img
                 src={user?.avatar}
+                alt="user avatar"
                 style={{
                   width: '150px',
                   height: '150px',
@@ -96,7 +100,6 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   objectFit: 'cover',
                   marginBottom: '40px',
                 }}
-                alt="user avatar"
               />
               <Grid
                 container
