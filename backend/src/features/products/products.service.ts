@@ -14,9 +14,27 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     super(productsRepository);
   }
 
+  /**
+   * Reserves `quantity` of `products`
+   */
+  reserveProductAmount(product: Product, quantity: number) {
+    return this.productsRepository.update(
+      {
+        id: product.id,
+      },
+      {
+        available: product.available - quantity,
+        reserved: product.reserved + quantity,
+      },
+    );
+  }
+
+  /**
+   * Resets the product availability weekly
+   */
   @Cron('0 23 * * 0')
-  handleUpdateAvailability() {
-    this.productsRepository.update(
+  resetProductAvailability() {
+    return this.productsRepository.update(
       {},
       {
         available: 0,
