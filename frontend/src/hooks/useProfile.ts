@@ -9,6 +9,7 @@ export const useProfile = () => {
     setPending(true);
     getMe()
       .then(setProfile)
+      .catch(() => setProfile({} as User))
       .finally(() => setPending(false));
   }, [setPending]);
   return profile;

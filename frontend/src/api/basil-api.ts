@@ -72,23 +72,34 @@ export interface User {
   products: Product[];
 }
 
-const client = createHttpClient('/api');
-
 export interface Tokens {
   token: string;
 }
 
+const client = createHttpClient('/api');
+
+const API_TOKEN = 'API_TOKEN';
+const token = localStorage.getItem(API_TOKEN);
+
+if (token) {
+  client.setBearerAuth(token);
+}
+
 export const login = (username: string, password: string) =>
-  (<Promise<Tokens>>client.post('/users/login', {
-    username,
-    password,
-  })).then(tokens => {
-    client.setBearerAuth(tokens.token);
-    return tokens;
-  });
+  client
+    .post<Tokens>('/users/login', {
+      username,
+      password,
+    })
+    .then(({ token }) => {
+      client.setBearerAuth(token);
+      localStorage.setItem(API_TOKEN, token);
+      return token;
+    });
 
 export const logout = () => {
   client.removeAuth();
+  localStorage.removeItem(API_TOKEN);
 };
 
 export const getUsers = () => client.get<User[]>('/users');
