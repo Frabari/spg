@@ -7,13 +7,15 @@ import {
   Grid,
   Typography,
   Box,
+  IconButton
 } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
+import AddIcon from '@mui/icons-material/Add';
 
 function ProductCard(props: { name: string; image: string; price: number }) {
   return (
-    <Grid item>
-      <Card sx={{ width: '350', height: 'fit-content' }}>
+    <Grid item lg={2} md={4} xs={12}>
+      <Card sx={{ height: "400" }}>
         <CardMedia
           component="img"
           height="200"
@@ -25,12 +27,14 @@ function ProductCard(props: { name: string; image: string; price: number }) {
             {props.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {props.price}
+            € {props.price}/kg
           </Typography>
         </CardContent>
         <CardActions>
-          <Box marginX="auto" padding="0.5rem">
-            <Button size="small">Add to cart</Button>
+          <Box marginLeft="auto" padding="0.5rem">
+            <IconButton>
+              <AddIcon/>
+            </IconButton>
           </Box>
         </CardActions>
       </Card>
@@ -50,10 +54,9 @@ export default function ProductsGrid(props: any) {
         padding="2rem"
         alignItems="center"
         justifyItems="center"
-        marginX="auto"
       >
         {products?.map(p => (
-          <ProductCard name={p.name} image={p.image} price={p.price} />
+          <ProductCard name={p.name.split(" ")[2]} image={p.image} price={p.price} />
         ))}
       </Grid>
     </>
