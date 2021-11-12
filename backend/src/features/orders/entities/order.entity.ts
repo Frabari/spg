@@ -6,52 +6,61 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
+import {
+  Allow,
+  ArrayMinSize,
+  IsIn,
+  IsNotEmpty,
+  IsString,
+  Validate,
+} from 'class-validator';
 import { User } from '../../users/entities/user.entity';
 import { OrderEntry } from './order-entry.entity';
+import { Transform, Type } from 'class-transformer';
+import { DeliveredBy } from '../validators/delivered-by.validator';
 
 export type OrderId = number;
 
-export const enum OrderStatus {
+export enum OrderStatus {
   /**
    * A basket order
    */
-  DRAFT,
+  DRAFT = 'draft',
 
   /**
    * The products were confirmed and the
    * payment was processed
    */
-  PAID,
+  PAID = 'paid',
 
   /**
    * The warehouse has prepared the bags
    */
-  PREPARED,
+  PREPARED = 'prepared',
 
   /**
    * The delivery or pickup is in progress
    */
-  DELIVERING,
+  DELIVERING = 'delivering',
 
   /**
    * The food was picked up or delivered successfully
    */
-  COMPLETED,
+  COMPLETED = 'completed',
 
   /**
    * The order was not picked up by the client or
    * the delivery was unsuccessful. Here the products
    * are still reserved for this order
    */
-  PENDING_CANCELLATION,
+  PENDING_CANCELLATION = 'pending_cancellation',
 
   /**
    * The order was canceled due to insufficient balance
    * or after an unsuccessful delivery/handover.
    * Here the products are made available for other orders
    */
-  CANCELED,
+  CANCELED = 'canceled',
 }
 
 @Entity()
@@ -63,6 +72,7 @@ export class Order {
    * The user who will receive this order
    */
   @ManyToOne(() => User, user => user.orders)
+  @IsNotEmpty()
   user: User;
 
   /**
@@ -70,13 +80,17 @@ export class Order {
    * is the active basket
    */
   @Column({ default: OrderStatus.DRAFT, nullable: false })
+  @IsString()
   @IsNotEmpty()
+  @IsIn(Object.values(OrderStatus))
   status: OrderStatus;
 
   /**
    * An array of products with their respective quantities
    */
   @OneToMany(() => OrderEntry, entry => entry.order, { cascade: true })
+  @IsNotEmpty()
+  @ArrayMinSize(1)
   entries: OrderEntry[];
 
   /**
@@ -84,6 +98,7 @@ export class Order {
    * or to pick it up at the warehouse
    */
   @Column({ default: null })
+  @Type(() => Date)
   deliverAt: Date;
 
   /**
@@ -98,11 +113,13 @@ export class Order {
    * will be picked up by the customer at the warehouse
    */
   @ManyToOne(() => User)
+  @Validate(DeliveredBy)
   deliveredBy: User;
 
   /**
    * The date when this order was created
    */
   @CreateDateColumn()
+  @Type(() => Date)
   createdAt: Date;
 }

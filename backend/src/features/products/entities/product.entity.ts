@@ -97,5 +97,6 @@ export class Product {
    */
   @Column({ default: null })
   @IsUrl()
+  @Expose()
   image: string;
 }
