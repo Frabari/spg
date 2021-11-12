@@ -16,23 +16,28 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { getMe, login } from '../api/basil-api';
+import { Navigate } from 'react-router-dom';
+import { useContext, useEffect } from 'react';
+import { UserContext } from '../contexts/user';
+import { PendingStateContext } from '../contexts/pending';
 
 interface State {
   password: string;
   showPassword: boolean;
 }
 
-function OutlinedCard() {
+function OutlinedCard(props: any) {
   const [values, setValues] = React.useState<State>({
     password: '',
     showPassword: false,
   });
+  const [email, setEmail] = React.useState('');
 
-  const handleChange = (prop: keyof State) => (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setValues({ ...values, [prop]: event.target.value });
-  };
+  const handleChange =
+    (prop: keyof State) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setValues({ ...values, [prop]: event.target.value });
+    };
 
   const handleClickShowPassword = () => {
     setValues({
@@ -45,6 +50,10 @@ function OutlinedCard() {
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
+  };
+
+  const handleEmail = (email: string) => {
+    setEmail(email);
   };
 
   return (
@@ -61,9 +70,12 @@ function OutlinedCard() {
             autoComplete="off"
           >
             <div>
-              <Grid container rowSpacing={2} direction="column">
+              <Grid container rowSpacing={1} direction="column">
                 <Grid item>
-                  <TextField label="Email"></TextField>
+                  <TextField
+                    label="Email"
+                    onChange={e => handleEmail(e.target.value)}
+                  />
                 </Grid>
                 <Grid item>
                   <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
@@ -101,7 +113,9 @@ function OutlinedCard() {
         </CardContent>
         <CardActions>
           <Box marginX="auto" padding="1rem">
-            <Button>Login</Button>
+            <Button onClick={() => props.handleLogin(email, values.password)}>
+              Login
+            </Button>
           </Box>
         </CardActions>
       </React.Fragment>
@@ -110,6 +124,23 @@ function OutlinedCard() {
 }
 
 export default function Login(props: any) {
+  // const [logged, setLogged] = React.useState(false);
+  const { user, setUser } = useContext(UserContext);
+  const { pending, setPending } = useContext(PendingStateContext);
+
+  const handleLogin = async (email: string, password: string) => {
+    await login(email, password);
+    setPending(true);
+    getMe()
+      .then(setUser)
+      .catch(() => setUser(false))
+      .finally(() => setPending(false));
+  };
+
+  if (user) {
+    console.log('isLogged');
+    return <Navigate to="/products" />;
+  }
   return (
     <Grid
       container
@@ -117,7 +148,7 @@ export default function Login(props: any) {
       direction="column"
       alignItems="center"
       justifyContent="center"
-      style={{ minHeight: '100vh', backgroundColor: "#fafafa" }}
+      style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}
     >
       <Grid item xs={4}>
         <Box sx={{ flexGrow: 1 }} style={{ width: 'fit-content' }}>
@@ -157,7 +188,7 @@ export default function Login(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <OutlinedCard />
+          <OutlinedCard handleLogin={handleLogin} />
         </Box>
       </Grid>
     </Grid>

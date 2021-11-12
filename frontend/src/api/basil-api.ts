@@ -1,4 +1,4 @@
-import { createHttpClient } from '../../lib/createHttpClient';
+import { createHttpClient } from './createHttpClient';
 
 export type CategoryId = number;
 
@@ -45,6 +45,7 @@ export interface Product {
   sold: number;
   category: Category;
   farmer: User;
+  image: string;
 }
 
 export type TransactionId = number;
@@ -72,7 +73,12 @@ export interface User {
   products: Product[];
 }
 
-const client = createHttpClient('/api');
+const client = createHttpClient('');
+
+const token = localStorage.getItem('API_TOKEN');
+if (token) {
+  client.setBearerAuth(token);
+}
 
 export interface Tokens {
   token: string;
@@ -84,11 +90,13 @@ export const login = (username: string, password: string) =>
     password,
   })).then(tokens => {
     client.setBearerAuth(tokens.token);
+    localStorage.setItem('API_TOKEN', tokens.token);
     return tokens;
   });
 
 export const logout = () => {
   client.removeAuth();
+  localStorage.removeItem('API_TOKEN');
 };
 
 export const getUsers = () => client.get<User[]>('/users');
