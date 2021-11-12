@@ -1,9 +1,9 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsUrl, Min } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
-import { Role, STAFF } from '../../users/roles.enum';
+import { STAFF } from '../../users/roles.enum';
 
 export type ProductId = number;
 
@@ -91,4 +91,11 @@ export class Product {
   @ManyToOne(() => User, user => user.products)
   @Expose()
   farmer: User;
+
+  /**
+   * An url pointing to the product image
+   */
+  @Column({ default: null })
+  @IsUrl()
+  image: string;
 }
