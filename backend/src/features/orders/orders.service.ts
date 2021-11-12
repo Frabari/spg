@@ -18,7 +18,6 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   async checkOrder(dto: CreateOrderDto) {
-    console.log('Checking', dto);
     if (dto.deliverAt) {
       const deliveryDate = DateTime.fromJSDate(dto.deliverAt);
       const from = DateTime.now()
