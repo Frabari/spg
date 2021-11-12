@@ -16,13 +16,14 @@ import {
 import * as React from 'react';
 import { AccountCircle } from '@mui/icons-material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import Users from './Users';
 
 const drawerWidth = 240;
 
-function ResponsiveDrawer(props: any) {
+function Admin(props: any) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [selectedFilter, setSelectedFilter] = React.useState('Clients');
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -33,7 +34,7 @@ function ResponsiveDrawer(props: any) {
       <Toolbar />
       <Divider />
       <List>
-        {['Clients', 'Products', 'Orders'].map((text, index) => (
+        {['Users', 'Products', 'Orders'].map((text, index) => (
           <ListItem key={text}>
             <ListItemButton>
               <ListItemIcon>
@@ -71,9 +72,7 @@ function ResponsiveDrawer(props: any) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {selectedFilter}
-          </Typography>
+          <Typography variant="h6" noWrap component="div"></Typography>
         </Toolbar>
       </AppBar>
       <Box
@@ -122,8 +121,12 @@ function ResponsiveDrawer(props: any) {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
         }}
       ></Box>
+      <Routes>
+        <Route path="/" element={<Navigate to="/admin/users" />} />
+        <Route path="/admin/users" element={<Users />} />
+      </Routes>
     </Box>
   );
 }
 
-export default ResponsiveDrawer;
+export default Admin;
