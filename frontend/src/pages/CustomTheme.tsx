@@ -17,6 +17,12 @@ export const themeOptions = createTheme({
     h6: {
       color: '#757575',
     },
+    h4: {
+      color: '#757575',
+    },
+    caption: {
+      marginLeft: '5px',
+    },
   },
   components: {
     MuiAppBar: {

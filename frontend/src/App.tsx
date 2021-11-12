@@ -6,6 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './pages/CustomTheme';
 import UsersInfo from './pages/UsersInfo';
 import Login from './pages/Login';
+import ProductInfo from './pages/ProductInfo';
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
             <Route path="/users" element={<UsersPage />} />
 
             <Route path="/UsersInfo/" element={<UsersInfo />} />
+
+            <Route path="/productsInfo/" element={<ProductInfo />} />
           </Routes>
         </BrowserRouter>
       </div>
