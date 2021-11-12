@@ -38,24 +38,22 @@ function ProductCard(props: { name: string; image: string; price: number }) {
   );
 }
 
-export default function ProductsGrid(props: any) {
-  const products = useProducts();
+export default function ProductsGrid() {
+  const { products } = useProducts();
 
   return (
-    <>
-      <Grid
-        container
-        direction="row"
-        spacing="2rem"
-        padding="2rem"
-        alignItems="center"
-        justifyItems="center"
-        marginX="auto"
-      >
-        {products?.map(p => (
-          <ProductCard name={p.name} image={p.image} price={p.price} />
-        ))}
-      </Grid>
-    </>
+    <Grid
+      container
+      direction="row"
+      spacing="2rem"
+      padding="2rem"
+      alignItems="center"
+      justifyItems="center"
+      marginX="auto"
+    >
+      {products?.map(p => (
+        <ProductCard name={p.name} image={p.image} price={p.price} />
+      ))}
+    </Grid>
   );
 }

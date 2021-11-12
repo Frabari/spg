@@ -1,12 +1,12 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@mui/material/styles';
 import './App.css';
 import { PendingStateContext } from './contexts/pending';
 import { UserContext } from './contexts/user';
 import Homepage from './pages/Homepage';
 import { themeOptions } from './pages/CustomTheme';
-import UsersInfo from './pages/UsersInfo';
 import Login from './pages/Login';
 import { Admin } from './pages/Admin';
 import Products from './pages/Products';
@@ -27,6 +27,7 @@ function App() {
   return (
     <PendingStateContext.Provider value={{ pending, setPending }}>
       <UserContext.Provider value={{ user, setUser }}>
+        <Toaster />
         <ThemeProvider theme={themeOptions}>
           <div className="App" style={{ backgroundColor: '#fafafa' }}>
             <BrowserRouter>
@@ -36,8 +37,6 @@ function App() {
                 <Route path="/login" element={<Login />} />
 
                 <Route path="/admin/*" element={<Admin />} />
-
-                <Route path="/UsersInfo/" element={<UsersInfo />} />
 
                 <Route path="/products" element={<Products />} />
               </Routes>

@@ -85,14 +85,16 @@ export interface Tokens {
 }
 
 export const login = (username: string, password: string) =>
-  (<Promise<Tokens>>client.post('/users/login', {
-    username,
-    password,
-  })).then(tokens => {
-    client.setBearerAuth(tokens.token);
-    localStorage.setItem('API_TOKEN', tokens.token);
-    return tokens;
-  });
+  client
+    .post<Tokens>('/users/login', {
+      username,
+      password,
+    })
+    .then(tokens => {
+      client.setBearerAuth(tokens.token);
+      localStorage.setItem('API_TOKEN', tokens.token);
+      return tokens;
+    });
 
 export const logout = () => {
   client.removeAuth();

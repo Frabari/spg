@@ -1,5 +1,6 @@
+import { useState } from 'react';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import {
-  AppBar,
   Box,
   CssBaseline,
   Divider,
@@ -13,17 +14,31 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import * as React from 'react';
-import Users from './Users';
-import { Link, Routes } from 'react-router-dom';
-import { AccountCircle } from '@mui/icons-material';
-import { Route } from 'react-router';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Users } from './Users';
+import { Logo } from '../components/Logo';
+import { drawerWidth } from '../constants';
+import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 
-const drawerWidth = 240;
+const pages = [
+  {
+    title: 'Users',
+    path: 'users',
+    icon: <Person />,
+  },
+  {
+    title: 'Products',
+    path: 'products',
+    icon: <Inventory />,
+  },
+  {
+    title: 'Orders',
+    path: 'orders',
+    icon: <ShoppingCart />,
+  },
+];
 
-export function Admin(props: any) {
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+export const Admin = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -31,16 +46,27 @@ export function Admin(props: any) {
 
   const drawer = (
     <div>
-      <Toolbar />
+      <Toolbar>
+        <IconButton href="/">
+          <Logo />
+        </IconButton>
+        <Typography variant="h6" component="h1" marginLeft="10px">
+          Basil
+        </Typography>
+      </Toolbar>
       <Divider />
       <List>
-        {['Users', 'Products', 'Orders'].map((text, index) => (
-          <ListItem key={text}>
-            <ListItemButton>
-              <ListItemIcon>
-                <AccountCircle />
+        {pages.map(page => (
+          <ListItem key={page.path}>
+            <ListItemButton
+              component={Link}
+              to={`/admin/${page.path}`}
+              sx={{ px: 1, borderRadius: 2 }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, pr: 2 }}>
+                {page.icon}
               </ListItemIcon>
-              <ListItemText primary={text} />
+              <ListItemText primary={page.title} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -50,43 +76,19 @@ export function Admin(props: any) {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', height: '100vh' }}>
       <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {' '}
-            Users{' '}
-          </Typography>
-        </Toolbar>
-      </AppBar>
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
+        aria-label="Admin pages"
       >
-        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
@@ -112,11 +114,28 @@ export function Admin(props: any) {
           {drawer}
         </Drawer>
       </Box>
-      <Routes>
-        <Route path="/" element={<Link to="/admin/users" />} />
-        <Route path="/admin/users" element={<Users />} />
-        <Route path="/admin/products" element={<Users />} />
-      </Routes>
+      <Box
+        component="main"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: 1,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          minWidth: 0,
+        }}
+      >
+        <Routes>
+          <Route path="/" element={<Navigate to="/admin/users" />} />
+          <Route
+            path="/users"
+            element={<Users handleDrawerToggle={handleDrawerToggle} />}
+          />
+          <Route
+            path="/products"
+            element={<Users handleDrawerToggle={handleDrawerToggle} />}
+          />
+        </Routes>
+      </Box>
     </Box>
   );
-}
+};
