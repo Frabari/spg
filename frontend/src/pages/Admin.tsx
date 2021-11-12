@@ -47,7 +47,7 @@ export const Admin = () => {
   const drawer = (
     <div>
       <Toolbar>
-        <IconButton href="/">
+        <IconButton href="/" sx={{ p: 0 }}>
           <Logo />
         </IconButton>
         <Typography variant="h6" component="h1" marginLeft="10px">
