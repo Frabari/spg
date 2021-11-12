@@ -1,5 +1,5 @@
-import { Navigate } from 'react-router-dom';
-import { Box, TableSortLabel, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Box, Button, TableSortLabel, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -11,6 +11,7 @@ import { useUsers } from '../hooks/useUsers';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useEffect, useState } from 'react';
 import { User } from '../api/basil-api';
+import { Add } from '@mui/icons-material';
 
 const columns: { key: keyof User; title: string; sortable: boolean }[] = [
   {
@@ -40,7 +41,8 @@ const columns: { key: keyof User; title: string; sortable: boolean }[] = [
   },
 ];
 
-export const Users = (props: { handleDrawerToggle: () => void }) => {
+export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
+  const navigate = useNavigate();
   const { users, error } = useUsers();
   const [sortedUsers, setSortedUsers] = useState<User[]>([]);
   const [sorting, setSorting] = useState<{
@@ -70,9 +72,6 @@ export const Users = (props: { handleDrawerToggle: () => void }) => {
     });
   };
 
-  if ([401, 403].includes(error?.statusCode)) {
-    return <Navigate to="/login" />;
-  }
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -81,11 +80,26 @@ export const Users = (props: { handleDrawerToggle: () => void }) => {
           noWrap
           component="h1"
           color="primary.main"
-          fontWeight="medium"
-          sx={{ fontSize: { sm: 36 } }}
+          fontWeight="bold"
+          sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
         >
           Users
         </Typography>
+        <Button
+          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
+          variant="contained"
+          href="/admin/users/new"
+        >
+          <Add />
+          <Typography
+            sx={{
+              display: { xs: 'none', sm: 'inline' },
+              textTransform: 'none',
+            }}
+          >
+            Create user
+          </Typography>
+        </Button>
       </AdminAppBar>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
@@ -122,6 +136,7 @@ export const Users = (props: { handleDrawerToggle: () => void }) => {
                 <TableRow
                   key={user.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  onClick={() => navigate(`/admin/users/${user.id}`)}
                 >
                   <TableCell component="th" scope="row">
                     {user.name}

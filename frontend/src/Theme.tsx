@@ -47,6 +47,10 @@ export const themeOptions = createTheme({
         root: {
           borderRadius: '30px',
         },
+        contained: {
+          color: 'white',
+          boxShadow: 'none',
+        },
       },
     },
     MuiBadge: {

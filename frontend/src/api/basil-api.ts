@@ -1,4 +1,5 @@
 import { createHttpClient } from './createHttpClient';
+import { useNavigate } from 'react-router';
 
 export type CategoryId = number;
 
@@ -67,6 +68,7 @@ export interface User {
   password: string;
   role: number;
   balance: number;
+  avatar: string;
   orders: Order[];
   transactions: Transaction[];
   deliveries: Order[];

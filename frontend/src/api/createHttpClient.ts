@@ -1,10 +1,14 @@
+/* eslint-disable no-restricted-globals */
 export class ApiException extends Error {
   constructor(message: string, public statusCode: number, public data: any) {
     super(message);
   }
 }
 
-export const createHttpClient = (baseUrl: string) => {
+export const createHttpClient = (
+  baseUrl: string,
+  loginPath: string = '/login',
+) => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -21,6 +25,9 @@ export const createHttpClient = (baseUrl: string) => {
     const response = await fetch(input, _options);
     if (!response.ok) {
       const body = await response.json();
+      if (!location.pathname.startsWith('/login') && response.status === 401) {
+        location.replace(loginPath);
+      }
       throw new ApiException(body.message, response.status, body);
     }
     return response.json();

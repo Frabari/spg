@@ -14,10 +14,11 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { Users } from './Users';
+import { AdminUsers } from './AdminUsers';
 import { Logo } from '../components/Logo';
 import { drawerWidth } from '../constants';
 import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
+import { AdminUser } from './AdminUser';
 
 const pages = [
   {
@@ -57,11 +58,11 @@ export const Admin = () => {
       <Divider />
       <List>
         {pages.map(page => (
-          <ListItem key={page.path}>
+          <ListItem key={page.path} sx={{ py: 0, px: 1 }}>
             <ListItemButton
               component={Link}
               to={`/admin/${page.path}`}
-              sx={{ px: 1, borderRadius: 2 }}
+              sx={{ borderRadius: 2 }}
             >
               <ListItemIcon sx={{ minWidth: 0, pr: 2 }}>
                 {page.icon}
@@ -71,7 +72,6 @@ export const Admin = () => {
           </ListItem>
         ))}
       </List>
-      <Divider />
     </div>
   );
 
@@ -128,11 +128,15 @@ export const Admin = () => {
           <Route path="/" element={<Navigate to="/admin/users" />} />
           <Route
             path="/users"
-            element={<Users handleDrawerToggle={handleDrawerToggle} />}
+            element={<AdminUsers handleDrawerToggle={handleDrawerToggle} />}
+          />
+          <Route
+            path="/users/:id"
+            element={<AdminUser handleDrawerToggle={handleDrawerToggle} />}
           />
           <Route
             path="/products"
-            element={<Users handleDrawerToggle={handleDrawerToggle} />}
+            element={<AdminUsers handleDrawerToggle={handleDrawerToggle} />}
           />
         </Routes>
       </Box>

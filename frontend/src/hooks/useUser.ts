@@ -12,8 +12,11 @@ export const useUser = (id?: UserId) => {
   const upsertUser = (user: Partial<User>) => {
     if (!user.id) {
       setPending(true);
-      createUser(user)
-        .then(setUser)
+      return createUser(user)
+        .then(u => {
+          setUser(u);
+          return u;
+        })
         .catch(e => {
           setError(e);
           toast.error(e.message);
