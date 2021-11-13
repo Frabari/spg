@@ -31,7 +31,17 @@ export const createHttpClient = (
       ) {
         location.replace(loginPath);
       }
-      throw new ApiException(body.message, response.status, body);
+      let message = 'Network error';
+      if (body.error) {
+        message = body.error;
+      } else if (body.message) {
+        if (Array.isArray(body.message)) {
+          message = body.message[0];
+        } else {
+          message = body.message;
+        }
+      }
+      throw new ApiException(message, response.status, body);
     }
     return response.json();
   };
