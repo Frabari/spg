@@ -6,7 +6,7 @@ import { ApiException } from '../api/createHttpClient';
 
 export const useCategories = () => {
   const { setPending } = useContext(PendingStateContext);
-  const [categories, setCategories] = useState<Category[]>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<ApiException>(null);
   useEffect(() => {
     setPending(true);
