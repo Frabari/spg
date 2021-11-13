@@ -9,6 +9,7 @@ import Homepage from './pages/Homepage';
 import { themeOptions } from './pages/CustomTheme';
 import UsersInfo from './pages/UsersInfo';
 import Login from './pages/Login';
+import ProductInfo from './pages/ProductInfo';
 import Products from './pages/Products';
 import { getMe } from './api/basil-api';
 
