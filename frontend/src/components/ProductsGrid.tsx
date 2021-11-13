@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Card,
   CardActions,
@@ -6,7 +7,6 @@ import {
   CardMedia,
   Grid,
   Typography,
-  Box,
 } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
 
@@ -50,6 +50,7 @@ export default function ProductsGrid() {
       alignItems="center"
       justifyItems="center"
       marginX="auto"
+      width="auto"
     >
       {products?.map(p => (
         <ProductCard name={p.name} image={p.image} price={p.price} />

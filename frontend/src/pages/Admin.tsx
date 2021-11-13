@@ -14,13 +14,14 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
+import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import { AdminUsers } from './AdminUsers';
 import { Logo } from '../components/Logo';
 import { drawerWidth } from '../constants';
-import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import { AdminUser } from './AdminUser';
 import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
+import { AdminOrder } from './AdminOrder';
 
 const pages = [
   {
@@ -143,6 +144,10 @@ export const Admin = (props: { user: any }) => {
           <Route
             path="/orders"
             element={<AdminOrders handleDrawerToggle={handleDrawerToggle} />}
+          />
+          <Route
+            path="/orders/:id"
+            element={<AdminOrder handleDrawerToggle={handleDrawerToggle} />}
           />
         </Routes>
       </Box>

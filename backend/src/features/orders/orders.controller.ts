@@ -32,6 +32,7 @@ import { CreateOrderDto } from './dtos/create-order.dto';
       user: { eager: true },
       deliveredBy: {},
       entries: { eager: true },
+      'entries.product': { eager: true },
     },
   },
   validation,

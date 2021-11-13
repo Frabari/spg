@@ -24,7 +24,7 @@ export type OrderId = number;
 export interface Order {
   id: OrderId;
   user: User;
-  status: number;
+  status: string;
   entries: OrderEntry[];
   deliverAt: Date;
   deliveryLocation: string;
@@ -119,6 +119,8 @@ export const getProduct = (id: ProductId) =>
 export const getCategories = () => client.get<Category[]>('/categories');
 
 export const getOrders = () => client.get<Order[]>('/orders');
+
+export const getOrder = (id: OrderId) => client.get<Order>(`/orders/${id}`);
 
 export const createOrder = (order: Partial<Order>) =>
   client.post<Order>('/orders', order);

@@ -71,12 +71,10 @@ export const themeOptions = createTheme({
         },
       },
     },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-        },
-      },
-    },
+    // MuiPaper: {
+    //   styleOverrides: {
+    //     rounded: 'border-radius: 8px',
+    //   },
+    // },
   },
 });
