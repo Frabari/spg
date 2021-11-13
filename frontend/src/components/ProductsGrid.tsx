@@ -69,6 +69,7 @@ export default function ProductsGrid() {
     >
       {products?.map(p => (
         <ProductCard
+          key={p.id}
           name={p.name.split(' ')[2]}
           image={p.image}
           price={p.price}

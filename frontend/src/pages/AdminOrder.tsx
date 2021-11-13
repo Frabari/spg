@@ -191,9 +191,17 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         anchor="right"
         open={selectingProduct}
         onClose={() => setSelectingProduct(false)}
-        sx={{ width: { xs: '100%', sm: '60vw' } }}
       >
-        <ProductsGrid />
+        <Box sx={{ width: { xs: '100%', sm: '60vw' } }}>
+          <Typography
+            variant="h5"
+            color="primary.main"
+            sx={{ p: 3, fontWeight: 'bold' }}
+          >
+            Select a product
+          </Typography>
+          <ProductsGrid />
+        </Box>
       </Drawer>
     </>
   );
