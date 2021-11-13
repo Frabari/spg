@@ -12,11 +12,10 @@ export interface Category {
 export type OrderEntryId = number;
 
 export interface OrderEntry {
-  id: OrderEntryId;
-  order: Order;
+  id?: OrderEntryId;
   product: Product;
   quantity: number;
-  confirmed: boolean;
+  confirmed?: boolean;
 }
 
 export type OrderId = number;

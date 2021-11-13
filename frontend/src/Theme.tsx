@@ -11,6 +11,9 @@ export const themeOptions = createTheme({
     info: {
       main: '#737373',
     },
+    background: {
+      default: '#fafafa',
+    },
   },
   typography: {
     fontFamily: ['DM Sans', '-apple-system', 'Arial'].join(','),
@@ -32,13 +35,6 @@ export const themeOptions = createTheme({
       styleOverrides: {
         root: {
           boxShadow: 'none',
-        },
-      },
-    },
-    MuiTabs: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#ffffff',
         },
       },
     },
@@ -75,10 +71,17 @@ export const themeOptions = createTheme({
         },
       },
     },
-    // MuiPaper: {
-    //   styleOverrides: {
-    //     rounded: 'border-radius: 8px',
-    //   },
-    // },
+    MuiPaper: {
+      styleOverrides: {
+        rounded: 'border-radius: 8px',
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        head: {
+          backgroundColor: 'white',
+        },
+      },
+    },
   },
 });
