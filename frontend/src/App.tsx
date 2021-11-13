@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@mui/material/styles';
@@ -31,11 +31,13 @@ function App() {
           <div className="App" style={{ backgroundColor: '#fafafa' }}>
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Homepage />} />
+                <Route path="/" element={<Navigate to="/home" />} />
+
+                <Route path="/home" element={<Homepage />} />
 
                 <Route path="/login" element={<Login />} />
 
-                <Route path="/admin/*" element={<Admin />} />
+                <Route path="/admin/*" element={<Admin user={user} />} />
 
                 <Route path="/products" element={<Products />} />
               </Routes>

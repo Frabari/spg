@@ -1,0 +1,148 @@
+import { useNavigate } from 'react-router-dom';
+import { Box, TableSortLabel, Typography } from '@mui/material';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import { AdminAppBar } from '../components/AdminAppBar';
+import { useEffect, useState } from 'react';
+import { Product } from '../api/basil-api';
+import { useProducts } from '../hooks/useProducts';
+import Card from '@mui/material/Card';
+import CardMedia from '@mui/material/CardMedia';
+
+const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
+  {
+    key: 'name',
+    title: 'Name',
+    sortable: true,
+  },
+  {
+    key: 'description',
+    title: 'Description',
+    sortable: true,
+  },
+  {
+    key: 'price',
+    title: 'Price',
+    sortable: true,
+  },
+  {
+    key: 'category',
+    title: 'Category',
+    sortable: true,
+  },
+  {
+    key: 'image',
+    title: ' ',
+    sortable: false,
+  },
+];
+
+export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
+  const navigate = useNavigate();
+  const { products, error } = useProducts();
+  console.log(products);
+  const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
+  const [sorting, setSorting] = useState<{
+    by: keyof Product;
+    dir: 'asc' | 'desc';
+  }>({ by: null, dir: 'asc' });
+
+  useEffect(() => {
+    if (products?.length) {
+      const { by, dir } = sorting;
+      if (by != null) {
+        const mul = dir === 'asc' ? -1 : 1;
+        const sorted = [...products].sort((a, b) =>
+          a[by] < b[by] ? mul : -mul,
+        );
+        setSortedProducts(sorted);
+      } else {
+        setSortedProducts(products);
+      }
+    }
+  }, [sorting]);
+
+  const toggleSorting = (byKey: keyof Product) => () => {
+    const { by, dir } = sorting;
+    setSorting({
+      by: by === byKey && dir === 'desc' ? null : byKey,
+      dir: by == null ? 'asc' : dir === 'asc' ? 'desc' : 'asc',
+    });
+  };
+
+  return (
+    <>
+      <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
+        <Typography
+          variant="h6"
+          noWrap
+          component="h1"
+          color="primary.main"
+          fontWeight="bold"
+          sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
+        >
+          Products
+        </Typography>
+      </AdminAppBar>
+      <Box
+        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+      >
+        <TableContainer
+          component={Paper}
+          sx={{ width: '100%', height: '100%' }}
+        >
+          <Table aria-label="Products table" stickyHeader>
+            <TableHead>
+              <TableRow>
+                {columns.map(c => (
+                  <TableCell
+                    key={c.key}
+                    sortDirection={sorting.by === c.key ? sorting.dir : false}
+                  >
+                    {c.sortable ? (
+                      <TableSortLabel
+                        active={sorting.by === c.key}
+                        direction={sorting.by === c.key ? sorting.dir : 'asc'}
+                        onClick={toggleSorting(c.key)}
+                      >
+                        {c.title}
+                      </TableSortLabel>
+                    ) : (
+                      c.title
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sortedProducts?.map(product => (
+                <TableRow
+                  key={product.id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  onClick={() => navigate(`/admin/products/${product.id}`)}
+                >
+                  <TableCell component="th" scope="row">
+                    {product.name}
+                  </TableCell>
+                  <TableCell>{product.description}</TableCell>
+                  <TableCell>{product.price}</TableCell>
+                  <TableCell>{product.category}</TableCell>
+                  <TableCell>
+                    <Card sx={{ width: 100, height: 100 }}>
+                      <CardMedia component="img" image={product.image} />
+                    </Card>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </>
+  );
+};

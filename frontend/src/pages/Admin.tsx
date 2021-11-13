@@ -19,6 +19,7 @@ import { Logo } from '../components/Logo';
 import { drawerWidth } from '../constants';
 import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import { AdminUser } from './AdminUser';
+import { AdminProducts } from './AdminProducts';
 
 const pages = [
   {
@@ -38,7 +39,7 @@ const pages = [
   },
 ];
 
-export const Admin = () => {
+export const Admin = (props: { user: any }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -136,7 +137,11 @@ export const Admin = () => {
           />
           <Route
             path="/products"
-            element={<AdminUsers handleDrawerToggle={handleDrawerToggle} />}
+            element={<AdminProducts handleDrawerToggle={handleDrawerToggle} />}
+          />
+          <Route
+            path="/orders"
+            element={<AdminOrder handleDrawerToggle={handleDrawerToggle} />}
           />
         </Routes>
       </Box>
