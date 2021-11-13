@@ -41,6 +41,9 @@ function ProductCard(props: any) {
                     <Typography gutterBottom variant="h5" component="div" align="center">
                         {props.name}
                     </Typography>
+                    <Typography variant="body1" color="text.secondary" align="center">
+                        {props.product.available} kg available
+                    </Typography>
                     <Typography variant="body2" color="text.secondary" align="center">
                         € {props.price}/kg
                     </Typography>
