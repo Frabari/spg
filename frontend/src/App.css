@@ -36,10 +36,3 @@
     transform: rotate(360deg);
   }
 }
-
-.page-container{
-  max-width: 1200px;
-  padding-inline: 4px;
-  margin: auto;
-  background-color: white;
-}
