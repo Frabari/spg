@@ -1,4 +1,4 @@
-import { MouseEvent, ChangeEvent, useContext, useState } from 'react';
+import { ChangeEvent, MouseEvent, useContext, useState } from 'react';
 import {
   Box,
   Button,
@@ -57,27 +57,34 @@ function OutlinedCard(props: any) {
   };
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Box
-          padding="1rem"
-          component="form"
-          sx={{
-            '& .MuiTextField-root': { m: 1, width: '25ch' },
-          }}
-          noValidate
-          autoComplete="off"
-        >
+    <Card variant="outlined" sx={{ mx: 1 }}>
+      <CardContent
+        sx={{
+          pb: 0,
+          p: 4,
+          px: { xs: 2, sm: 4 },
+          maxWidth: 300,
+        }}
+      >
+        <Box component="form" noValidate autoComplete="off">
           <div>
+            <Typography
+              variant="h5"
+              color="primary.main"
+              sx={{ mb: 2, fontWeight: 'bold' }}
+            >
+              Login
+            </Typography>
             <Grid container rowSpacing={1} direction="column">
               <Grid item>
                 <TextField
                   label="Email"
+                  fullWidth
                   onChange={e => handleEmail(e.target.value)}
                 />
               </Grid>
               <Grid item>
-                <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
+                <FormControl variant="outlined" fullWidth>
                   <InputLabel htmlFor="outlined-adornment-password">
                     Password
                   </InputLabel>
@@ -111,8 +118,12 @@ function OutlinedCard(props: any) {
         </Box>
       </CardContent>
       <CardActions>
-        <Box marginX="auto" padding="1rem">
-          <Button onClick={() => props.handleLogin(email, values.password)}>
+        <Box marginX="auto" sx={{ p: 2, pt: 0 }}>
+          <Button
+            variant="contained"
+            onClick={() => props.handleLogin(email, values.password)}
+            sx={{ px: 3 }}
+          >
             Login
           </Button>
         </Box>

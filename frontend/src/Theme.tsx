@@ -50,6 +50,7 @@ export const themeOptions = createTheme({
         contained: {
           color: 'white',
           boxShadow: 'none',
+          fontWeight: 'bold',
         },
       },
     },
