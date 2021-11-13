@@ -3,6 +3,7 @@ import NavigationBox from './Navigation';
 import { Navigate } from 'react-router-dom';
 import React, { useContext, useEffect } from 'react';
 import { UserContext } from '../contexts/user';
+import { Container } from '@mui/material';
 
 export default function Products(props: any) {
   // const [logged, setLogged] = React.useState(false);
@@ -15,13 +16,14 @@ export default function Products(props: any) {
   // }, [user]);
 
   if (user === null) {
-    return <Navigate to="/login" />;
+    return <Navigate to='/login' />;
   }
   return (
     <>
-      <NavigationBox.NavBar loggedIn={1} />
-      <NavigationBox.NavTabs />
-      <ProductsGrid />
+      <NavigationBox.NavBar loggedIn={1} products={true} />
+      <Container style={{backgroundColor: "#fafafa"}}>
+        <ProductsGrid />
+      </Container>
     </>
   );
 }

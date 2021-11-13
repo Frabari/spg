@@ -29,21 +29,19 @@ function App() {
     <PendingStateContext.Provider value={{ pending, setPending }}>
       <UserContext.Provider value={{ user, setUser }}>
         <ThemeProvider theme={themeOptions}>
-          <div className="App" style={{ backgroundColor: '#fafafa' }}>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Homepage />} />
+          <BrowserRouter>
+            <Routes>
+              <Route path='/' element={<Homepage />} />
 
-                <Route path="/login" element={<Login />} />
+              <Route path='/login' element={<Login />} />
 
-                <Route path="/users" element={<UsersPage />} />
+              <Route path='/users' element={<UsersPage />} />
 
-                <Route path="/UsersInfo/" element={<UsersInfo />} />
+              <Route path='/UsersInfo/' element={<UsersInfo />} />
 
-                <Route path="/products" element={<Products />} />
-              </Routes>
-            </BrowserRouter>
-          </div>
+              <Route path='/products' element={<Products />} />
+            </Routes>
+          </BrowserRouter>
         </ThemeProvider>
       </UserContext.Provider>
     </PendingStateContext.Provider>

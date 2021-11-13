@@ -29,18 +29,16 @@ export const themeOptions = createTheme({
       defaultProps: {
         color: 'secondary',
       },
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+        }
+      }
     },
     MuiTabs: {
       styleOverrides: {
         root: {
           backgroundColor: '#ffffff',
-        },
-      },
-    },
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          padding: 50,
         },
       },
     },
