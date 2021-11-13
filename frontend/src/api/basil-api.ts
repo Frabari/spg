@@ -1,5 +1,4 @@
 import { createHttpClient } from './createHttpClient';
-import { useNavigate } from 'react-router';
 
 export type CategoryId = number;
 
@@ -118,3 +117,8 @@ export const getProduct = (id: ProductId) =>
   client.get<Product>(`/products/${id}`);
 
 export const getCategories = () => client.get<Category[]>('/categories');
+
+export const getOrders = () => client.get<Order[]>('/orders');
+
+export const createOrder = (order: Partial<Order>) =>
+  client.post<Order>('/orders', order);

@@ -43,7 +43,7 @@ const columns: { key: keyof User; title: string; sortable: boolean }[] = [
 
 export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { users, error } = useUsers();
+  const { users } = useUsers();
   const [sortedUsers, setSortedUsers] = useState<User[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof User;

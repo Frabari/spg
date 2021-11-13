@@ -1,22 +1,22 @@
 import { useContext, useEffect, useState } from 'react';
-import { getUsers, User } from '../api/basil-api';
+import { getOrders, Order } from '../api/basil-api';
 import { PendingStateContext } from '../contexts/pending';
 import { toast } from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
 
-export const useUsers = () => {
+export const useOrders = () => {
   const { setPending } = useContext(PendingStateContext);
-  const [users, setUsers] = useState<User[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState<ApiException>(null);
   useEffect(() => {
     setPending(true);
-    getUsers()
-      .then(setUsers)
+    getOrders()
+      .then(setOrders)
       .catch(e => {
         setError(e);
         toast.error(e.message);
       })
       .finally(() => setPending(false));
   }, [setPending]);
-  return { users, error };
+  return { orders, error };
 };
