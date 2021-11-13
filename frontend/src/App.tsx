@@ -38,7 +38,7 @@ function App() {
 
               <Route path="/admin/*" element={<Admin user={user} />} />
 
-              <Route path="/products" element={<Products />} />
+              <Route path="/products" element={<Products user={user} />} />
             </Routes>
           </BrowserRouter>
         </ThemeProvider>

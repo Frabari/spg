@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   AppBar,
+  Avatar,
   Badge,
   Box,
   Button,
@@ -21,6 +22,12 @@ import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Logo } from '../components/Logo';
+import {getMe, logout } from '../api/basil-api';
+import { useContext } from 'react';
+import { PendingStateContext } from '../contexts/pending';
+import toast from 'react-hot-toast';
+import { ApiException } from '../api/createHttpClient';
+import { UserContext } from '../contexts/user';
 
 interface LinkTabProps {
   label?: string;
@@ -100,6 +107,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { user, setUser } = useContext(UserContext);
+  const { setPending } = useContext(PendingStateContext);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -109,6 +118,22 @@ function NavBar(props: any) {
     setAnchorEl(null);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setPending(true);
+      getMe()
+          .then(setUser)
+          .catch(() => setUser(false))
+          .finally(() => setPending(false));
+    } catch (e) {
+      toast.error((e as ApiException).message);
+    }
+  };
+
+  if(!user){
+    return <Navigate to="/login" />;
+  }
   return (
     <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
       <Container>
@@ -142,7 +167,7 @@ function NavBar(props: any) {
 
               <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
                 <IconButton size="large" onClick={handleMenu}>
-                  <Person />
+                  <Avatar src={props.user.avatar}/>
                 </IconButton>
                 <Menu
                   id="menu-appbar"
@@ -159,9 +184,7 @@ function NavBar(props: any) {
                   open={Boolean(anchorEl)}
                   onClose={handleClose}
                 >
-                  <MenuItem onClick={handleClose}>Profile</MenuItem>
-                  <MenuItem onClick={handleClose}>My orders</MenuItem>
-                  <MenuItem component={Link} to={'/home'}>
+                  <MenuItem onClick={handleLogout}>
                     <LogoutIcon /> Logout
                   </MenuItem>
                 </Menu>

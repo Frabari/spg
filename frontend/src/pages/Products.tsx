@@ -5,7 +5,7 @@ import ProductsGrid from '../components/ProductsGrid';
 import NavigationBox from './Navigation';
 import { UserContext } from '../contexts/user';
 
-export default function Products() {
+export default function Products(props: any) {
   const { user } = useContext(UserContext);
 
   if (user === null) {
@@ -13,7 +13,7 @@ export default function Products() {
   }
   return (
     <>
-      <NavigationBox.NavBar loggedIn={1} products={true} />
+      <NavigationBox.NavBar loggedIn={1} products={true} user={props.user} />
       <Container sx={{ mt: 18 }}>
         <ProductsGrid onSelect={null}/>
       </Container>

@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:3001/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -15,6 +15,7 @@
     "@mui/icons-material": "^5.1.0",
     "@mui/material": "^5.1.0",
     "@mui/styled-engine": "^5.1.0",
+    "@popperjs/core": "^2.10.2",
     "@testing-library/jest-dom": "^5.15.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -51,6 +52,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "proxy": "http://localhost:3001/"
+  }
 }
