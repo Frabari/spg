@@ -53,6 +53,7 @@ export class ProductsController implements CrudController<Product> {
         }),
       };
     }
+    crudReq.parsed.join = [{ field: 'category' }];
     return this.base.getManyBase(crudReq) as Promise<Product[]>;
   }
 
