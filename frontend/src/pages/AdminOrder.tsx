@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Add, Save } from '@mui/icons-material';
 import {
+  Avatar,
   Box,
   Button,
   Container,
@@ -12,6 +13,7 @@ import {
   InputLabel,
   List,
   ListItem,
+  ListItemAvatar,
   ListItemText,
   MenuItem,
   Paper,
@@ -42,8 +44,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const saveChanges = () => {
     upsertOrder(dto)
       .then(newOrder => {
-        toast.success(`Order ${order ? 'updated' : 'created'}`);
-        navigate(`/admin/users/${(newOrder as Order).id}`);
+        const creating = id == null;
+        toast.success(`Order ${creating ? 'created' : 'updated'}`);
+        if (creating) {
+          navigate(`/admin/orders/${(newOrder as Order).id}`);
+        }
       })
       .catch(e => {
         toast.error(e.message);
@@ -53,17 +58,18 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const onProductSelected = (product: Product) => {
     setSelectingProduct(false);
     setDto(oldDto => {
-      const entry = oldDto.entries.find(e => e.product.id === product.id);
+      const entry = oldDto?.entries?.find(e => e.product.id === product.id);
       if (entry) {
         ++entry.quantity;
         return { ...oldDto };
       }
       return {
         ...oldDto,
-        entries: oldDto.entries.concat({
-          product,
-          quantity: 1,
-        }),
+        entries:
+          oldDto?.entries?.concat({
+            product,
+            quantity: 1,
+          }) ?? [],
       };
     });
   };
@@ -138,7 +144,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <Select
                     labelId="order-status"
                     label="Status"
-                    value={dto?.status ?? ''}
+                    value={id == null ? 'draft' : dto?.status ?? ''}
+                    disabled={id == null}
                     onChange={e =>
                       setDto(oldDto => ({
                         ...oldDto,
@@ -202,6 +209,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                         });
                       }}
                     />
+                    <ListItemAvatar>
+                      <Avatar src={e.product.image} />
+                    </ListItemAvatar>
                     <ListItemText
                       primary={e.product.name}
                       secondary={`${e.product.price}€`}

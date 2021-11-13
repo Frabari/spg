@@ -1,6 +1,12 @@
 import { useContext, useEffect, useState } from 'react';
 import { PendingStateContext } from '../contexts/pending';
-import { createOrder, getOrder, Order, OrderId } from '../api/basil-api';
+import {
+  createOrder,
+  getOrder,
+  Order,
+  OrderId,
+  updateOrder,
+} from '../api/basil-api';
 import { toast } from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
 
@@ -10,12 +16,12 @@ export const useOrder = (id?: OrderId) => {
   const [error, setError] = useState<ApiException>(null);
 
   const upsertOrder = (order: Partial<Order>) => {
+    setPending(true);
     if (!order.id) {
-      setPending(true);
       return createOrder(order)
-        .then(u => {
-          setOrder(u);
-          return u;
+        .then(o => {
+          setOrder(o);
+          return o;
         })
         .catch(e => {
           setError(e);
@@ -23,6 +29,16 @@ export const useOrder = (id?: OrderId) => {
         })
         .finally(() => setPending(false));
     }
+    return updateOrder(id, order)
+      .then(o => {
+        setOrder(o);
+        return o;
+      })
+      .catch(e => {
+        setError(e);
+        toast.error(e.message);
+      })
+      .finally(() => setPending(false));
   };
 
   useEffect(() => {

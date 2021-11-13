@@ -123,3 +123,6 @@ export const getOrder = (id: OrderId) => client.get<Order>(`/orders/${id}`);
 
 export const createOrder = (order: Partial<Order>) =>
   client.post<Order>('/orders', order);
+
+export const updateOrder = (id: OrderId, order: Partial<Order>) =>
+  client.patch<Order>(`/orders/${id}`, order);
