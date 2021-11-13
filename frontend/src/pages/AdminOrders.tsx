@@ -15,28 +15,13 @@ import { Add } from '@mui/icons-material';
 
 const columns: { key: keyof Order; title: string; sortable: boolean }[] = [
   {
-    key: 'name',
-    title: 'Name',
-    sortable: true,
-  },
-  {
-    key: 'surname',
-    title: 'Surname',
-    sortable: true,
-  },
-  {
-    key: 'email',
-    title: 'Email',
-    sortable: true,
-  },
-  {
-    key: 'role',
-    title: 'Role',
+    key: 'status',
+    title: 'Status',
     sortable: false,
   },
   {
-    key: 'balance',
-    title: 'Balance',
+    key: 'deliveryLocation',
+    title: 'DeliveryLocation',
     sortable: true,
   },
 ];
@@ -52,6 +37,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
 
   useEffect(() => {
     if (orders?.length) {
+      console.log(orders);
       const { by, dir } = sorting;
       if (by != null) {
         const mul = dir === 'asc' ? -1 : 1;
@@ -133,17 +119,18 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
             <TableBody>
               {sortedOrders?.map(order => (
                 <TableRow
+                  hover
                   key={order.id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  sx={{
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    cursor: 'pointer',
+                  }}
                   onClick={() => navigate(`/admin/orders/${order.id}`)}
                 >
                   <TableCell component="th" scope="row">
-                    {order.name}
+                    {order.status}
                   </TableCell>
-                  <TableCell>{user.surname}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.balance}</TableCell>
+                  <TableCell>{order.deliveryLocation}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

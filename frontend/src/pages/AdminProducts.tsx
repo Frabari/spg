@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, TableSortLabel, Typography } from '@mui/material';
+import { Box, Button, TableSortLabel, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -7,12 +7,13 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { useProducts } from '../hooks/useProducts';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useEffect, useState } from 'react';
 import { Product } from '../api/basil-api';
-import { useProducts } from '../hooks/useProducts';
-import Card from '@mui/material/Card';
+import { Add } from '@mui/icons-material';
 import CardMedia from '@mui/material/CardMedia';
+import Card from '@mui/material/Card';
 
 const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
   {
@@ -31,11 +32,6 @@ const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
     sortable: true,
   },
   {
-    key: 'category',
-    title: 'Category',
-    sortable: true,
-  },
-  {
     key: 'image',
     title: ' ',
     sortable: false,
@@ -44,8 +40,7 @@ const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
 
 export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { products, error } = useProducts();
-  console.log(products);
+  const { products } = useProducts();
   const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Product;
@@ -65,7 +60,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
         setSortedProducts(products);
       }
     }
-  }, [sorting]);
+  }, [products, sorting]);
 
   const toggleSorting = (byKey: keyof Product) => () => {
     const { by, dir } = sorting;
@@ -88,6 +83,22 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
         >
           Products
         </Typography>
+        <Button
+          disabled
+          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
+          variant="contained"
+          href="/admin/products/new"
+        >
+          <Add />
+          <Typography
+            sx={{
+              display: { xs: 'none', sm: 'inline' },
+              textTransform: 'none',
+            }}
+          >
+            Add product
+          </Typography>
+        </Button>
       </AdminAppBar>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
@@ -122,8 +133,12 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
             <TableBody>
               {sortedProducts?.map(product => (
                 <TableRow
+                  hover
                   key={product.id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  sx={{
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    cursor: 'pointer',
+                  }}
                   onClick={() => navigate(`/admin/products/${product.id}`)}
                 >
                   <TableCell component="th" scope="row">
@@ -131,10 +146,13 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                   </TableCell>
                   <TableCell>{product.description}</TableCell>
                   <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.category}</TableCell>
                   <TableCell>
                     <Card sx={{ width: 100, height: 100 }}>
-                      <CardMedia component="img" image={product.image} />
+                      <CardMedia
+                        component="img"
+                        image={product.image}
+                        alt={product.name}
+                      />
                     </Card>
                   </TableCell>
                 </TableRow>

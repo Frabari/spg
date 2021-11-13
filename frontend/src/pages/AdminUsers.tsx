@@ -133,8 +133,12 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
             <TableBody>
               {sortedUsers?.map(user => (
                 <TableRow
+                  hover
                   key={user.id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  sx={{
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    cursor: 'pointer',
+                  }}
                   onClick={() => navigate(`/admin/users/${user.id}`)}
                 >
                   <TableCell component="th" scope="row">

@@ -15,6 +15,7 @@ import { toast } from 'react-hot-toast';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useUser } from '../hooks/useUser';
 import { User } from '../api/basil-api';
+import Avatar from '@mui/material/Avatar';
 
 export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
             })}
           >
             <div className="container relative">
-              <img
+              <Avatar
                 src={user?.avatar}
                 alt="user avatar"
                 style={{

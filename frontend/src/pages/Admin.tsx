@@ -20,6 +20,7 @@ import { drawerWidth } from '../constants';
 import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import { AdminUser } from './AdminUser';
 import { AdminProducts } from './AdminProducts';
+import { AdminOrders } from './AdminOrders';
 
 const pages = [
   {
@@ -141,7 +142,7 @@ export const Admin = (props: { user: any }) => {
           />
           <Route
             path="/orders"
-            element={<AdminOrder handleDrawerToggle={handleDrawerToggle} />}
+            element={<AdminOrders handleDrawerToggle={handleDrawerToggle} />}
           />
         </Routes>
       </Box>
