@@ -32,6 +32,11 @@ const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
     sortable: true,
   },
   {
+    key: 'category',
+    title: 'Category',
+    sortable: true,
+  },
+  {
     key: 'image',
     title: ' ',
     sortable: false,
@@ -146,6 +151,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                   </TableCell>
                   <TableCell>{product.description}</TableCell>
                   <TableCell>{product.price}</TableCell>
+                  <TableCell>{product.category.name.toLowerCase()}</TableCell>
                   <TableCell>
                     <Card sx={{ width: 100, height: 100 }}>
                       <CardMedia

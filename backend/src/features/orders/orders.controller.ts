@@ -22,10 +22,17 @@ import { CreateOrderDto } from './dtos/create-order.dto';
     type: Order,
   },
   routes: {
-    only: ['getManyBase', 'createOneBase'],
+    only: ['getManyBase', 'getOneBase', 'createOneBase'],
   },
   dto: {
     create: CreateOrderDto,
+  },
+  query: {
+    join: {
+      user: { eager: true },
+      deliveredBy: {},
+      entries: { eager: true },
+    },
   },
   validation,
 })
@@ -43,15 +50,23 @@ export class OrdersController {
   @Override()
   @Roles(...STAFF)
   getMany(@ParsedRequest() request: CrudRequest) {
+    request.parsed.fields = ['id', 'status', 'createdAt'];
     return this.base.getManyBase(request);
   }
 
   @Override()
-  @Roles(Role.EMPLOYEE)
+  @Roles(...STAFF)
+  getOne(@ParsedRequest() request: CrudRequest) {
+    return this.base.getOneBase(request);
+  }
+
+  @Override()
+  @Roles(Role.MANAGER, Role.EMPLOYEE)
   async createOne(
     @ParsedRequest() request: CrudRequest,
     @ParsedBody() dto: CreateOrderDto,
   ) {
+    request.parsed.join = [{ field: 'deliveredBy' }];
     const order = await this.service.checkOrder(dto);
     return this.base.createOneBase(request, order as Order);
   }

@@ -15,14 +15,24 @@ import { Add } from '@mui/icons-material';
 
 const columns: { key: keyof Order; title: string; sortable: boolean }[] = [
   {
+    key: 'user',
+    title: 'Name',
+    sortable: true,
+  },
+  {
+    key: 'user',
+    title: 'Surname',
+    sortable: true,
+  },
+  {
+    key: 'user',
+    title: 'Email',
+    sortable: true,
+  },
+  {
     key: 'status',
     title: 'Status',
     sortable: false,
-  },
-  {
-    key: 'deliveryLocation',
-    title: 'DeliveryLocation',
-    sortable: true,
   },
 ];
 
@@ -37,6 +47,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
 
   useEffect(() => {
     if (orders?.length) {
+      console.log(orders);
       console.log(orders);
       const { by, dir } = sorting;
       if (by != null) {
@@ -128,9 +139,11 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                   onClick={() => navigate(`/admin/orders/${order.id}`)}
                 >
                   <TableCell component="th" scope="row">
-                    {order.status}
+                    {order.user.name}
                   </TableCell>
-                  <TableCell>{order.deliveryLocation}</TableCell>
+                  <TableCell>{order.user.surname}</TableCell>
+                  <TableCell>{order.user.email}</TableCell>
+                  <TableCell>{order.status}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
