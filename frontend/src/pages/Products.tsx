@@ -15,7 +15,7 @@ export default function Products() {
     <>
       <NavigationBox.NavBar loggedIn={1} products={true} />
       <Container sx={{ mt: 18 }}>
-        <ProductsGrid />
+        <ProductsGrid onSelect={null}/>
       </Container>
     </>
   );
