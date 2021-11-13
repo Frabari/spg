@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import {
-  Allow,
   ArrayMinSize,
   IsIn,
   IsNotEmpty,
@@ -16,7 +15,7 @@ import {
 } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
 import { OrderEntry } from './order-entry.entity';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { DeliveredBy } from '../validators/delivered-by.validator';
 
 export type OrderId = number;
