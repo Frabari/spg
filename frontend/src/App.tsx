@@ -28,21 +28,19 @@ function App() {
       <UserContext.Provider value={{ user, setUser }}>
         <Toaster />
         <ThemeProvider theme={themeOptions}>
-          <div className="App" style={{ backgroundColor: '#fafafa' }}>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Navigate to="/home" />} />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Navigate to="/home" />} />
 
-                <Route path="/home" element={<Homepage />} />
+              <Route path="/home" element={<Homepage />} />
 
-                <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<Login />} />
 
-                <Route path="/admin/*" element={<Admin user={user} />} />
+              <Route path="/admin/*" element={<Admin user={user} />} />
 
-                <Route path="/products" element={<Products />} />
-              </Routes>
-            </BrowserRouter>
-          </div>
+              <Route path="/products" element={<Products />} />
+            </Routes>
+          </BrowserRouter>
         </ThemeProvider>
       </UserContext.Provider>
     </PendingStateContext.Provider>

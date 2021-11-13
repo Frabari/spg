@@ -1,18 +1,19 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Box,
-  Tabs,
-  Tab,
   AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
   Badge,
+  Box,
   Button,
+  Container,
+  IconButton,
   InputBase,
   Menu,
   MenuItem,
+  Tab,
+  Tabs,
+  Toolbar,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Person from '@mui/icons-material/Person';
@@ -46,12 +47,14 @@ function NavTabs() {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Toolbar
+      sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
+    >
       <Tabs value={value} onChange={handleChange}>
         <LinkTab label="Fruits" href="/fruits" />
         <LinkTab label="Vegetables" href="/vegetables" />
       </Tabs>
-    </Box>
+    </Toolbar>
   );
 }
 
@@ -107,13 +110,13 @@ function NavBar(props: any) {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton href={'/home'}>
+    <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
+      <Container>
+        <Toolbar sx={{ px: '0!important' }}>
+          <IconButton href={'/'}>
             <Logo />
           </IconButton>
-          <Typography variant="h6" component="div" marginLeft="10px">
+          <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
             Basil
           </Typography>
           {props.loggedIn === 0 ? (
@@ -125,7 +128,7 @@ function NavBar(props: any) {
             </>
           ) : (
             <>
-              <Box marginX="auto">
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <Search>
                   <SearchIconWrapper>
                     <SearchIcon style={{ color: '#737373' }} />
@@ -137,7 +140,7 @@ function NavBar(props: any) {
                 </Search>
               </Box>
 
-              <Box sx={{ display: { md: 'flex' } }}>
+              <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
                 <IconButton size="large" onClick={handleMenu}>
                   <Person />
                 </IconButton>
@@ -171,8 +174,9 @@ function NavBar(props: any) {
             </>
           )}
         </Toolbar>
-      </AppBar>
-    </Box>
+        {props.products && <NavTabs />}
+      </Container>
+    </AppBar>
   );
 }
 

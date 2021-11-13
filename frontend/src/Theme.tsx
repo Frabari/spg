@@ -17,24 +17,28 @@ export const themeOptions = createTheme({
     h6: {
       color: '#757575',
     },
+    h4: {
+      color: '#757575',
+    },
+    caption: {
+      marginLeft: '5px',
+    },
   },
   components: {
     MuiAppBar: {
       defaultProps: {
         color: 'secondary',
       },
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+        },
+      },
     },
     MuiTabs: {
       styleOverrides: {
         root: {
           backgroundColor: '#ffffff',
-        },
-      },
-    },
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          padding: 50,
         },
       },
     },
