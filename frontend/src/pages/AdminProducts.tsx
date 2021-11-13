@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Add } from '@mui/icons-material';
+import Paper from '@mui/material/Paper';
 import { Box, Button, TableSortLabel, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -6,16 +9,16 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import { useProducts } from '../hooks/useProducts';
 import { AdminAppBar } from '../components/AdminAppBar';
-import { useEffect, useState } from 'react';
 import { Product } from '../api/basil-api';
-import { Add } from '@mui/icons-material';
-import CardMedia from '@mui/material/CardMedia';
-import Card from '@mui/material/Card';
 
 const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
+  {
+    key: 'image',
+    title: 'Image',
+    sortable: false,
+  },
   {
     key: 'name',
     title: 'Name',
@@ -35,11 +38,6 @@ const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
     key: 'category',
     title: 'Category',
     sortable: true,
-  },
-  {
-    key: 'image',
-    title: ' ',
-    sortable: false,
   },
 ];
 
@@ -146,21 +144,24 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                   }}
                   onClick={() => navigate(`/admin/products/${product.id}`)}
                 >
+                  <TableCell sx={{ py: 0 }}>
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  </TableCell>
                   <TableCell component="th" scope="row">
                     {product.name}
                   </TableCell>
                   <TableCell>{product.description}</TableCell>
                   <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.category.name.toLowerCase()}</TableCell>
-                  <TableCell>
-                    <Card sx={{ width: 100, height: 100 }}>
-                      <CardMedia
-                        component="img"
-                        image={product.image}
-                        alt={product.name}
-                      />
-                    </Card>
-                  </TableCell>
+                  <TableCell>{product.category.name}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

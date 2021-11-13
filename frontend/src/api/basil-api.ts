@@ -29,7 +29,7 @@ export interface Order {
   deliverAt: Date;
   deliveryLocation: string;
   deliveredBy: User;
-  createAt: Date;
+  createdAt: Date;
 }
 
 export type ProductId = number;

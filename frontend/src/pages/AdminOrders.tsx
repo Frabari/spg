@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TableSortLabel, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
@@ -7,32 +8,38 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { Add } from '@mui/icons-material';
 import { useOrders } from '../hooks/useOrders';
 import { AdminAppBar } from '../components/AdminAppBar';
-import { useEffect, useState } from 'react';
 import { Order } from '../api/basil-api';
-import { Add } from '@mui/icons-material';
 
-const columns: { key: keyof Order; title: string; sortable: boolean }[] = [
+const columns: {
+  key: keyof Order;
+  title: string;
+  sortable: boolean;
+  value?: (order: Order) => any;
+}[] = [
   {
     key: 'user',
-    title: 'Name',
+    title: 'User',
     sortable: true,
-  },
-  {
-    key: 'user',
-    title: 'Surname',
-    sortable: true,
-  },
-  {
-    key: 'user',
-    title: 'Email',
-    sortable: true,
+    value: (i: Order) => i.user.email,
   },
   {
     key: 'status',
     title: 'Status',
     sortable: false,
+  },
+  {
+    key: 'entries',
+    title: 'Entries',
+    sortable: true,
+    value: (i: Order) => i.entries.length,
+  },
+  {
+    key: 'createdAt',
+    title: 'Created on',
+    sortable: true,
   },
 ];
 
@@ -43,16 +50,19 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const [sorting, setSorting] = useState<{
     by: keyof Order;
     dir: 'asc' | 'desc';
+    value?: (o: Order) => any;
   }>({ by: null, dir: 'asc' });
 
   useEffect(() => {
     if (orders?.length) {
-      console.log(orders);
-      console.log(orders);
-      const { by, dir } = sorting;
+      const { by, dir, value } = sorting;
       if (by != null) {
         const mul = dir === 'asc' ? -1 : 1;
-        const sorted = [...orders].sort((a, b) => (a[by] < b[by] ? mul : -mul));
+        const sorted = [...orders].sort((a, b) => {
+          const _a = value ? value(a) : a[by];
+          const _b = value ? value(b) : b[by];
+          return _a < _b ? mul : -mul;
+        });
         setSortedOrders(sorted);
       } else {
         setSortedOrders(orders);
@@ -65,6 +75,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
     setSorting({
       by: by === byKey && dir === 'desc' ? null : byKey,
       dir: by == null ? 'asc' : dir === 'asc' ? 'desc' : 'asc',
+      value: columns.find(c => c.key === byKey)?.value,
     });
   };
 
@@ -139,11 +150,13 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                   onClick={() => navigate(`/admin/orders/${order.id}`)}
                 >
                   <TableCell component="th" scope="row">
-                    {order.user.name}
+                    {order.user.email}
                   </TableCell>
-                  <TableCell>{order.user.surname}</TableCell>
-                  <TableCell>{order.user.email}</TableCell>
                   <TableCell>{order.status}</TableCell>
+                  <TableCell>{order.entries.length}</TableCell>
+                  <TableCell>
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
