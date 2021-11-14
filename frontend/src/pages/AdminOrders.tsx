@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, TableSortLabel, Typography } from '@mui/material';
+import { Box, Button, Chip, TableSortLabel, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -8,10 +8,30 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Add } from '@mui/icons-material';
+import { Add, Pending } from '@mui/icons-material';
 import { useOrders } from '../hooks/useOrders';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { Order } from '../api/basil-api';
+import DraftsIcon from '@mui/icons-material/Drafts';
+import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DoneIcon from '@mui/icons-material/Done';
+
+const statusColor = {
+  draft: {
+    color: '#ddf208',
+    icon: <DraftsIcon style={{ color: '#ddf208' }} />,
+  },
+  paid: { color: 'secondary', icon: <AttachMoneyIcon /> },
+  delivering: {
+    color: 'red',
+    icon: <DeliveryDiningIcon style={{ color: 'red' }} />,
+  },
+  completed: { color: 'success', icon: <DoneIcon /> },
+  pending_cancellation: { color: 'info', icon: <Pending /> },
+  canceled: { color: 'warning', icon: <DeleteIcon /> },
+};
 
 const columns: {
   key: keyof Order;
@@ -152,7 +172,18 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                   <TableCell component="th" scope="row">
                     {order.user.email}
                   </TableCell>
-                  <TableCell>{order.status}</TableCell>
+                  <TableCell>
+                    {' '}
+                    <Chip
+                      icon={statusColor.draft.icon}
+                      variant="outlined"
+                      label="delivering"
+                      sx={{
+                        borderColor: statusColor.draft.color,
+                        color: statusColor.draft.color,
+                      }}
+                    />
+                  </TableCell>
                   <TableCell>{order.entries.length}</TableCell>
                   <TableCell>
                     {new Date(order.createdAt).toLocaleDateString()}

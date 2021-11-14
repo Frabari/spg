@@ -21,6 +21,7 @@ import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import { AdminUser } from './AdminUser';
 import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
+import { AdminProduct } from './AdminProduct';
 
 const pages = [
   {
@@ -139,6 +140,10 @@ export const Admin = (props: { user: any }) => {
           <Route
             path="/products"
             element={<AdminProducts handleDrawerToggle={handleDrawerToggle} />}
+          />
+          <Route
+            path="/products/:id"
+            element={<AdminProduct handleDrawerToggle={handleDrawerToggle} />}
           />
           <Route
             path="/orders"
