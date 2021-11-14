@@ -35,4 +35,10 @@ export class UsersService extends TypeOrmCrudService<User> {
       } as JwtTokenPayload),
     };
   }
+
+  updateBalance(user: User, amount: number) {
+    return this.usersRepository.update(user, {
+      balance: user.balance + amount,
+    });
+  }
 }
