@@ -83,6 +83,6 @@ export class OrdersController {
   ) {
     request.parsed.join = [{ field: 'deliveredBy' }];
     const order = await this.service.checkOrderUpdate(id, dto);
-    return this.base.updateOneBase(request, dto as Order);
+    return this.base.updateOneBase(request, order as Order);
   }
 }
