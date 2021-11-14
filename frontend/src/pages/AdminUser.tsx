@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save } from '@mui/icons-material';
 import {
@@ -41,6 +41,10 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
         toast.error(e.message);
       });
   };
+
+  useEffect(() => {
+    setDto(user);
+  }, [user]);
 
   return (
     <>
@@ -111,35 +115,35 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                 <Grid item>
                   <TextField
                     label="Name"
-                    value={user?.name ?? ''}
+                    value={dto?.name ?? ''}
                     onChange={e => handleChange('name', e.target.value)}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="Surname"
-                    value={user?.surname ?? ''}
+                    value={dto?.surname ?? ''}
                     onChange={e => handleChange('surname', e.target.value)}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="Email"
-                    value={user?.email ?? ''}
+                    value={dto?.email ?? ''}
                     onChange={e => handleChange('email', e.target.value)}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="Password"
-                    value={user?.password ?? ''}
+                    value={dto?.password ?? ''}
                     onChange={e => handleChange('password', e.target.value)}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="Avatar"
-                    value={user?.avatar ?? ''}
+                    value={dto?.avatar ?? ''}
                     onChange={e => handleChange('avatar', e.target.value)}
                   />
                 </Grid>
