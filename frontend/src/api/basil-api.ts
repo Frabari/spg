@@ -136,3 +136,6 @@ export const createOrder = (order: Partial<Order>) =>
 
 export const updateOrder = (id: OrderId, order: Partial<Order>) =>
   client.patch<Order>(`/orders/${id}`, order);
+
+export const createTransaction = (transaction: Partial<Transaction>) =>
+  client.post<Transaction>('/transactions', transaction);

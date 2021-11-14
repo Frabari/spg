@@ -7,8 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
-import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { Transaction } from './entities/transaction.entity';
+import { CreateTransactionDto } from './dtos/create-transaction.dto';
 
 @Injectable()
 export class TransactionsService extends TypeOrmCrudService<Transaction> {
