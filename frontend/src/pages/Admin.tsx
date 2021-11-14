@@ -24,7 +24,7 @@ import { AdminUser } from './AdminUser';
 import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
 import { AdminOrder } from './AdminOrder';
-import { useUser } from '../hooks/useUser';
+import { AdminProduct } from './AdminProduct';
 import { getMe, logout } from '../api/basil-api';
 import { UserContext } from '../contexts/user';
 import { PendingStateContext } from '../contexts/pending';
