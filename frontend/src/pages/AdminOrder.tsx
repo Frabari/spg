@@ -59,6 +59,10 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         setSelectingProduct(false);
         setDto(oldDto => {
             const entry = oldDto?.entries?.find(e => e.product.id === product.id);
+            if (entry?.quantity >= product.available) {
+                toast.error(`You have alredy selected maximum available quantiy for ${product.name}.`)
+                return {...oldDto}
+            }
             if (entry) {
                 ++entry.quantity;
                 return {...oldDto};
@@ -188,25 +192,27 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                                             value={e.quantity ?? ''}
                                             onChange={event => {
                                                 const value = +event.target.value;
-                                                setDto(oldDto => {
-                                                    let entries;
-                                                    if (value === 0) {
-                                                        entries = oldDto.entries.filter(oe => oe !== e);
-                                                    } else {
-                                                        entries = oldDto.entries.map(oe =>
-                                                            oe !== e
-                                                                ? oe
-                                                                : {
-                                                                    ...oe,
-                                                                    quantity: +event.target.value,
-                                                                },
-                                                        );
-                                                    }
-                                                    return {
-                                                        ...oldDto,
-                                                        entries,
-                                                    };
-                                                });
+                                                if (value <= e.product.available) {
+                                                    setDto(oldDto => {
+                                                        let entries;
+                                                        if (value === 0) {
+                                                            entries = oldDto.entries.filter(oe => oe !== e);
+                                                        } else {
+                                                            entries = oldDto.entries.map(oe =>
+                                                                oe !== e
+                                                                    ? oe
+                                                                    : {
+                                                                        ...oe,
+                                                                        quantity: +event.target.value,
+                                                                    },
+                                                            );
+                                                        }
+                                                        return {
+                                                            ...oldDto,
+                                                            entries,
+                                                        };
+                                                    });
+                                                }
                                             }}
                                         />
                                         <ListItemAvatar>
