@@ -13,7 +13,7 @@ export default function Homepage() {
           alignItems="center"
           justifyItems="center"
           spacing={3}
-          paddingTop="2rem"
+          paddingTop="10rem"
         >
           <Grid item xs={12}>
             <ImageHome width="300" height="400" />

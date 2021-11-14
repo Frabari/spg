@@ -8,8 +8,8 @@ import { UserContext } from '../contexts/user';
 export default function Products(props: any) {
   const { user } = useContext(UserContext);
 
-  if (user === null) {
-    return <Navigate to="/login" />;
+  if (!user) {
+    return <Navigate to="/" />;
   }
   return (
     <>
