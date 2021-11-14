@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import {
+  Avatar,
   Box,
   CssBaseline,
   Divider,
@@ -14,14 +15,21 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
+import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { AdminUsers } from './AdminUsers';
 import { Logo } from '../components/Logo';
 import { drawerWidth } from '../constants';
-import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import { AdminUser } from './AdminUser';
 import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
-import { AdminProduct } from './AdminProduct';
+import { AdminOrder } from './AdminOrder';
+import { useUser } from '../hooks/useUser';
+import { getMe, logout } from '../api/basil-api';
+import { UserContext } from '../contexts/user';
+import { PendingStateContext } from '../contexts/pending';
+import toast from 'react-hot-toast';
+import { ApiException } from '../api/createHttpClient';
 
 const pages = [
   {
@@ -43,9 +51,24 @@ const pages = [
 
 export const Admin = (props: { user: any }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, setUser } = useContext(UserContext);
+  const { setPending } = useContext(PendingStateContext);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setPending(true);
+      getMe()
+        .then(setUser)
+        .catch(() => setUser(false))
+        .finally(() => setPending(false));
+    } catch (e) {
+      toast.error((e as ApiException).message);
+    }
   };
 
   const drawer = (
@@ -74,6 +97,17 @@ export const Admin = (props: { user: any }) => {
             </ListItemButton>
           </ListItem>
         ))}
+      </List>
+      <List sx={{ position: 'absolute', bottom: 0 }}>
+        <ListItem>
+          <Avatar src={props.user?.avatar} />
+          <ListItemButton onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText primary="Logout" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </div>
   );
@@ -148,6 +182,10 @@ export const Admin = (props: { user: any }) => {
           <Route
             path="/orders"
             element={<AdminOrders handleDrawerToggle={handleDrawerToggle} />}
+          />
+          <Route
+            path="/orders/:id"
+            element={<AdminOrder handleDrawerToggle={handleDrawerToggle} />}
           />
         </Routes>
       </Box>

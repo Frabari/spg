@@ -25,10 +25,23 @@ export const createHttpClient = (
     const response = await fetch(input, _options);
     if (!response.ok) {
       const body = await response.json();
-      if (!location.pathname.startsWith('/login') && response.status === 401) {
+      if (
+        !location.pathname.startsWith('/login') &&
+        [401, 403].includes(response.status)
+      ) {
         location.replace(loginPath);
       }
-      throw new ApiException(body.message, response.status, body);
+      let message = 'Network error';
+      if (body.error) {
+        message = body.error;
+      } else if (body.message) {
+        if (Array.isArray(body.message)) {
+          message = body.message[0];
+        } else {
+          message = body.message;
+        }
+      }
+      throw new ApiException(message, response.status, body);
     }
     return response.json();
   };
