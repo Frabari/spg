@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
-import { Box, Button, TableSortLabel, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  InputBase,
+  TableSortLabel,
+  Typography,
+} from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -12,6 +18,8 @@ import TableRow from '@mui/material/TableRow';
 import { useProducts } from '../hooks/useProducts';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { Product } from '../api/basil-api';
+import { styled } from '@mui/material/styles';
+import SearchIcon from '@mui/icons-material/Search';
 
 const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
   {
@@ -40,6 +48,46 @@ const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
     sortable: true,
   },
 ];
+
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: '#f7f7f7',
+  '&:hover': {
+    backgroundColor: '#f7f7f7',
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
 
 export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
@@ -73,6 +121,14 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
     });
   };
 
+  const handleChange = (value: any) => {
+    setSortedProducts(
+      products.filter(p =>
+        p.name.toLocaleLowerCase().includes(value.toLocaleLowerCase()),
+      ),
+    );
+  };
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -86,6 +142,16 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
         >
           Products
         </Typography>
+        <Search sx={{ display: { xs: 'none', sm: 'block' } }}>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="Search…"
+            inputProps={{ 'aria-label': 'search' }}
+            onChange={e => handleChange(e.target.value)}
+          />
+        </Search>
         <Button
           disabled
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
@@ -99,7 +165,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
               textTransform: 'none',
             }}
           >
-            Add product
+            Create product
           </Typography>
         </Button>
       </AdminAppBar>

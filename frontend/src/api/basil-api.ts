@@ -20,10 +20,20 @@ export interface OrderEntry {
 
 export type OrderId = number;
 
+export enum OrderStatus {
+  DRAFT = 'draft',
+  PAID = 'paid',
+  PREPARED = 'prepared',
+  DELIVERING = 'delivering',
+  COMPLETED = 'completed',
+  PENDING_CANCELLATION = 'pending_cancellation',
+  CANCELED = 'canceled',
+}
+
 export interface Order {
   id: OrderId;
   user: User;
-  status: string;
+  status: OrderStatus;
   entries: OrderEntry[];
   deliverAt: Date;
   deliveryLocation: string;
