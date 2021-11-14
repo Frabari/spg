@@ -8,29 +8,33 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Add, Pending } from '@mui/icons-material';
+import { Add, Build, Pending } from '@mui/icons-material';
 import { useOrders } from '../hooks/useOrders';
 import { AdminAppBar } from '../components/AdminAppBar';
-import { Order } from '../api/basil-api';
+import { Order, OrderStatus } from '../api/basil-api';
 import DraftsIcon from '@mui/icons-material/Drafts';
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DoneIcon from '@mui/icons-material/Done';
 
-const statusColor = {
+const status: Record<OrderStatus, { color: string; icon: any }> = {
   draft: {
-    color: '#ddf208',
-    icon: <DraftsIcon style={{ color: '#ddf208' }} />,
+    color: 'burlywood',
+    icon: DraftsIcon,
   },
-  paid: { color: 'secondary', icon: <AttachMoneyIcon /> },
+  paid: {
+    color: 'darkorange',
+    icon: AttachMoneyIcon,
+  },
   delivering: {
-    color: 'red',
-    icon: <DeliveryDiningIcon style={{ color: 'red' }} />,
+    color: 'indigo',
+    icon: DeliveryDiningIcon,
   },
-  completed: { color: 'success', icon: <DoneIcon /> },
-  pending_cancellation: { color: 'info', icon: <Pending /> },
-  canceled: { color: 'warning', icon: <DeleteIcon /> },
+  completed: { color: 'springgreen', icon: DoneIcon },
+  pending_cancellation: { color: 'orangered', icon: Pending },
+  canceled: { color: 'red', icon: DeleteIcon },
+  prepared: { color: 'gold', icon: Build },
 };
 
 const columns: {
@@ -65,7 +69,7 @@ const columns: {
 
 export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { orders, error } = useOrders();
+  const { orders } = useOrders();
   const [sortedOrders, setSortedOrders] = useState<Order[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Order;
@@ -159,37 +163,49 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedOrders?.map(order => (
-                <TableRow
-                  hover
-                  key={order.id}
-                  sx={{
-                    '&:last-child td, &:last-child th': { border: 0 },
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => navigate(`/admin/orders/${order.id}`)}
-                >
-                  <TableCell component="th" scope="row">
-                    {order.user.email}
-                  </TableCell>
-                  <TableCell>
-                    {' '}
-                    <Chip
-                      icon={statusColor.draft.icon}
-                      variant="outlined"
-                      label="delivering"
-                      sx={{
-                        borderColor: statusColor.draft.color,
-                        color: statusColor.draft.color,
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>{order.entries.length}</TableCell>
-                  <TableCell>
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {sortedOrders?.map(order => {
+                const { icon: Icon, color } = status[order.status];
+                return (
+                  <TableRow
+                    hover
+                    key={order.id}
+                    sx={{
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/admin/orders/${order.id}`)}
+                  >
+                    <TableCell component="th" scope="row">
+                      {order.user.email}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        icon={
+                          <Icon
+                            sx={{
+                              color: color + '!important',
+                              width: 16,
+                              height: 16,
+                            }}
+                          />
+                        }
+                        variant="outlined"
+                        label={order.status}
+                        sx={{
+                          borderColor: color,
+                          color: color,
+                          py: '4px',
+                          height: 'unset',
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>{order.entries.length}</TableCell>
+                    <TableCell>
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
