@@ -1,7 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@mui/material/styles';
+import { LinearProgress } from '@mui/material';
 import { PendingStateContext } from './contexts/pending';
 import { UserContext } from './contexts/user';
 import Homepage from './pages/Homepage';
@@ -14,6 +15,8 @@ import { getMe } from './api/basil-api';
 function App() {
   const [pending, setPending] = useState(false);
   const [user, setUser] = useState(null);
+  const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
+  const timerRef = useRef<number>();
 
   useEffect(() => {
     setPending(true);
@@ -22,6 +25,17 @@ function App() {
       .catch(() => setUser(false))
       .finally(() => setPending(false));
   }, []);
+
+  useEffect(() => {
+    if (!pending) {
+      timerRef.current = window.setTimeout(() => {
+        setShowLoadingIndicator(false);
+      }, 1000);
+    } else {
+      clearTimeout(timerRef.current);
+      setShowLoadingIndicator(true);
+    }
+  }, [pending]);
 
   return (
     <PendingStateContext.Provider value={{ pending, setPending }}>
@@ -41,6 +55,11 @@ function App() {
               <Route path="/products" element={<Products user={user} />} />
             </Routes>
           </BrowserRouter>
+          {showLoadingIndicator && (
+            <LinearProgress
+              sx={{ position: 'fixed', width: '100%', top: 0, zIndex: 11000 }}
+            />
+          )}
         </ThemeProvider>
       </UserContext.Provider>
     </PendingStateContext.Provider>

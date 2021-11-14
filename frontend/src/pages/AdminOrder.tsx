@@ -113,7 +113,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
             </Typography>
             <Divider sx={{ my: 2 }} />
 
-            <Grid container columnSpacing={2}>
+            <Grid container spacing={2}>
               <Grid item>
                 <FormControl sx={{ width: 250 }}>
                   <InputLabel id="order-user">User</InputLabel>
