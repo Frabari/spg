@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { PendingStateContext } from '../contexts/pending';
 import { createUser, getUser, User, UserId } from '../api/basil-api';
 import { toast } from 'react-hot-toast';
@@ -25,7 +25,8 @@ export const useUser = (id?: UserId) => {
     }
   };
 
-  useEffect(() => {
+  const load = useRef<() => void>();
+  load.current = () => {
     if (id) {
       setPending(true);
       getUser(id)
@@ -36,6 +37,11 @@ export const useUser = (id?: UserId) => {
         })
         .finally(() => setPending(false));
     }
-  }, [id, setPending]);
-  return { user, upsertUser, error };
+  };
+
+  useEffect(() => {
+    load.current();
+  }, [id, setPending, load]);
+
+  return { load, user, upsertUser, error };
 };
