@@ -1,9 +1,14 @@
 import NavigationBox from './Navigation';
 import { Container, Grid, Typography } from '@mui/material';
 import { ReactComponent as ImageHome } from './images/image-home.svg';
+import { useContext } from 'react';
+import { UserContext } from '../contexts/user';
+import { Navigate } from 'react-router-dom';
 
 export default function Homepage() {
-  return (
+  const { user } = useContext(UserContext);
+
+  return user === null ? null : user === false ? (
     <>
       <NavigationBox.NavBar loggedIn={0} />
       <Container>
@@ -29,5 +34,7 @@ export default function Homepage() {
         </Grid>
       </Container>
     </>
+  ) : (
+    <Navigate to="/products" />
   );
 }
