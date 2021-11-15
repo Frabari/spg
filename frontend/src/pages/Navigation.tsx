@@ -29,6 +29,7 @@ import {PendingStateContext} from '../contexts/pending';
 import toast from 'react-hot-toast';
 import {ApiException} from '../api/createHttpClient';
 import {UserContext} from '../contexts/user';
+import { useCategories } from '../hooks/useCategories';
 
 interface LinkTabProps {
     label?: string;
