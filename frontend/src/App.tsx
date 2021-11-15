@@ -10,13 +10,13 @@ import { themeOptions } from './Theme';
 import Login from './pages/Login';
 import { Admin } from './pages/Admin';
 import Products from './pages/Products';
-import { getMe } from './api/basil-api';
+import { getMe } from './api/BasilApi';
 import SignUp from './pages/SignUp';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
   const [pending, setPending] = useState(false);
   const [user, setUser] = useState(null);
-  const [userPending, setUserPending] = useState(true);
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const timerRef = useRef<number>();
 
@@ -26,7 +26,6 @@ function App() {
       .then(setUser)
       .catch(() => setUser(false))
       .finally(() => {
-        setUserPending(false);
         setPending(false);
       });
   }, []);
@@ -42,9 +41,6 @@ function App() {
     }
   }, [pending]);
 
-  if (userPending) {
-    return null;
-  }
   return (
     <PendingStateContext.Provider value={{ pending, setPending }}>
       <UserContext.Provider value={{ user, setUser }}>
@@ -58,9 +54,23 @@ function App() {
 
               <Route path="/signup" element={<SignUp />} />
 
-              <Route path="/admin/*" element={<Admin user={user} />} />
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
 
-              <Route path="/products" element={<Products user={user} />} />
+              <Route
+                path="/products"
+                element={
+                  <ProtectedRoute>
+                    <Products />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </BrowserRouter>
           {showLoadingIndicator && (

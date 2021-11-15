@@ -23,7 +23,7 @@ import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Logo } from '../components/Logo';
-import { getMe, logout } from '../api/basil-api';
+import { getMe, logout } from '../api/BasilApi';
 import { useContext } from 'react';
 import { PendingStateContext } from '../contexts/pending';
 import toast from 'react-hot-toast';

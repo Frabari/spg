@@ -6,7 +6,7 @@ import {
   Order,
   OrderId,
   updateOrder,
-} from '../api/basil-api';
+} from '../api/BasilApi';
 import { toast } from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
 

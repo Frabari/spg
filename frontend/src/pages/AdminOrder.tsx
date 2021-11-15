@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { toast } from 'react-hot-toast';
 import { AdminAppBar } from '../components/AdminAppBar';
-import { Order, OrderStatus, Product, User } from '../api/basil-api';
+import { Order, OrderStatus, Product, User } from '../api/BasilApi';
 import { useOrder } from '../hooks/useOrder';
 import { useUsers } from '../hooks/useUsers';
 import ProductsGrid from '../components/ProductsGrid';

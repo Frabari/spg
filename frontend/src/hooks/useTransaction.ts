@@ -1,10 +1,6 @@
 import { useContext, useState } from 'react';
 import { PendingStateContext } from '../contexts/pending';
-import {
-  createTransaction,
-  Transaction,
-  TransactionId,
-} from '../api/basil-api';
+import { createTransaction, Transaction, TransactionId } from '../api/BasilApi';
 import { toast } from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
 

@@ -11,7 +11,7 @@ import Paper from '@mui/material/Paper';
 import { Add, Build, Pending } from '@mui/icons-material';
 import { useOrders } from '../hooks/useOrders';
 import { AdminAppBar } from '../components/AdminAppBar';
-import { Order, OrderStatus } from '../api/basil-api';
+import { Order, OrderStatus } from '../api/BasilApi';
 import DraftsIcon from '@mui/icons-material/Drafts';
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';

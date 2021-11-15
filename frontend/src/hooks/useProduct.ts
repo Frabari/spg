@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { PendingStateContext } from '../contexts/pending';
 import { toast } from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
-import { getProduct, Product, ProductId } from '../api/basil-api';
+import { getProduct, Product, ProductId } from '../api/BasilApi';
 
 export const useProduct = (id?: ProductId) => {
   const { setPending } = useContext(PendingStateContext);

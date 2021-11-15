@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { getProducts, Product } from '../api/basil-api';
+import { getProducts, Product } from '../api/BasilApi';
 import { PendingStateContext } from '../contexts/pending';
 import { toast } from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';

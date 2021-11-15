@@ -68,13 +68,23 @@ export interface Transaction {
 
 export type UserId = number;
 
+export enum Role {
+  CUSTOMER = 'customer',
+  FARMER = 'farmer',
+  RIDER = 'rider',
+  EMPLOYEE = 'employee',
+  WAREHOUSE_WORKER = 'warehouse_worker',
+  WAREHOUSE_MANAGER = 'warehouse_manager',
+  MANAGER = 'manager',
+}
+
 export interface User {
   id: UserId;
   name: string;
   surname: string;
   email: string;
   password: string;
-  role: number;
+  role: Role;
   balance: number;
   avatar: string;
   orders: Order[];

@@ -7,7 +7,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { User } from '../api/basil-api';
+import { User } from '../api/BasilApi';
 import { useState } from 'react';
 import { useTransaction } from '../hooks/useTransaction';
 import { useUser } from '../hooks/useUser';
