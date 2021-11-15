@@ -29,10 +29,12 @@ import {PendingStateContext} from '../contexts/pending';
 import toast from 'react-hot-toast';
 import {ApiException} from '../api/createHttpClient';
 import {UserContext} from '../contexts/user';
+import { useCategories } from '../hooks/useCategories';
 
 interface LinkTabProps {
     label?: string;
     href?: string;
+	handleFilter?: any;
 }
 
 function LinkTab(props: LinkTabProps) {
@@ -41,14 +43,16 @@ function LinkTab(props: LinkTabProps) {
             component="a"
             onClick={(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
                 event.preventDefault();
+				props.handleFilter(props.href);
             }}
             {...props}
         />
     );
 }
 
-function NavTabs() {
+function NavTabs(props: any) {
     const [value, setValue] = React.useState(0);
+	const { categories } = useCategories();
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
@@ -59,8 +63,9 @@ function NavTabs() {
             sx={{width: '100%', minHeight: '0!important', px: '0!important'}}
         >
             <Tabs value={value} onChange={handleChange}>
-                <LinkTab label="Fruits" href="/fruits"/>
-                <LinkTab label="Vegetables" href="/vegetables"/>
+                {categories?.map(c => (
+          			<LinkTab key={c.id} label={c.name} href={c.slug} {...props} />
+        		))}
             </Tabs>
         </Toolbar>
     );
@@ -170,7 +175,7 @@ function NavBar(props: any) {
 
                             <Box sx={{display: {md: 'flex'}, ml: 'auto'}}>
                                 <IconButton size="large" onClick={handleMenu}>
-                                    <Avatar src={props.user.avatar}/>
+                                    <Avatar src={props.user?.avatar}/>
                                 </IconButton>
                                 <Menu
                                     id="menu-appbar"
@@ -200,7 +205,7 @@ function NavBar(props: any) {
                         </>
                     )}
                 </Toolbar>
-                {props.products && <NavTabs/>}
+                {props.products && <NavTabs {...props}/>}
             </Container>
         </AppBar>
     );

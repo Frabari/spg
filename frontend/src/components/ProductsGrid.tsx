@@ -8,9 +8,10 @@ import {
     IconButton,
     Typography,
 } from '@mui/material';
-import {useProducts} from '../hooks/useProducts';
+import { useProducts } from '../hooks/useProducts';
+import { useCategories } from '../hooks/useCategories';
 import AddIcon from '@mui/icons-material/Add';
-import {useState} from 'react';
+import { useState, useEffect } from 'react';
 import ProductInfo from '../pages/ProductInfo';
 import {Product} from '../api/basil-api';
 
@@ -45,7 +46,7 @@ function ProductCard(props: any) {
                         {props.name}
                     </Typography>
                     <Typography variant="body1" color="text.secondary" align="center">
-                        {props.product.available} kg available
+                        {props.product?.available} kg available
                     </Typography>
                     <Typography variant="body2" color="text.secondary" align="center">
                         € {props.price}/kg
@@ -63,32 +64,46 @@ function ProductCard(props: any) {
     )
 }
 
-export default function ProductsGrid(props: {
-    onSelect: (product: Product) => void;
-}) {
-    const {products} = useProducts();
+export default function ProductsGrid(props: any) {
+  const { products } = useProducts();
+  const { categories } = useCategories();
+  const [filteredProd, setFilteredProd] = useState(products);
 
-    return (
-        <Grid
-            container
-            direction="row"
-            spacing="2rem"
-            padding="1rem"
-            alignItems="center"
-            justifyItems="center"
-            width="auto"
-        >
-            {products?.map(p => (p.available > 0 ?
-                    <ProductCard
-                        key={p.id}
-                        name={p.name.split(' ')[2]}
-                        image={p.image}
-                        price={p.price}
-                        description={p.description}
-                        product={p}
-                        onSelect={props.onSelect}
-                    /> : <></>
-            ))}
-        </Grid>
-    )
+  useEffect(() => {
+    setFilteredProd(
+      products?.filter(firstCat => firstCat.category.id === categories[0]?.id),
+    );
+  }, [categories]);
+
+  useEffect(() => {
+    setFilteredProd(
+      products?.filter(
+        filteredCat => filteredCat.category.slug === props.filter,
+      ),
+    );
+  }, [props.filter]);
+
+  return (
+    <Grid
+      container
+      direction="row"
+      spacing="2rem"
+      padding="1rem"
+      alignItems="center"
+      justifyItems="center"
+      width="auto"
+    >
+      {filteredProd?.map(p => (p.available > 0 ?
+        <ProductCard
+          key={p.id}
+          name={p.name.split(' ')[2]}
+          image={p.image}
+          price={p.price}
+          description={p.description}
+		  product={p}
+          onSelect={props.onSelect}
+        /> : <></>
+      ))}
+    </Grid>
+  );
 }
