@@ -6,26 +6,28 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {useState, MouseEvent, ChangeEvent} from "react";
 import {Navigate, useNavigate} from "react-router";
-import {User} from "../api/basil-api";
+import {login, User} from "../api/basil-api";
 import {useUser} from "../hooks/useUser";
 import toast from "react-hot-toast";
 
 export default function SignUp(props: any) {
     const navigate = useNavigate();
     const [dto, setDto] = useState<Partial<User>>({});
-    const {user, upsertUser} = useUser();
+    const {user, upsertUser} = useUser(null);
     const [show, setShow] = useState(false);
 
     const handleChange =
-        (key: string, value: any) => (event: ChangeEvent<HTMLInputElement>) => {
-            setDto(_dto => ({..._dto, [key]: event.target.value}));
+        (key: string, value: any) => {
+            setDto(_dto => ({..._dto, [key]: value}));
         };
 
     const handleRegistration = () => {
         upsertUser(dto)
             .then(newUser => {
                 toast.success(`Welcome ${dto.name}!`);
-                navigate(`/products`);
+                login(dto.email, dto.password).then(
+                    () => navigate(`/products`)
+                )
             })
             .catch(e => {
                 toast.error(e.message);
@@ -103,18 +105,21 @@ export default function SignUp(props: any) {
                         <Grid item>
                             <TextField
                                 label="Name"
+                                value={dto?.name}
                                 onChange={e => handleChange('name', e.target.value)}
                             />
                         </Grid>
                         <Grid item>
                             <TextField
                                 label="Surname"
+                                value={dto?.surname}
                                 onChange={e => handleChange('surname', e.target.value)}
                             />
                         </Grid>
                         <Grid item>
                             <TextField
                                 label="Email"
+                                value={dto?.email}
                                 onChange={e => handleChange('email', e.target.value)}
                             />
                         </Grid>
@@ -126,7 +131,7 @@ export default function SignUp(props: any) {
                                 <OutlinedInput
                                     id="outlined-adornment-password"
                                     type={show ? 'text' : 'password'}
-                                    value={dto.password}
+                                    value={dto?.password}
                                     onChange={e => handleChange('password', e.target.value)}
                                     endAdornment={
                                         <InputAdornment position="end">
@@ -151,6 +156,7 @@ export default function SignUp(props: any) {
                         <Grid item>
                             <TextField
                                 label="Avatar"
+                                value={dto?.avatar}
                                 onChange={e => handleChange('avatar', e.target.value)}
                             />
                         </Grid>

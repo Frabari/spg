@@ -58,7 +58,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
-        <Balance open={open} setOpen={setOpen} user={user} />;
+        <Balance open={open} setOpen={setOpen} user={user} />
         <Typography
           variant="h6"
           noWrap
