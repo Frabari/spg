@@ -147,7 +147,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                   <TableCell>{user.surname}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.balance}</TableCell>
+                  <TableCell>€ {user.balance}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

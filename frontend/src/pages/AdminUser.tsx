@@ -169,6 +169,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
+                            disabled={idParam === 'new'}
                             aria-label="manage user wallet"
                             color="success"
                             edge="end"
