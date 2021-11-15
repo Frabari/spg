@@ -9,8 +9,9 @@ import {
   Typography,
 } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
+import { useCategories } from '../hooks/useCategories';
 import AddIcon from '@mui/icons-material/Add';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductInfo from '../pages/ProductInfo';
 
 function ProductCard(props: {
@@ -54,8 +55,24 @@ function ProductCard(props: {
   );
 }
 
-export default function ProductsGrid() {
+export default function ProductsGrid(props: any) {
   const { products } = useProducts();
+  const { categories } = useCategories();
+  const [filteredProd, setFilteredProd] = useState(products);
+
+  useEffect(() => {
+    setFilteredProd(
+      products?.filter(firstCat => firstCat.category.id === categories[0]?.id),
+    );
+  }, [categories]);
+
+  useEffect(() => {
+    setFilteredProd(
+      products?.filter(
+        filteredCat => filteredCat.category.slug === props.filter,
+      ),
+    );
+  }, [props.filter]);
 
   return (
     <Grid
@@ -67,7 +84,7 @@ export default function ProductsGrid() {
       justifyItems="center"
       width="auto"
     >
-      {products?.map(p => (
+      {filteredProd.map(p => (
         <ProductCard
           key={p.id}
           name={p.name.split(' ')[2]}
