@@ -43,5 +43,5 @@ export const useUser = (id?: UserId) => {
     load.current();
   }, [id, setPending, load]);
 
-  return { load, user, upsertUser, error };
+  return { load: load.current, user, upsertUser, error };
 };

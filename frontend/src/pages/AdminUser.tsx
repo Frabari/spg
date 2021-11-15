@@ -5,6 +5,8 @@ import {
   Box,
   Button,
   Grid,
+  IconButton,
+  InputAdornment,
   Paper,
   TextField,
   ThemeProvider,
@@ -16,6 +18,8 @@ import { AdminAppBar } from '../components/AdminAppBar';
 import { useUser } from '../hooks/useUser';
 import { User } from '../api/basil-api';
 import Avatar from '@mui/material/Avatar';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { Balance } from './Balance';
 
 export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
@@ -23,6 +27,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const id = idParam === 'new' ? null : +idParam;
   const { user, upsertUser } = useUser(id);
   const [dto, setDto] = useState<Partial<User>>({});
+  const [open, setOpen] = useState(false);
 
   const handleChange = (key: string, value: any) => {
     setDto(_dto => ({
@@ -42,6 +47,10 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
       });
   };
 
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
   useEffect(() => {
     setDto(user);
   }, [user]);
@@ -49,6 +58,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
+        <Balance open={open} setOpen={setOpen} user={user} />;
         <Typography
           variant="h6"
           noWrap
@@ -145,6 +155,30 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                     label="Avatar"
                     value={dto?.avatar ?? ''}
                     onChange={e => handleChange('avatar', e.target.value)}
+                  />
+                </Grid>
+                <Grid item>
+                  <TextField
+                    label="Balance"
+                    value={user?.balance ?? ''}
+                    InputProps={{
+                      readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start"> € </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="manage user wallet"
+                            color="success"
+                            edge="end"
+                            onClick={handleOpen}
+                          >
+                            <AccountBalanceWalletIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
               </Grid>

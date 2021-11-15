@@ -48,6 +48,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         toast.success(`Order ${creating ? 'created' : 'updated'}`);
         if (creating) {
           navigate(`/admin/orders/${(newOrder as Order).id}`);
+        } else {
+          navigate('/admin/orders');
         }
       })
       .catch(e => {

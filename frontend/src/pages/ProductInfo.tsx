@@ -1,5 +1,4 @@
-import NavigationBox from './Navigation';
-import { Typography, Button, IconButton, Modal, Box } from '@mui/material';
+import { Box, Button, IconButton, Modal, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -90,7 +89,7 @@ export default function ProductInfo(props: any) {
               </Grid>
               <Grid item>
                 <IconButton
-                  disabled={counter == 0}
+                  disabled={counter === 0}
                   onClick={() => setCounter(counter - 1)}
                 >
                   <RemoveCircleOutlineIcon />
