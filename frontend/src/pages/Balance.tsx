@@ -28,7 +28,11 @@ const style = {
   p: 4,
 };
 
-export const Balance = (props: any) => {
+export const Balance = (props: {
+  open: boolean;
+  setOpen: (value: boolean) => void;
+  user: User;
+}) => {
   const navigate = useNavigate();
   const { upsertTransaction } = useTransaction();
   const { load } = useUser();
@@ -41,7 +45,7 @@ export const Balance = (props: any) => {
     amount = add ? amount : -amount;
     upsertTransaction({
       user: { id: props.user.id } as User,
-      amount: amount,
+      amount,
     })
       .then(() => {
         if (amount) {
@@ -50,7 +54,7 @@ export const Balance = (props: any) => {
           navigate(`/admin/users/${props.user?.id}`);
           props.setOpen(false);
         } else {
-          toast.error(`Amount should be not equal to zero`);
+          toast.error(`Amount should not be equal to zero`);
         }
       })
       .catch(e => toast.error(e.message));
