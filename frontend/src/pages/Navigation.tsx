@@ -49,7 +49,7 @@ function LinkTab(props: LinkTabProps) {
     );
 }
 
-function NavTabs() {
+function NavTabs(props: any) {
     const [value, setValue] = React.useState(0);
 	const { categories } = useCategories();
 
@@ -174,7 +174,7 @@ function NavBar(props: any) {
 
                             <Box sx={{display: {md: 'flex'}, ml: 'auto'}}>
                                 <IconButton size="large" onClick={handleMenu}>
-                                    <Avatar src={props.user.avatar}/>
+                                    <Avatar src={props.user?.avatar}/>
                                 </IconButton>
                                 <Menu
                                     id="menu-appbar"

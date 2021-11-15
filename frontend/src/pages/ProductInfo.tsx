@@ -67,7 +67,7 @@ export default function ProductInfo(props: any) {
                   component="div"
                   display="inline"
                 >
-                  {props.product.available} available
+                  {props.product?.available} available
                 </Typography>
               </Grid>
               <Grid item>
@@ -98,7 +98,7 @@ export default function ProductInfo(props: any) {
                   {counter}
                 </Typography>
                 <IconButton
-                  disabled={counter === props.product.available}
+                  disabled={counter === props.product?.available}
                   onClick={() => setCounter(counter + 1)}
                 >
                   <AddCircleOutlineIcon />

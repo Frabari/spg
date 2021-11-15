@@ -46,7 +46,7 @@ function ProductCard(props: any) {
                         {props.name}
                     </Typography>
                     <Typography variant="body1" color="text.secondary" align="center">
-                        {props.product.available} kg available
+                        {props.product?.available} kg available
                     </Typography>
                     <Typography variant="body2" color="text.secondary" align="center">
                         € {props.price}/kg

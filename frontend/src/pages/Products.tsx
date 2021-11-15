@@ -19,9 +19,14 @@ export default function Products(props: any) {
 
   return (
     <>
-      <NavigationBox.NavBar loggedIn={1} products={true} user={props.user} handleFilter={handleFilter} />
+      <NavigationBox.NavBar
+        loggedIn={1}
+        products={true}
+        user={props.user}
+        handleFilter={handleFilter}
+      />
       <Container sx={{ mt: 18 }}>
-        <ProductsGrid onSelect={null} filter={filter} />
+        <ProductsGrid filter={filter} onSelect={null}/>
       </Container>
     </>
   );
