@@ -17,7 +17,7 @@ export const useOrder = (id?: OrderId) => {
 
   const upsertOrder = (order: Partial<Order>) => {
     setPending(true);
-    if (!order.id) {
+    if (!order?.id) {
       return createOrder(order)
         .then(o => {
           setOrder(o);
