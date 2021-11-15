@@ -8,6 +8,7 @@ import { UserContext } from '../contexts/user';
 export default function Products(props: any) {
   const { user } = useContext(UserContext);
   const [filter, setFilter] = useState();
+  const [search, setSearch] = useState('');
 
   if (!user) {
     return <Navigate to="/" />;
@@ -17,6 +18,10 @@ export default function Products(props: any) {
     setFilter(value);
   };
 
+  const handleSearch = (value: any) => {
+    setSearch(value);
+  };
+
   return (
     <>
       <NavigationBox.NavBar
@@ -24,9 +29,10 @@ export default function Products(props: any) {
         products={true}
         user={props.user}
         handleFilter={handleFilter}
+        handleSearch={handleSearch}
       />
       <Container sx={{ mt: 18 }}>
-        <ProductsGrid filter={filter} onSelect={null}/>
+        <ProductsGrid filter={filter} search={search} onSelect={null} />
       </Container>
     </>
   );
