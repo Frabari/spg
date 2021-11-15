@@ -63,6 +63,7 @@ function NavTabs(props: any) {
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
       <Tabs value={value} onChange={handleChange}>
+        <LinkTab key="all" label="all" href="all" {...props} />
         {categories?.map(c => (
           <LinkTab key={c.id} label={c.name} href={c.slug} {...props} />
         ))}
