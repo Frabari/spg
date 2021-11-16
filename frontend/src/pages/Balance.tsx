@@ -42,22 +42,22 @@ export const Balance = (props: {
   };
 
   const change = (add: boolean) => {
-    amount = add ? amount : -amount;
-    upsertTransaction({
-      user: { id: props.user.id } as User,
-      amount,
-    })
-      .then(() => {
-        if (amount) {
+    if (amount > 0) {
+      amount = add ? amount : -amount;
+      upsertTransaction({
+        user: { id: props.user.id } as User,
+        amount,
+      })
+        .then(() => {
           load();
           toast.success(`Wallet updated`);
           navigate(`/admin/users/${props.user?.id}`);
           props.setOpen(false);
-        } else {
-          toast.error(`Amount should not be equal to zero`);
-        }
-      })
-      .catch(e => toast.error(e.message));
+        })
+        .catch(e => toast.error(e.message));
+    } else {
+      toast.error(`Amount should be a positive and not null number`);
+    }
   };
 
   return (

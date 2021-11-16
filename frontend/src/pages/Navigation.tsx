@@ -138,10 +138,9 @@ function NavBar(props: any) {
     }
   };
 
-  if (!user) {
-    return <Navigate to="/" />;
-  }
-  return (
+  return user === null ? null : user === false ? (
+    <Navigate to="/login" />
+  ) : (
     <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
       <Container>
         <Toolbar sx={{ px: '0!important' }}>
