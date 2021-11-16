@@ -62,7 +62,7 @@ function NavTabs() {
     <Toolbar
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
-      <Tabs value={value}>
+      <Tabs value={value} variant="scrollable" scrollButtons="auto">
         <LinkTab key="all" label="all" />
         {categories?.map(c => (
           <LinkTab key={c.id} label={c.name} slug={c.slug} />
