@@ -1,6 +1,5 @@
 import { Controller, Param, UseGuards } from '@nestjs/common';
 import {
-  Crud,
   CrudController,
   CrudRequest,
   Override,
@@ -17,11 +16,9 @@ import { RolesGuard } from '../users/guards/roles.guard';
 import { ADMINS, Role, STAFF } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
+import { Crud } from 'src/core/decorators/crud.decorator';
 
-@Crud({
-  model: {
-    type: Order,
-  },
+@Crud(Order, {
   routes: {
     only: ['getManyBase', 'getOneBase', 'createOneBase', 'updateOneBase'],
   },
@@ -34,15 +31,15 @@ import { UpdateOrderDto } from './dtos/update-order.dto';
       user: { eager: true },
       deliveredBy: {},
       entries: { eager: true },
+      'entries.product': { eager: true },
     },
   },
-  validation,
 })
 @ApiTags(Order.name)
 @ApiBearerAuth()
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
-export class OrdersController {
+export class OrdersController implements CrudController<Order> {
   constructor(public readonly service: OrdersService) {}
 
   get base(): CrudController<Order> {

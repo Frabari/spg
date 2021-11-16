@@ -1,27 +1,37 @@
+import { useContext, useState } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { Container } from '@mui/material';
 import ProductsGrid from '../components/ProductsGrid';
 import NavigationBox from './Navigation';
-import { Navigate } from 'react-router-dom';
-import React, { useContext, useEffect } from 'react';
 import { UserContext } from '../contexts/user';
 
-export default function Products(props: any) {
-  // const [logged, setLogged] = React.useState(false);
+export default function Products() {
   const { user } = useContext(UserContext);
+  const [search, setSearch] = useState('');
+  const [queryParams] = useSearchParams();
 
-  // useEffect(() => {
-  //   if (user) {
-  //     setLogged(true);
-  //   } else setLogged(false)
-  // }, [user]);
-
-  if (user === null) {
-    return <Navigate to="/login" />;
+  if (!user) {
+    return <Navigate to="/" />;
   }
+
+  const handleSearch = (value: any) => {
+    setSearch(value);
+  };
+
   return (
     <>
-      <NavigationBox.NavBar loggedIn={1} />
-      <NavigationBox.NavTabs />
-      <ProductsGrid />
+      <NavigationBox.NavBar
+        loggedIn={1}
+        products={true}
+        handleSearch={handleSearch}
+      />
+      <Container sx={{ mt: 18 }}>
+        <ProductsGrid
+          filter={queryParams.get('category')}
+          search={search}
+          onSelect={null}
+        />
+      </Container>
     </>
   );
 }

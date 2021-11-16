@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 
 export type TransactionId = number;
 
@@ -20,6 +20,7 @@ export class Transaction {
    * The user to which this transaction applies
    */
   @ManyToOne(() => User, user => user.transactions)
+  @IsNotEmpty()
   user: User;
 
   /**
