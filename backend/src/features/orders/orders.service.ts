@@ -39,6 +39,12 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       }
     }
     for (const entry of dto.entries) {
+      if (entry.quantity < 1) {
+        throw new BadRequestException(
+          'Order.QuantityZero',
+          `You make an order with a wrong quantity`,
+        );
+      }
       const product = await this.productsService.findOne(entry.product?.id);
       if (!product) {
         throw new BadRequestException(
