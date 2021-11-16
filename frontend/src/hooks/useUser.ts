@@ -10,7 +10,7 @@ export const useUser = (id?: UserId) => {
   const [error, setError] = useState<ApiException>(null);
 
   const upsertUser = (user: Partial<User>) => {
-    if (!user.id) {
+    if (!user?.id) {
       setPending(true);
       return createUser(user)
         .then(u => {
@@ -20,6 +20,7 @@ export const useUser = (id?: UserId) => {
         .catch(e => {
           setError(e);
           toast.error(e.message);
+          throw e;
         })
         .finally(() => setPending(false));
     }

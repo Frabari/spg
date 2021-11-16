@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Avatar,
@@ -7,7 +8,6 @@ import {
   Box,
   Button,
   Container,
-  Grid,
   IconButton,
   InputBase,
   Menu,
@@ -18,18 +18,16 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import Person from '@mui/icons-material/Person';
-import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
-import LogoutIcon from '@mui/icons-material/Logout';
 import { Logo } from '../components/Logo';
-import { getMe, logout } from '../api/BasilApi';
-import { useContext } from 'react';
+import { getMe, logout, Role } from '../api/BasilApi';
 import { PendingStateContext } from '../contexts/pending';
 import toast from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
 import { UserContext } from '../contexts/user';
 import { useCategories } from '../hooks/useCategories';
+import { Person, ShoppingCart } from '@mui/icons-material';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 interface LinkTabProps {
   label?: string;
@@ -116,6 +114,7 @@ function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const { user, setUser } = useContext(UserContext);
   const { setPending } = useContext(PendingStateContext);
+  const navigate = useNavigate();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -204,6 +203,11 @@ function NavBar(props: any) {
                   open={Boolean(anchorEl)}
                   onClose={handleClose}
                 >
+                  {user.role !== Role.CUSTOMER && (
+                    <MenuItem onClick={() => navigate('/admin')}>
+                      <Person /> Admin
+                    </MenuItem>
+                  )}
                   <MenuItem onClick={handleLogout}>
                     <LogoutIcon /> Logout
                   </MenuItem>
