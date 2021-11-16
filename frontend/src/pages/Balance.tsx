@@ -7,7 +7,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { User } from '../api/basil-api';
+import { User } from '../api/BasilApi';
 import { useState } from 'react';
 import { useTransaction } from '../hooks/useTransaction';
 import { useUser } from '../hooks/useUser';
@@ -28,7 +28,11 @@ const style = {
   p: 4,
 };
 
-export const Balance = (props: any) => {
+export const Balance = (props: {
+  open: boolean;
+  setOpen: (value: boolean) => void;
+  user: User;
+}) => {
   const navigate = useNavigate();
   const { upsertTransaction } = useTransaction();
   const { load } = useUser();
@@ -42,7 +46,7 @@ export const Balance = (props: any) => {
       amount = add ? amount : -amount;
       upsertTransaction({
         user: { id: props.user.id } as User,
-        amount: amount,
+        amount,
       })
         .then(() => {
           load();

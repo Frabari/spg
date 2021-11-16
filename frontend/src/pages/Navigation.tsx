@@ -23,7 +23,7 @@ import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Logo } from '../components/Logo';
-import { getMe, logout } from '../api/basil-api';
+import { getMe, logout } from '../api/BasilApi';
 import { useContext } from 'react';
 import { PendingStateContext } from '../contexts/pending';
 import toast from 'react-hot-toast';
@@ -63,6 +63,7 @@ function NavTabs(props: any) {
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
       <Tabs value={value} onChange={handleChange}>
+        <LinkTab key="all" label="all" href="all" {...props} />
         {categories?.map(c => (
           <LinkTab key={c.id} label={c.name} href={c.slug} {...props} />
         ))}
@@ -137,10 +138,9 @@ function NavBar(props: any) {
     }
   };
 
-  if (!user) {
-    return <Navigate to="/" />;
-  }
-  return (
+  return user === null ? null : user === false ? (
+    <Navigate to="/login" />
+  ) : (
     <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
       <Container>
         <Toolbar sx={{ px: '0!important' }}>

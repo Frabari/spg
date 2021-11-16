@@ -17,7 +17,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { useProducts } from '../hooks/useProducts';
 import { AdminAppBar } from '../components/AdminAppBar';
-import { Product } from '../api/basil-api';
+import { Product } from '../api/BasilApi';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 

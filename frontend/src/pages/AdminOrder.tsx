@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { toast } from 'react-hot-toast';
 import { AdminAppBar } from '../components/AdminAppBar';
-import { Order, OrderStatus, Product, User } from '../api/basil-api';
+import { Order, OrderStatus, Product, User } from '../api/BasilApi';
 import { useOrder } from '../hooks/useOrder';
 import { useUsers } from '../hooks/useUsers';
 import ProductsGrid from '../components/ProductsGrid';
@@ -260,7 +260,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
           >
             Select a product
           </Typography>
-          <ProductsGrid onSelect={onProductSelected} />
+          <ProductsGrid
+            filter={'all'}
+            search={''}
+            onSelect={onProductSelected}
+          />
         </Box>
       </Drawer>
     </>

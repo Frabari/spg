@@ -25,12 +25,6 @@ export const createHttpClient = (
     const response = await fetch(input, _options);
     if (!response.ok) {
       const body = await response.json();
-      if (
-        !location.pathname.startsWith('/login') &&
-        [401, 403].includes(response.status)
-      ) {
-        location.replace(loginPath);
-      }
       let message = 'Network error';
       if (body.error) {
         message = body.error;

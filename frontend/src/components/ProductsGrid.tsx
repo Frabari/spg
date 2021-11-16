@@ -69,17 +69,18 @@ export default function ProductsGrid(props: any) {
   const [filteredProd, setFilteredProd] = useState(products);
 
   useEffect(() => {
-    setFilteredProd(
-      products?.filter(firstCat => firstCat.category.id === categories[0]?.id),
-    );
+    setFilteredProd(products);
   }, [categories]);
 
   useEffect(() => {
-    setFilteredProd(
-      products?.filter(
-        filteredCat => filteredCat.category.slug === props.filter,
-      ),
-    );
+    if (props.filter === 'all') setFilteredProd(products);
+    else {
+      setFilteredProd(
+        products?.filter(
+          filteredCat => filteredCat.category.slug === props.filter,
+        ),
+      );
+    }
   }, [props.filter]);
 
   return (

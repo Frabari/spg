@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import toast from 'react-hot-toast';
 import { AdminUsers } from './AdminUsers';
 import { Logo } from '../components/Logo';
 import { drawerWidth } from '../constants';
@@ -25,11 +26,11 @@ import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
 import { AdminOrder } from './AdminOrder';
 import { AdminProduct } from './AdminProduct';
-import { getMe, logout } from '../api/basil-api';
+import { getMe, logout, Role, User } from '../api/BasilApi';
 import { UserContext } from '../contexts/user';
 import { PendingStateContext } from '../contexts/pending';
-import toast from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const pages = [
   {
@@ -49,10 +50,10 @@ const pages = [
   },
 ];
 
-export const Admin = (props: { user: any }) => {
+export const Admin = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, setUser } = useContext(UserContext);
-  const { setPending } = useContext(PendingStateContext);
+  const { pending, setPending } = useContext(PendingStateContext);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -100,7 +101,7 @@ export const Admin = (props: { user: any }) => {
       </List>
       <List sx={{ position: 'absolute', bottom: 0 }}>
         <ListItem>
-          <Avatar src={props.user?.avatar} />
+          <Avatar src={(user as User)?.avatar} />
           <ListItemButton onClick={handleLogout}>
             <ListItemIcon>
               <LogoutIcon />
@@ -111,6 +112,10 @@ export const Admin = (props: { user: any }) => {
       </List>
     </div>
   );
+
+  if (typeof user === 'object' && user.role === Role.CUSTOMER) {
+    return <Navigate to="/products" />;
+  }
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
@@ -162,30 +167,61 @@ export const Admin = (props: { user: any }) => {
         }}
       >
         <Routes>
-          <Route path="/" element={<Navigate to="/admin/users" />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/admin/users" />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/users"
-            element={<AdminUsers handleDrawerToggle={handleDrawerToggle} />}
+            element={
+              <ProtectedRoute>
+                <AdminUsers handleDrawerToggle={handleDrawerToggle} />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/users/:id"
-            element={<AdminUser handleDrawerToggle={handleDrawerToggle} />}
+            element={
+              <ProtectedRoute>
+                <AdminUser handleDrawerToggle={handleDrawerToggle} />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/products"
-            element={<AdminProducts handleDrawerToggle={handleDrawerToggle} />}
+            element={
+              <ProtectedRoute>
+                <AdminProducts handleDrawerToggle={handleDrawerToggle} />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/products/:id"
-            element={<AdminProduct handleDrawerToggle={handleDrawerToggle} />}
+            element={
+              <ProtectedRoute>
+                <AdminProduct handleDrawerToggle={handleDrawerToggle} />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/orders"
-            element={<AdminOrders handleDrawerToggle={handleDrawerToggle} />}
+            element={
+              <ProtectedRoute>
+                <AdminOrders handleDrawerToggle={handleDrawerToggle} />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/orders/:id"
-            element={<AdminOrder handleDrawerToggle={handleDrawerToggle} />}
+            element={
+              <ProtectedRoute>
+                <AdminOrder handleDrawerToggle={handleDrawerToggle} />
+              </ProtectedRoute>
+            }
           />
         </Routes>
       </Box>

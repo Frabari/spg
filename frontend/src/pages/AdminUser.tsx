@@ -16,7 +16,7 @@ import { createTheme } from '@mui/material/styles';
 import { toast } from 'react-hot-toast';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useUser } from '../hooks/useUser';
-import { User } from '../api/basil-api';
+import { User } from '../api/BasilApi';
 import Avatar from '@mui/material/Avatar';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { Balance } from './Balance';

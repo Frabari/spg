@@ -5,7 +5,7 @@ import ProductsGrid from '../components/ProductsGrid';
 import NavigationBox from './Navigation';
 import { UserContext } from '../contexts/user';
 
-export default function Products(props: any) {
+export default function Products() {
   const { user } = useContext(UserContext);
   const [filter, setFilter] = useState();
   const [search, setSearch] = useState('');
@@ -27,7 +27,7 @@ export default function Products(props: any) {
       <NavigationBox.NavBar
         loggedIn={1}
         products={true}
-        user={props.user}
+        user={user}
         handleFilter={handleFilter}
         handleSearch={handleSearch}
       />

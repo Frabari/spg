@@ -10,7 +10,7 @@ import Paper from '@mui/material/Paper';
 import { useUsers } from '../hooks/useUsers';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useEffect, useState } from 'react';
-import { User } from '../api/basil-api';
+import { User } from '../api/BasilApi';
 import { Add } from '@mui/icons-material';
 
 const columns: { key: keyof User; title: string; sortable: boolean }[] = [
