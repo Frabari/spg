@@ -7,15 +7,15 @@ import { CategoriesModule } from '../categories/categories.module';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { OrdersModule } from './orders.module';
 import { EntityManager } from 'typeorm';
-import { Order } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { User } from '../users/entities/user.entity';
 import { hash } from 'bcrypt';
-import { UsersService } from '../users/users.service';
 import { Product } from '../products/entities/product.entity';
 import { DateTime } from 'luxon';
 import { OrderEntry } from './entities/order-entry.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { BadRequestException } from '@nestjs/common';
+import { UpdateOrderDto } from './dtos/update-order.dto';
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -94,6 +94,50 @@ describe('OrdersService', () => {
           user: { id: user.id } as User,
           entries: [{ product, quantity: 20 }] as OrderEntry[],
         } as CreateOrderDto),
+      ).rejects.toThrowError(BadRequestException);
+    });
+  });
+
+  describe('checkOrderUpdate', () => {
+    it('should cheange the status of the order with a following one', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      const order = await entityManager.save(Order, {
+        user: { id: user.id },
+      });
+      expect(
+        await service.checkOrderUpdate(order.id, {
+          status: OrderStatus.PAID,
+        } as UpdateOrderDto),
+      ).toMatchObject({ status: OrderStatus.PAID });
+    });
+
+    it('should fail if the status of the updated order is a previous one', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+
+      const order = await entityManager.save(Order, {
+        user: { id: user.id },
+        status: OrderStatus.PAID,
+      });
+      expect(
+        service.checkOrderUpdate(order.id, {
+          status: OrderStatus.DRAFT,
+        } as UpdateOrderDto),
       ).rejects.toThrowError(BadRequestException);
     });
   });
