@@ -110,12 +110,6 @@ describe('OrdersService', () => {
         name: 'John',
         surname: 'Doe',
       });
-      const product = await entityManager.save(Product, {
-        name: 'onions',
-        description: 'very good onions',
-        price: 10,
-        available: 10,
-      });
       const order = await entityManager.save(Order, {
         user: { id: user.id },
       });
@@ -136,12 +130,7 @@ describe('OrdersService', () => {
         name: 'John',
         surname: 'Doe',
       });
-      const product = await entityManager.save(Product, {
-        name: 'onions',
-        description: 'very good onions',
-        price: 10,
-        available: 10,
-      });
+
       const order = await entityManager.save(Order, {
         user: { id: user.id },
         status: OrderStatus.PAID,
