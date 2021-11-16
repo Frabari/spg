@@ -5,10 +5,7 @@ export class ApiException extends Error {
   }
 }
 
-export const createHttpClient = (
-  baseUrl: string,
-  loginPath: string = '/login',
-) => {
+export const createHttpClient = (baseUrl: string) => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',

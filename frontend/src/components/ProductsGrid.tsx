@@ -73,7 +73,6 @@ export default function ProductsGrid({
   onSelect: (product: Product) => void;
 }) {
   const { products } = useProducts();
-  console.log('Products', products);
 
   return (
     <Grid

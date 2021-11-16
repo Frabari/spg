@@ -260,11 +260,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
           >
             Select a product
           </Typography>
-          <ProductsGrid
-            filter={'all'}
-            search={''}
-            onSelect={onProductSelected}
-          />
+          <ProductsGrid onSelect={onProductSelected} />
         </Box>
       </Drawer>
     </>
