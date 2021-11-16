@@ -1,30 +1,34 @@
+import { MouseEvent, useContext, useState } from 'react';
 import {
-  Avatar,
   Box,
   Button,
-  createTheme,
+  Card,
+  CardActions,
+  CardContent,
   FormControl,
   Grid,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
-  Paper,
   TextField,
-  ThemeProvider,
+  Typography,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { MouseEvent, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { login, User } from '../api/BasilApi';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { getMe, login, User } from '../api/BasilApi';
+import { UserContext } from '../contexts/user';
+import { PendingStateContext } from '../contexts/pending';
+import { Logo } from '../components/Logo';
+import { toast } from 'react-hot-toast';
+import { ApiException } from '../api/createHttpClient';
 import { useUser } from '../hooks/useUser';
-import toast from 'react-hot-toast';
 
-export default function SignUp(props: any) {
-  const navigate = useNavigate();
+function OutlinedCard(props: any) {
   const [dto, setDto] = useState<Partial<User>>({});
-  const { user, upsertUser } = useUser(null);
+  const { upsertUser } = useUser(null);
+  const navigate = useNavigate();
   const [show, setShow] = useState(false);
 
   const handleChange = (key: string, value: any) => {
@@ -34,8 +38,8 @@ export default function SignUp(props: any) {
   const handleRegistration = () => {
     upsertUser(dto)
       .then(newUser => {
-        toast.success(`Welcome ${dto.name}!`);
-        login(dto.email, dto.password).then(() => navigate(`/products`));
+        toast.success(`Welcome ${newUser.name}!`);
+        login(dto.email, dto.password).then(() => navigate('/'));
       })
       .catch(e => {
         toast.error(e.message);
@@ -51,95 +55,43 @@ export default function SignUp(props: any) {
   };
 
   return (
-    <Box
-      sx={{
-        p: { xs: 2, sm: 3 },
-        pt: { sm: 3 },
-        flexGrow: 1,
-        minHeight: 0,
-        marginInline: 'auto',
-      }}
-    >
-      <Paper
-        className="AdminUser"
-        sx={{ p: { xs: 2, sm: 3 }, py: { sm: 8 }, position: 'relative' }}
+    <Card variant="outlined" sx={{ mx: 1 }}>
+      <CardContent
+        sx={{
+          pb: 0,
+          p: 4,
+          px: { xs: 2, sm: 4 },
+          maxWidth: 300,
+        }}
       >
-        <ThemeProvider
-          theme={createTheme({
-            palette: {
-              primary: {
-                main: '#5dd886',
-              },
-            },
-            typography: {
-              fontFamily: ['DM Sans', '-apple-system', 'Arial'].join(','),
-            },
-            components: {
-              MuiTextField: {
-                defaultProps: {
-                  fullWidth: true,
-                },
-              },
-              MuiButton: {
-                defaultProps: {
-                  color: 'primary',
-                  variant: 'outlined',
-                },
-                styleOverrides: {
-                  root: {
-                    borderRadius: '30px',
-                  },
-                  contained: {
-                    color: 'white',
-                    boxShadow: 'none',
-                    fontWeight: 'bold',
-                  },
-                },
-              },
-            },
-          })}
-        >
-          <Box
-            className="container relative"
-            component="form"
-            noValidate
-            autoComplete="off"
-          >
-            <Avatar
-              src={user?.avatar}
-              alt="user avatar"
-              style={{
-                width: '150px',
-                height: '150px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                marginBottom: '40px',
-              }}
-            />
-            <Grid
-              container
-              display="grid"
-              gap={4}
-              gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
+        <Box component="form" noValidate autoComplete="off">
+          <div>
+            <Typography
+              variant="h5"
+              color="primary.main"
+              sx={{ mb: 2, fontWeight: 'bold' }}
             >
+              Signup
+            </Typography>
+            <Grid container rowSpacing={1} direction="column">
               <Grid item>
                 <TextField
                   label="Name"
-                  value={dto?.name ?? ''}
+                  fullWidth
                   onChange={e => handleChange('name', e.target.value)}
                 />
               </Grid>
               <Grid item>
                 <TextField
                   label="Surname"
-                  value={dto?.surname ?? ''}
+                  fullWidth
                   onChange={e => handleChange('surname', e.target.value)}
                 />
               </Grid>
               <Grid item>
                 <TextField
                   label="Email"
-                  value={dto?.email ?? ''}
+                  fullWidth
                   onChange={e => handleChange('email', e.target.value)}
                 />
               </Grid>
@@ -169,24 +121,84 @@ export default function SignUp(props: any) {
                   />
                 </FormControl>
               </Grid>
-              <Grid item>
-                <TextField
-                  label="Avatar"
-                  value={dto?.avatar ?? ''}
-                  onChange={e => handleChange('avatar', e.target.value)}
-                />
-              </Grid>
             </Grid>
+          </div>
+        </Box>
+      </CardContent>
+      <CardActions>
+        <Grid
+          container
+          direction="column"
+          alignItems="center"
+          justifyItems="center"
+          paddingBottom="1rem"
+        >
+          <Grid item sx={{ p: 2, pt: 0 }}>
             <Button
-              onClick={handleRegistration}
               variant="contained"
-              sx={{ px: 3, position: 'absolute', bottom: 0, right: 0 }}
+              onClick={handleRegistration}
+              sx={{ px: 3 }}
             >
               Register
             </Button>
-          </Box>
-        </ThemeProvider>
-      </Paper>
-    </Box>
+          </Grid>
+        </Grid>
+      </CardActions>
+    </Card>
+  );
+}
+
+export default function Login(props: any) {
+  // const [logged, setLogged] = useState(false);
+  const { user, setUser } = useContext(UserContext);
+  const { setPending } = useContext(PendingStateContext);
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      setPending(true);
+      getMe()
+        .then(setUser)
+        .catch(() => setUser(false))
+        .finally(() => setPending(false));
+    } catch (e) {
+      toast.error((e as ApiException).message);
+    }
+  };
+
+  if (user) {
+    return <Navigate to="/products" />;
+  }
+  return (
+    <Grid
+      container
+      spacing={0}
+      direction="column"
+      alignItems="center"
+      justifyContent="center"
+      style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}
+    >
+      <Grid item xs={4}>
+        <Box sx={{ flexGrow: 1 }} style={{ width: 'fit-content' }}>
+          <Grid
+            container
+            spacing={1}
+            direction="row"
+            justifyContent="center"
+            marginBottom="2rem"
+          >
+            <Grid item>
+              <Logo />
+            </Grid>
+            <Grid item>
+              <Typography variant="h6" component="div" marginLeft="10px">
+                Basil
+              </Typography>
+            </Grid>
+          </Grid>
+          <OutlinedCard handleLogin={handleLogin} />
+        </Box>
+      </Grid>
+    </Grid>
   );
 }
