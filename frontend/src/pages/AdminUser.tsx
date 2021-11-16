@@ -42,8 +42,8 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
         toast.success('User created');
         navigate(`/admin/users/${(newUser as User).id}`);
       })
-      .catch(e => {
-        toast.error(e.message);
+      .catch(() => {
+        // noop
       });
   };
 
