@@ -9,10 +9,10 @@ import {
   Typography,
 } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
-import { useCategories } from '../hooks/useCategories';
 import AddIcon from '@mui/icons-material/Add';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ProductInfo from '../pages/ProductInfo';
+import { Product } from '../api/BasilApi';
 
 function ProductCard(props: any) {
   const [open, setOpen] = useState(false);
@@ -63,25 +63,17 @@ function ProductCard(props: any) {
   );
 }
 
-export default function ProductsGrid(props: any) {
+export default function ProductsGrid({
+  filter,
+  onSelect,
+  search,
+}: {
+  filter?: string;
+  search?: string;
+  onSelect: (product: Product) => void;
+}) {
   const { products } = useProducts();
-  const { categories } = useCategories();
-  const [filteredProd, setFilteredProd] = useState(products);
-
-  useEffect(() => {
-    setFilteredProd(products);
-  }, [categories]);
-
-  useEffect(() => {
-    if (props.filter === 'all') setFilteredProd(products);
-    else {
-      setFilteredProd(
-        products?.filter(
-          filteredCat => filteredCat.category.slug === props.filter,
-        ),
-      );
-    }
-  }, [props.filter]);
+  console.log('Products', products);
 
   return (
     <Grid
@@ -93,30 +85,22 @@ export default function ProductsGrid(props: any) {
       justifyItems="center"
       width="auto"
     >
-      {filteredProd
-        ?.filter(p => {
-          return (
-            props.search === '' ||
-            p.name
-              .toLocaleLowerCase()
-              .includes(props.search.toLocaleLowerCase())
-          );
-        })
-        .map(p =>
-          p.available > 0 ? (
-            <ProductCard
-              key={p.id}
-              name={p.name.split(' ')[2]}
-              image={p.image}
-              price={p.price}
-              description={p.description}
-              product={p}
-              onSelect={props.onSelect}
-            />
-          ) : (
-            <></>
-          ),
-        )}
+      {products
+        ?.filter(p => !filter || p.category.slug === filter)
+        ?.filter(
+          p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
+        )
+        .map(p => (
+          <ProductCard
+            key={p.id}
+            name={p.name.split(' ')[2]}
+            image={p.image}
+            price={p.price}
+            description={p.description}
+            product={p}
+            onSelect={onSelect}
+          />
+        ))}
     </Grid>
   );
 }

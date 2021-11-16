@@ -53,7 +53,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         }
       })
       .catch(e => {
-        toast.error(e.message);
+        // noop
       });
   };
 

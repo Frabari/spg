@@ -28,11 +28,13 @@ export const createHttpClient = (
       let message = 'Network error';
       if (body.error) {
         message = body.error;
-      } else if (body.message) {
+      }
+      if (body.message) {
+        message += ': ';
         if (Array.isArray(body.message)) {
-          message = body.message[0];
+          message += body.message.join(', ');
         } else {
-          message = body.message;
+          message += body.message;
         }
       }
       throw new ApiException(message, response.status, body);

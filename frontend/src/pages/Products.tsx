@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { Container } from '@mui/material';
 import ProductsGrid from '../components/ProductsGrid';
 import NavigationBox from './Navigation';
@@ -7,16 +7,12 @@ import { UserContext } from '../contexts/user';
 
 export default function Products() {
   const { user } = useContext(UserContext);
-  const [filter, setFilter] = useState();
   const [search, setSearch] = useState('');
+  const [queryParams] = useSearchParams();
 
   if (!user) {
     return <Navigate to="/" />;
   }
-
-  const handleFilter = (value: any) => {
-    setFilter(value);
-  };
 
   const handleSearch = (value: any) => {
     setSearch(value);
@@ -27,12 +23,14 @@ export default function Products() {
       <NavigationBox.NavBar
         loggedIn={1}
         products={true}
-        user={user}
-        handleFilter={handleFilter}
         handleSearch={handleSearch}
       />
       <Container sx={{ mt: 18 }}>
-        <ProductsGrid filter={filter} search={search} onSelect={null} />
+        <ProductsGrid
+          filter={queryParams.get('category')}
+          search={search}
+          onSelect={null}
+        />
       </Container>
     </>
   );
