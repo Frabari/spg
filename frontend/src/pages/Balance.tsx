@@ -32,32 +32,11 @@ export const Balance = (props: {
   open: boolean;
   setOpen: (value: boolean) => void;
   user: User;
+  change: (add: boolean, amount: number) => void;
 }) => {
-  const navigate = useNavigate();
-  const { upsertTransaction } = useTransaction();
-  const { load } = useUser();
   let [amount, setAmount] = useState(0);
   const handleClose = () => {
     props.setOpen(false);
-  };
-
-  const change = (add: boolean) => {
-    if (amount > 0) {
-      amount = add ? amount : -amount;
-      upsertTransaction({
-        user: { id: props.user.id } as User,
-        amount,
-      })
-        .then(() => {
-          load();
-          toast.success(`Wallet updated`);
-          navigate(`/admin/users/${props.user?.id}`);
-          props.setOpen(false);
-        })
-        .catch(e => toast.error(e.message));
-    } else {
-      toast.error(`Amount should be a positive and not null number`);
-    }
   };
 
   return (
@@ -104,14 +83,14 @@ export const Balance = (props: {
               <Button
                 color="error"
                 variant="outlined"
-                onClick={() => change(false)}
+                onClick={() => props.change(false, amount)}
                 sx={{ width: 116, m: 1 }}
               >
                 <Remove sx={{ py: '4px' }} />
                 Reduce
               </Button>
               <Button
-                onClick={() => change(true)}
+                onClick={() => props.change(true, amount)}
                 variant="outlined"
                 sx={{ width: 116, m: 1 }}
               >

@@ -20,14 +20,16 @@ import { User } from '../api/BasilApi';
 import Avatar from '@mui/material/Avatar';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { Balance } from './Balance';
+import { useTransaction } from '../hooks/useTransaction';
 
 export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { user, upsertUser } = useUser(id);
+  const { user, upsertUser, load } = useUser(id);
   const [dto, setDto] = useState<Partial<User>>({});
   const [open, setOpen] = useState(false);
+  const { upsertTransaction } = useTransaction();
 
   const handleChange = (key: string, value: any) => {
     setDto(_dto => ({
@@ -47,6 +49,27 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
       });
   };
 
+  const change = (add: boolean, amount: number) => {
+    if (amount > 0) {
+      amount = add ? amount : -amount;
+      upsertTransaction({
+        user: { id: user.id } as User,
+        amount,
+      })
+        .then(() => {
+          load();
+          toast.success(`Wallet updated`);
+          navigate(`/admin/users/${user?.id}`);
+          setOpen(false);
+        })
+        .catch(() => {
+          //noop
+        });
+    } else {
+      toast.error(`Amount should be a positive and not null number`);
+    }
+  };
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -58,7 +81,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
-        <Balance open={open} setOpen={setOpen} user={user} />
+        <Balance open={open} setOpen={setOpen} user={user} change={change} />
         <Typography
           variant="h6"
           noWrap

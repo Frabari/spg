@@ -30,19 +30,32 @@ function OutlinedCard(props: any) {
   const { upsertUser } = useUser(null);
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
+  const { user, setUser } = useContext(UserContext);
+  const { setPending } = useContext(PendingStateContext);
 
   const handleChange = (key: string, value: any) => {
     setDto(_dto => ({ ..._dto, [key]: value }));
+  };
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      setPending(true);
+      getMe()
+        .then(setUser)
+        .catch(() => setUser(false))
+        .finally(() => setPending(false));
+    } catch (e) {}
   };
 
   const handleRegistration = () => {
     upsertUser(dto)
       .then(newUser => {
         toast.success(`Welcome ${newUser.name}!`);
-        login(dto.email, dto.password).then(() => navigate('/'));
+        handleLogin(dto.email, dto.password);
       })
-      .catch(e => {
-        toast.error(e.message);
+      .catch(() => {
+        // noop
       });
   };
 
