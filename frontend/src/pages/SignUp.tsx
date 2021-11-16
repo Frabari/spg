@@ -17,42 +17,27 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { getMe, login, User } from '../api/BasilApi';
+import { User } from '../api/BasilApi';
 import { UserContext } from '../contexts/user';
-import { PendingStateContext } from '../contexts/pending';
 import { Logo } from '../components/Logo';
 import { toast } from 'react-hot-toast';
-import { ApiException } from '../api/createHttpClient';
 import { useUser } from '../hooks/useUser';
 
-function OutlinedCard(props: any) {
+function OutlinedCard() {
   const [dto, setDto] = useState<Partial<User>>({});
   const { upsertUser } = useUser(null);
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
-  const { user, setUser } = useContext(UserContext);
-  const { setPending } = useContext(PendingStateContext);
 
   const handleChange = (key: string, value: any) => {
     setDto(_dto => ({ ..._dto, [key]: value }));
-  };
-
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setPending(true);
-      getMe()
-        .then(setUser)
-        .catch(() => setUser(false))
-        .finally(() => setPending(false));
-    } catch (e) {}
   };
 
   const handleRegistration = () => {
     upsertUser(dto)
       .then(newUser => {
         toast.success(`Welcome ${newUser.name}!`);
-        handleLogin(dto.email, dto.password);
+        navigate('/login');
       })
       .catch(() => {
         // noop
@@ -161,25 +146,11 @@ function OutlinedCard(props: any) {
   );
 }
 
-export default function Login(props: any) {
+export default function SignUp() {
   // const [logged, setLogged] = useState(false);
-  const { user, setUser } = useContext(UserContext);
-  const { setPending } = useContext(PendingStateContext);
+  const { user } = useContext(UserContext);
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setPending(true);
-      getMe()
-        .then(setUser)
-        .catch(() => setUser(false))
-        .finally(() => setPending(false));
-    } catch (e) {
-      toast.error((e as ApiException).message);
-    }
-  };
-
-  if (user) {
+  if (user !== null && user !== false) {
     return <Navigate to="/products" />;
   }
   return (
@@ -209,7 +180,7 @@ export default function Login(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <OutlinedCard handleLogin={handleLogin} />
+          <OutlinedCard />
         </Box>
       </Grid>
     </Grid>
