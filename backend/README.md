@@ -38,19 +38,9 @@ $ npm run test:cov
 
 ## DB seed
 
-To seed the db with test data first run the app at least once:
-
 ```shell
-$ npm run start:dev
+$ npm run seed:run
 ```
-
-and then run
-
-```shell
-$ npm run db:seed
-```
-
-> ⚠️ The db must be empty for this to work properly. If it's not: delete the .sqlite file and repeat the steps above
 
 ## Project structure
 

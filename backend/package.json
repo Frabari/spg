@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -14,36 +15,64 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed:config": "ts-node ./node_modules/typeorm-seeding/dist/cli.js config",
+    "seed:run": "ts-node ./node_modules/typeorm-seeding/dist/cli.js seed"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
+    "@nestjs/jwt": "^8.0.0",
+    "@nestjs/passport": "^8.0.1",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/schedule": "^1.0.1",
+    "@nestjs/swagger": "^5.1.4",
+    "@nestjs/typeorm": "^8.0.2",
+    "@nestjsx/crud": "^5.0.0-alpha.3",
+    "@nestjsx/crud-typeorm": "^5.0.0-alpha.3",
+    "@types/cron": "^1.7.3",
+    "bcrypt": "^5.0.1",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
+    "luxon": "^2.1.1",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "sqlite3": "^5.0.2",
+    "swagger-ui-express": "^4.1.6",
+    "typeorm": "^0.2.38"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
     "@nestjs/schematics": "^8.0.0",
     "@nestjs/testing": "^8.0.0",
+    "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.13",
+    "@types/faker": "^5.5.9",
     "@types/jest": "^27.0.1",
+    "@types/luxon": "^2.0.7",
     "@types/node": "^16.0.0",
+    "@types/passport-jwt": "^3.0.6",
+    "@types/passport-local": "^1.0.34",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "faker": "^5.5.3",
     "jest": "^27.2.5",
+    "node-fetch": "^2.6.6",
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.3",
     "ts-jest": "^27.0.3",
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
+    "typeorm-seeding": "^1.6.1",
     "typescript": "^4.3.5"
   },
   "jest": {
@@ -60,6 +89,7 @@
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
+      "!main.ts",
       "!**/*.dto.(t|j)s",
       "!**/*.entity.(t|j)s",
       "!**/*.module.(t|j)s",
@@ -67,7 +97,11 @@
       "!**/*.guard.(t|j)s",
       "!**/*.decorator.(t|j)s",
       "!**/*.middleware.(t|j)s",
-      "!**/*.strategy.(t|j)s"
+      "!**/*.strategy.(t|j)s",
+      "!**/constants.(t|j)s",
+      "!**/enum.(t|j)s",
+      "!**/*.controller.(t|j)s",
+      "!**/database/**/*"
     ],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
