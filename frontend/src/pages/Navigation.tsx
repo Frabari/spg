@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { useContext, useEffect } from 'react';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import {
   AppBar,
   Avatar,
@@ -7,7 +8,6 @@ import {
   Box,
   Button,
   Container,
-  Grid,
   IconButton,
   InputBase,
   Menu,
@@ -18,13 +18,11 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import Person from '@mui/icons-material/Person';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Logo } from '../components/Logo';
 import { getMe, logout } from '../api/BasilApi';
-import { useContext } from 'react';
 import { PendingStateContext } from '../contexts/pending';
 import toast from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
@@ -32,40 +30,42 @@ import { UserContext } from '../contexts/user';
 import { useCategories } from '../hooks/useCategories';
 
 interface LinkTabProps {
-  label?: string;
-  href?: string;
+  label: string;
+  slug?: string;
   handleFilter?: any;
 }
 
-function LinkTab(props: LinkTabProps) {
+function LinkTab({ slug, label, ...rest }: LinkTabProps) {
   return (
     <Tab
-      component="a"
-      onClick={(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-        event.preventDefault();
-        props.handleFilter(props.href);
-      }}
-      {...props}
+      component={Link}
+      to={`/products${slug ? `?category=${slug}` : ''}`}
+      label={label}
+      {...rest}
     />
   );
 }
 
-function NavTabs(props: any) {
+function NavTabs() {
   const [value, setValue] = React.useState(0);
+  const [queryParams] = useSearchParams();
   const { categories } = useCategories();
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
+  useEffect(() => {
+    const categoryIndex = categories.findIndex(
+      c => c.slug === queryParams.get('category'),
+    );
+    setValue(categoryIndex !== -1 ? categoryIndex + 1 : 0);
+  }, [queryParams, categories]);
 
   return (
     <Toolbar
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
-      <Tabs value={value} onChange={handleChange}>
-        <LinkTab key="all" label="all" href="all" {...props} />
+      <Tabs value={value}>
+        <LinkTab key="all" label="all" />
         {categories?.map(c => (
-          <LinkTab key={c.id} label={c.name} href={c.slug} {...props} />
+          <LinkTab key={c.id} label={c.name} slug={c.slug} />
         ))}
       </Tabs>
     </Toolbar>
@@ -187,7 +187,7 @@ function NavBar(props: any) {
 
               <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
                 <IconButton size="large" onClick={handleMenu}>
-                  <Avatar src={props.user?.avatar} />
+                  <Avatar src={user?.avatar} />
                 </IconButton>
                 <Menu
                   id="menu-appbar"
