@@ -10,7 +10,6 @@ import { EntityManager } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { User } from '../users/entities/user.entity';
 import { hash } from 'bcrypt';
-import { UsersService } from '../users/users.service';
 import { Product } from '../products/entities/product.entity';
 import { DateTime } from 'luxon';
 import { OrderEntry } from './entities/order-entry.entity';
