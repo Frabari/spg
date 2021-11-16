@@ -1,10 +1,14 @@
+/* eslint-disable no-restricted-globals */
 export class ApiException extends Error {
   constructor(message: string, public statusCode: number, public data: any) {
     super(message);
   }
 }
 
-export const createHttpClient = (baseUrl: string) => {
+export const createHttpClient = (
+  baseUrl: string,
+  loginPath: string = '/login',
+) => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -24,11 +28,13 @@ export const createHttpClient = (baseUrl: string) => {
       let message = 'Network error';
       if (body.error) {
         message = body.error;
-      } else if (body.message) {
+      }
+      if (body.message) {
+        message += ': ';
         if (Array.isArray(body.message)) {
-          message = body.message[0];
+          message += body.message.join(', ');
         } else {
-          message = body.message;
+          message += body.message;
         }
       }
       throw new ApiException(message, response.status, body);

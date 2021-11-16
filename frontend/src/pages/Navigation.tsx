@@ -1,56 +1,75 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { useContext, useEffect } from 'react';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Box,
-  Tabs,
-  Tab,
   AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
+  Avatar,
   Badge,
+  Box,
   Button,
+  Container,
+  IconButton,
   InputBase,
   Menu,
   MenuItem,
+  Tab,
+  Tabs,
+  Toolbar,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Person from '@mui/icons-material/Person';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { Logo } from '../components/Logo';
+import { getMe, logout, Role } from '../api/BasilApi';
+import { PendingStateContext } from '../contexts/pending';
+import toast from 'react-hot-toast';
+import { ApiException } from '../api/createHttpClient';
+import { UserContext } from '../contexts/user';
+import { useCategories } from '../hooks/useCategories';
 
 interface LinkTabProps {
-  label?: string;
-  href?: string;
+  label: string;
+  slug?: string;
+  handleFilter?: any;
 }
 
-function LinkTab(props: LinkTabProps) {
+function LinkTab({ slug, label, ...rest }: LinkTabProps) {
   return (
     <Tab
-      component="a"
-      onClick={(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-        event.preventDefault();
-      }}
-      {...props}
+      component={Link}
+      to={`/products${slug ? `?category=${slug}` : ''}`}
+      label={label}
+      {...rest}
     />
   );
 }
 
 function NavTabs() {
   const [value, setValue] = React.useState(0);
+  const [queryParams] = useSearchParams();
+  const { categories } = useCategories();
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
+  useEffect(() => {
+    const categoryIndex = categories.findIndex(
+      c => c.slug === queryParams.get('category'),
+    );
+    setValue(categoryIndex !== -1 ? categoryIndex + 1 : 0);
+  }, [queryParams, categories]);
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Tabs value={value} onChange={handleChange}>
-        <LinkTab label="Fruits" href="/fruits" />
-        <LinkTab label="Vegetables" href="/vegetables" />
+    <Toolbar
+      sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
+    >
+      <Tabs value={value} variant="scrollable" scrollButtons="auto">
+        <LinkTab key="all" label="all" />
+        {categories?.map(c => (
+          <LinkTab key={c.id} label={c.name} slug={c.slug} />
+        ))}
       </Tabs>
-    </Box>
+    </Toolbar>
   );
 }
 
@@ -96,6 +115,9 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { user, setUser } = useContext(UserContext);
+  const { setPending } = useContext(PendingStateContext);
+  const navigate = useNavigate();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -105,46 +127,52 @@ function NavBar(props: any) {
     setAnchorEl(null);
   };
 
-  return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton href={'/home'}>
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 456 456"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="228" cy="228" r="228" fill="#5DD886" />
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M28.708 338.84C23.658 272.315 68.3297 45.5122 392.5 143C355.447 140.27 330.321 190.357 307.011 236.824C300.438 249.926 294.01 262.739 287.5 274C267.121 319.424 187.298 423.278 89.2562 408.94C64.6032 390.008 43.9301 366.151 28.708 338.84Z"
-                fill="white"
-              />
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M84.1488 404.901C76.1242 398.368 68.5525 391.299 61.4883 383.75C65.8644 335.83 80.2611 283.425 109.5 248.5C108.39 223.065 109.299 210.285 113 189.5C116.216 204.759 118.885 213.096 127.5 227C143.834 210.833 192.8 178.3 258 177.5C247 180 218.8 188.9 194 204.5C199.401 210.123 204.063 213.219 219.5 218.5C194.982 221.303 185.461 220.673 170.5 218.5C154.81 231.397 124.626 264.209 113 291.5C133.678 295.835 145.731 297.699 170.5 297C142.278 308.958 127.149 313.369 101 318.5C95.8675 331.565 85.509 361.179 84.1488 404.901Z"
-                fill="#5DD886"
-              />
-            </svg>
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setPending(true);
+      getMe()
+        .then(setUser)
+        .catch(() => setUser(false))
+        .finally(() => setPending(false));
+    } catch (e) {
+      toast.error((e as ApiException).message);
+    }
+  };
+
+  return user === null ? null : user === false ? (
+    <Navigate to="/login" />
+  ) : (
+    <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
+      <Container>
+        <Toolbar sx={{ px: '0!important' }}>
+          <IconButton href={'/'}>
+            <Logo />
           </IconButton>
-          <Typography variant="h6" component="div" marginLeft="10px">
+          <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
             Basil
           </Typography>
           {props.loggedIn === 0 ? (
-            <>
-              <Box sx={{ flexGrow: 1 }} />
-              <Button component={Link} to={'/login'}>
+            <Box sx={{ position: 'absolute', right: 0 }}>
+              <Button
+                component={Link}
+                to={'/login'}
+                sx={{ px: 3, marginRight: '16px' }}
+              >
                 Login
               </Button>
-            </>
+              <Button
+                component={Link}
+                to={'/signup'}
+                variant="contained"
+                sx={{ px: 3 }}
+              >
+                Sign Up
+              </Button>
+            </Box>
           ) : (
             <>
-              <Box marginX="auto">
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <Search>
                   <SearchIconWrapper>
                     <SearchIcon style={{ color: '#737373' }} />
@@ -152,13 +180,16 @@ function NavBar(props: any) {
                   <StyledInputBase
                     placeholder="Search…"
                     inputProps={{ 'aria-label': 'search' }}
+                    onChange={s => {
+                      props.handleSearch(s.target.value);
+                    }}
                   />
                 </Search>
               </Box>
 
-              <Box sx={{ display: { md: 'flex' } }}>
+              <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
                 <IconButton size="large" onClick={handleMenu}>
-                  <Person />
+                  <Avatar src={user?.avatar} />
                 </IconButton>
                 <Menu
                   id="menu-appbar"
@@ -175,9 +206,12 @@ function NavBar(props: any) {
                   open={Boolean(anchorEl)}
                   onClose={handleClose}
                 >
-                  <MenuItem onClick={handleClose}>Profile</MenuItem>
-                  <MenuItem onClick={handleClose}>My orders</MenuItem>
-                  <MenuItem component={Link} to={'/home'}>
+                  {user.role !== Role.CUSTOMER && (
+                    <MenuItem onClick={() => navigate('/admin')}>
+                      <Person /> Admin
+                    </MenuItem>
+                  )}
+                  <MenuItem onClick={handleLogout}>
                     <LogoutIcon /> Logout
                   </MenuItem>
                 </Menu>
@@ -190,8 +224,9 @@ function NavBar(props: any) {
             </>
           )}
         </Toolbar>
-      </AppBar>
-    </Box>
+        {props.products && <NavTabs {...props} />}
+      </Container>
+    </AppBar>
   );
 }
 

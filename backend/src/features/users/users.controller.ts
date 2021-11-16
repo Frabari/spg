@@ -23,7 +23,7 @@ import { Roles } from './roles.decorator';
 import { LoginDto } from './dtos/login.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { RolesGuard } from './guards/roles.guard';
-import { Role, ADMINS } from './roles.enum';
+import { ADMINS } from './roles.enum';
 import { Crud } from '../../core/decorators/crud.decorator';
 
 @Crud(User, {
