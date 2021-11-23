@@ -1,6 +1,11 @@
 import * as React from 'react';
 import { useContext, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Person from '@mui/icons-material/Person';
+import SearchIcon from '@mui/icons-material/Search';
+import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import {
   AppBar,
   Avatar,
@@ -18,15 +23,10 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import Person from '@mui/icons-material/Person';
-import ShoppingCart from '@mui/icons-material/ShoppingCart';
-import SearchIcon from '@mui/icons-material/Search';
-import LogoutIcon from '@mui/icons-material/Logout';
-import { Logo } from '../components/Logo';
 import { getMe, logout, Role } from '../api/BasilApi';
-import { PendingStateContext } from '../contexts/pending';
-import toast from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
+import { Logo } from '../components/Logo';
+import { PendingStateContext } from '../contexts/pending';
 import { UserContext } from '../contexts/user';
 import { useCategories } from '../hooks/useCategories';
 

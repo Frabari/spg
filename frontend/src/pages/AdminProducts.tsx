@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
-import Paper from '@mui/material/Paper';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
@@ -9,17 +9,17 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material';
+import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { useProducts } from '../hooks/useProducts';
-import { AdminAppBar } from '../components/AdminAppBar';
-import { Product } from '../api/BasilApi';
 import { styled } from '@mui/material/styles';
-import SearchIcon from '@mui/icons-material/Search';
+import { Product } from '../api/BasilApi';
+import { AdminAppBar } from '../components/AdminAppBar';
+import { useProducts } from '../hooks/useProducts';
 
 const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
   {

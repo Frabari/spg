@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import NavigationBox from './Navigation';
+import React from 'react';
 import { TextField, Grid, Button } from '@mui/material';
+import NavigationBox from './Navigation';
 
 function UsersInfo() {
   const [edit, setEdit] = React.useState(true);
