@@ -9,9 +9,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
-import { useCategories } from '../hooks/useCategories';
 import AddIcon from '@mui/icons-material/Add';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ProductInfo from '../pages/ProductInfo';
 import { Product } from '../api/BasilApi';
 
@@ -74,22 +73,6 @@ export default function ProductsGrid({
   onSelect: (product: Product) => void;
 }) {
   const { products } = useProducts();
-  const { categories } = useCategories();
-  const [filteredProd, setFilteredProd] = useState(products);
-
-  useEffect(() => {
-    setFilteredProd(
-      products?.filter(firstCat => firstCat.category.id === categories[0]?.id),
-    );
-  }, [categories]);
-
-  useEffect(() => {
-    setFilteredProd(
-      products?.filter(
-        filteredCat => filteredCat.category.slug === props.filter,
-      ),
-    );
-  }, [props.filter]);
 
   return (
     <Grid
