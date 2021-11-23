@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save } from '@mui/icons-material';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import {
   Box,
   Button,
@@ -12,15 +14,13 @@ import {
   ThemeProvider,
   Typography,
 } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
-import { toast } from 'react-hot-toast';
-import { AdminAppBar } from '../components/AdminAppBar';
-import { useUser } from '../hooks/useUser';
-import { User } from '../api/BasilApi';
 import Avatar from '@mui/material/Avatar';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import { Balance } from './Balance';
+import { createTheme } from '@mui/material/styles';
+import { User } from '../api/BasilApi';
+import { AdminAppBar } from '../components/AdminAppBar';
 import { useTransaction } from '../hooks/useTransaction';
+import { useUser } from '../hooks/useUser';
+import { Balance } from './Balance';
 
 export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();

@@ -1,5 +1,8 @@
 import { useContext, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
+import LogoutIcon from '@mui/icons-material/Logout';
 import {
   Avatar,
   Box,
@@ -15,22 +18,19 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
-import LogoutIcon from '@mui/icons-material/Logout';
-import toast from 'react-hot-toast';
-import { AdminUsers } from './AdminUsers';
-import { Logo } from '../components/Logo';
-import { drawerWidth } from '../constants';
-import { AdminUser } from './AdminUser';
-import { AdminProducts } from './AdminProducts';
-import { AdminOrders } from './AdminOrders';
-import { AdminOrder } from './AdminOrder';
-import { AdminProduct } from './AdminProduct';
 import { getMe, logout, Role, User } from '../api/BasilApi';
-import { UserContext } from '../contexts/user';
-import { PendingStateContext } from '../contexts/pending';
 import { ApiException } from '../api/createHttpClient';
+import { Logo } from '../components/Logo';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { drawerWidth } from '../constants';
+import { PendingStateContext } from '../contexts/pending';
+import { UserContext } from '../contexts/user';
+import { AdminOrder } from './AdminOrder';
+import { AdminOrders } from './AdminOrders';
+import { AdminProduct } from './AdminProduct';
+import { AdminProducts } from './AdminProducts';
+import { AdminUser } from './AdminUser';
+import { AdminUsers } from './AdminUsers';
 
 const pages = [
   {

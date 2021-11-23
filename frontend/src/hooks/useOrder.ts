@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { PendingStateContext } from '../contexts/pending';
+import { toast } from 'react-hot-toast';
 import {
   createOrder,
   getOrder,
@@ -7,8 +7,8 @@ import {
   OrderId,
   updateOrder,
 } from '../api/BasilApi';
-import { toast } from 'react-hot-toast';
 import { ApiException } from '../api/createHttpClient';
+import { PendingStateContext } from '../contexts/pending';
 
 export const useOrder = (id?: OrderId) => {
   const { setPending } = useContext(PendingStateContext);
