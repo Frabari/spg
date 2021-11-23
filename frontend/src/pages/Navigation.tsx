@@ -47,7 +47,7 @@ function LinkTab({ slug, label, ...rest }: LinkTabProps) {
   );
 }
 
-function NavTabs() {
+function NavTabs(props: any) {
   const [value, setValue] = React.useState(0);
   const [queryParams] = useSearchParams();
   const { categories } = useCategories();
