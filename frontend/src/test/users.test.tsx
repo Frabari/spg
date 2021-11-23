@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react-hooks';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { User } from '../api/BasilApi';
 import { PendingStateContext } from '../contexts/pending';
@@ -8,7 +8,7 @@ import { useUser } from '../hooks/useUser';
 jest.mock('../api/BasilApi', () => {
   // Require the original module to not be mocked...
   const originalModule = jest.requireActual('../api/BasilApi');
-  const user: Partial<User> = {
+  const mockUser: Partial<User> = {
     id: 30,
     name: 'Mario',
     surname: 'Rossi',
@@ -19,7 +19,7 @@ jest.mock('../api/BasilApi', () => {
   return {
     __esModule: true, // Use it when dealing with esModules
     ...originalModule,
-    getUser: () => Promise.resolve(user),
+    getUser: () => Promise.resolve(mockUser),
     createUser: (_user: Partial<User>) => Promise.resolve(_user),
   };
 });
@@ -31,6 +31,7 @@ test('create user', async () => {
     email: 'mario@rossi.com',
     password: 'mariorossi',
   };
+  // @ts-ignore
   const wrapper = ({ children }) => (
     <Router>
       <PendingStateContext.Provider
