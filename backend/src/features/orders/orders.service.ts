@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { ProductsService } from '../products/products.service';
+import { User } from '../users/entities/user.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
@@ -22,6 +23,22 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     private readonly productsService: ProductsService,
   ) {
     super(ordersRepository);
+  }
+
+  async resolveBasket(user: User) {
+    const basket = await this.ordersRepository.findOne(
+      {
+        status: OrderStatus.DRAFT,
+        user,
+      },
+      {
+        relations: ['entries', 'entries.product'],
+      },
+    );
+    if (basket) {
+      return basket;
+    }
+    return this.ordersRepository.save({ user });
   }
 
   async checkOrder(dto: CreateOrderDto) {

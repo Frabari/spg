@@ -1,21 +1,31 @@
-import { Controller, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Request,
+  Patch,
+  UseInterceptors,
+  Body,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CrudController,
   CrudRequest,
+  CrudRequestInterceptor,
   Override,
   ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Order } from './entities/order.entity';
-import { OrdersService } from './orders.service';
+import { Crud } from '../../core/decorators/crud.decorator';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
-import { Roles } from '../users/roles.decorator';
 import { RolesGuard } from '../users/guards/roles.guard';
-import { ADMINS, Role, STAFF } from '../users/roles.enum';
+import { Roles } from '../users/roles.decorator';
+import { ADMINS, ALL, Role, STAFF } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
-import { Crud } from '../../core/decorators/crud.decorator';
+import { Order } from './entities/order.entity';
+import { OrdersService } from './orders.service';
 
 @Crud(Order, {
   routes: {
@@ -50,6 +60,29 @@ export class OrdersController implements CrudController<Order> {
   getMany(@ParsedRequest() request: CrudRequest) {
     request.parsed.fields = ['id', 'status', 'createdAt'];
     return this.base.getManyBase(request);
+  }
+
+  @Get('basket')
+  @Roles(...ALL)
+  getBasket(@Request() request) {
+    return this.service.resolveBasket(request.user);
+  }
+
+  @Patch('basket')
+  @UseInterceptors(CrudRequestInterceptor)
+  @Roles(...ALL)
+  async updateBasket(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @Body() dto: UpdateOrderDto,
+  ) {
+    const basket = await this.service.resolveBasket(request.user);
+    crudRequest.parsed.paramsFilter = [
+      { field: 'id', operator: '$eq', value: basket.id },
+    ];
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    const order = await this.service.checkOrderUpdate(basket.id, dto);
+    return this.base.updateOneBase(crudRequest, order as Order);
   }
 
   @Override()
