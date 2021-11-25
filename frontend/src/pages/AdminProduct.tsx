@@ -9,9 +9,9 @@ import {
   ThemeProvider,
   Typography,
 } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
 import { createTheme } from '@mui/material/styles';
 import { AdminAppBar } from '../components/AdminAppBar';
-import Avatar from '@mui/material/Avatar';
 import { useProduct } from '../hooks/useProduct';
 
 export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {

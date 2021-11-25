@@ -1,4 +1,11 @@
-``;
+import { Type } from 'class-transformer';
+import {
+  ArrayMinSize,
+  IsIn,
+  IsNotEmpty,
+  IsString,
+  Validate,
+} from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -7,17 +14,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import {
-  ArrayMinSize,
-  IsIn,
-  IsNotEmpty,
-  IsString,
-  Validate,
-} from 'class-validator';
 import { User } from '../../users/entities/user.entity';
-import { OrderEntry } from './order-entry.entity';
-import { Type } from 'class-transformer';
 import { DeliveredBy } from '../validators/delivered-by.validator';
+import { OrderEntry } from './order-entry.entity';
 
 export type OrderId = number;
 

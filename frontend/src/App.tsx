@@ -1,18 +1,18 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { ThemeProvider } from '@mui/material/styles';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LinearProgress } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import { themeOptions } from './Theme';
+import { getMe } from './api/BasilApi';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { PendingStateContext } from './contexts/pending';
 import { UserContext } from './contexts/user';
-import Homepage from './pages/Homepage';
-import { themeOptions } from './Theme';
-import Login from './pages/Login';
 import { Admin } from './pages/Admin';
+import Homepage from './pages/Homepage';
+import Login from './pages/Login';
 import Products from './pages/Products';
-import { getMe } from './api/BasilApi';
 import SignUp from './pages/SignUp';
-import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
   const [pending, setPending] = useState(false);

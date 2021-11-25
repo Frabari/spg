@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
   Card,
@@ -8,11 +10,9 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import { useProducts } from '../hooks/useProducts';
-import AddIcon from '@mui/icons-material/Add';
-import { useState } from 'react';
-import ProductInfo from '../pages/ProductInfo';
 import { Product } from '../api/BasilApi';
+import { useProducts } from '../hooks/useProducts';
+import ProductInfo from '../pages/ProductInfo';
 
 function ProductCard(props: any) {
   const [open, setOpen] = useState(false);
@@ -73,7 +73,6 @@ export default function ProductsGrid({
   onSelect: (product: Product) => void;
 }) {
   const { products } = useProducts();
-  console.log('Products', products);
 
   return (
     <Grid

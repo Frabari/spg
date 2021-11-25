@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js",
-    "test:cov": "CI=true node scripts/test.js --coverage"
+    "test": "cross-env CI=true node scripts/test.js",
+    "test:cov": "cross-env CI=true node scripts/test.js --coverage",
+    "lint:staged": "lint-staged"
   },
   "dependencies": {
     "@babel/core": "7.12.3",
@@ -45,6 +46,7 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.0",
     "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.21.5",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-testing-library": "^3.9.2",
@@ -91,14 +93,38 @@
   },
   "devDependencies": {
     "@testing-library/react-hooks": "^7.0.2",
+    "@trivago/prettier-plugin-sort-imports": "^3.1.1",
     "eslint": "^7.32.0",
-    "jest-sonar": "^0.2.12"
+    "eslint-plugin-unused-imports": "^1.1.5",
+    "jest-sonar": "^0.2.12",
+    "lint-staged": "^12.1.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
-    ]
+      "react-app/jest",
+      "plugin:prettier/recommended"
+    ],
+    "plugins": [
+      "unused-imports"
+    ],
+    "rules": {
+      "no-unused-vars": "off",
+      "linebreak-style": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "after-used",
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    }
   },
   "browserslist": {
     "production": [
@@ -131,7 +157,7 @@
       "<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}"
     ],
     "testEnvironment": "jsdom",
-    "testRunner": "/Users/Enrico/spg/frontend/node_modules/jest-circus/runner.js",
+    "testRunner": "../node_modules/jest-circus/runner.js",
     "transform": {
       "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/config/jest/babelTransform.js",
       "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
