@@ -1,12 +1,11 @@
-import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Container, Grid, Typography } from '@mui/material';
-import { UserContext } from '../contexts/user';
+import { getGlobalState } from '../App';
 import NavigationBox from './Navigation';
 import { ReactComponent as ImageHome } from './images/image-home.svg';
 
 export default function Homepage() {
-  const { user } = useContext(UserContext);
+  const user = getGlobalState('user');
 
   return user === null ? null : user === false ? (
     <>

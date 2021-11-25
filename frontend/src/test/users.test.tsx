@@ -2,7 +2,6 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { User } from '../api/BasilApi';
 import { PendingStateContext } from '../contexts/pending';
-import { UserContext } from '../contexts/user';
 import { useUser } from '../hooks/useUser';
 
 jest.mock('../api/BasilApi', () => {
@@ -37,11 +36,7 @@ test('create user', async () => {
       <PendingStateContext.Provider
         value={{ pending: true, setPending: (value: boolean) => true }}
       >
-        <UserContext.Provider
-          value={{ user: false, setUser: (value: false | User) => user }}
-        >
-          {children}
-        </UserContext.Provider>
+        {children}
       </PendingStateContext.Provider>
     </Router>
   );

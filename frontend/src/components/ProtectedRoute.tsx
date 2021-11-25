@@ -1,9 +1,9 @@
-import { PropsWithChildren, useContext } from 'react';
+import { PropsWithChildren } from 'react';
 import { Navigate } from 'react-router-dom';
-import { UserContext } from '../contexts/user';
+import { getGlobalState } from '../App';
 
 export const ProtectedRoute = ({ children }: PropsWithChildren<{}>) => {
-  const { user } = useContext(UserContext);
+  const user = getGlobalState('user');
   return user === null ? null : user === false ? (
     <Navigate to="/login" />
   ) : (

@@ -18,13 +18,13 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
+import { getGlobalState, setGlobalState } from '../App';
 import { getMe, logout, Role, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { Logo } from '../components/Logo';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { drawerWidth } from '../constants';
 import { PendingStateContext } from '../contexts/pending';
-import { UserContext } from '../contexts/user';
 import { AdminOrder } from './AdminOrder';
 import { AdminOrders } from './AdminOrders';
 import { AdminProduct } from './AdminProduct';
@@ -52,7 +52,7 @@ const pages = [
 
 export const Admin = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, setUser } = useContext(UserContext);
+  const user = getGlobalState('user');
   const { pending, setPending } = useContext(PendingStateContext);
 
   const handleDrawerToggle = () => {
@@ -64,8 +64,8 @@ export const Admin = () => {
       await logout();
       setPending(true);
       getMe()
-        .then(setUser)
-        .catch(() => setUser(false))
+        .then(user => setGlobalState('user', user))
+        .catch(() => setGlobalState('user', false))
         .finally(() => setPending(false));
     } catch (e) {
       toast.error((e as ApiException).message);
