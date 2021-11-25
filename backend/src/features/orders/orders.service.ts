@@ -1,16 +1,16 @@
+import { DateTime } from 'luxon';
+import { Repository } from 'typeorm';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { DateTime } from 'luxon';
-import { Order, OrderId, OrderStatus } from './entities/order.entity';
-import { CreateOrderDto } from './dtos/create-order.dto';
+import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { ProductsService } from '../products/products.service';
+import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
+import { Order, OrderId, OrderStatus } from './entities/order.entity';
 
 const statuses = Object.values(OrderStatus);
 
@@ -64,7 +64,11 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   async checkOrderUpdate(id: OrderId, dto: UpdateOrderDto) {
-    const order = await this.ordersRepository.findOne(id);
+    const order = await this.ordersRepository.findOne(id, {
+      relations: ['entries', 'entries.product'],
+    });
+    console.log(order);
+
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
     }
@@ -76,6 +80,50 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         `Cannot revert an order's status change`,
       );
     }
+
+    for (const entry of dto.entries) {
+      if (entry.quantity < 1) {
+        throw new BadRequestException(
+          'Order.QuantityZero',
+          `You make an order with a wrong quantity`,
+        );
+      }
+      const product = await this.productsService.findOne(entry.product?.id);
+      const existingEntry = order.entries.find(
+        e => e.product.id === entry.product.id,
+      );
+      let delta = 0;
+      if (existingEntry) {
+        delta = entry.quantity - existingEntry.quantity;
+      } else {
+        if (!product) {
+          throw new BadRequestException(
+            'Order.EntryProductNotFound',
+            'An entry in your order references an invalid product',
+          );
+        }
+        if (product.available < entry.quantity) {
+          throw new BadRequestException(
+            'Order.InsufficientEntry',
+            `There is not enough ${product.name} to satisfy your request`,
+          );
+        }
+        delta = entry.quantity;
+      }
+
+      if (delta !== 0)
+        await this.productsService.reserveProductAmount(product, delta);
+    }
+
+    for (const oldEntry of order.entries) {
+      if (!dto.entries.some(e => e.product.id === oldEntry.product.id)) {
+        await this.productsService.reserveProductAmount(
+          oldEntry.product,
+          -oldEntry.quantity,
+        );
+      }
+    }
+
     return dto;
   }
 }
