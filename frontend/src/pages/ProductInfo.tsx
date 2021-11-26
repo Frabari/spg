@@ -13,7 +13,7 @@ const Img = styled('img')({
 });
 
 export default function ProductInfo(props: any) {
-  const [counter, setCounter] = useState(0);
+  const [counter, setCounter] = useState(1);
   const handleClose = () => {
     props.setOpen(false);
     setCounter(0);
@@ -89,7 +89,7 @@ export default function ProductInfo(props: any) {
               </Grid>
               <Grid item>
                 <IconButton
-                  disabled={counter === 0}
+                  disabled={counter === 1}
                   onClick={() => setCounter(counter - 1)}
                 >
                   <RemoveCircleOutlineIcon />

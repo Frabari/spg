@@ -1,29 +1,27 @@
-import { MouseEvent, useContext, useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Navigate, useNavigate } from 'react-router-dom';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardActions,
   CardContent,
+  Collapse,
   FormControl,
   Grid,
-  IconButton,
-  InputAdornment,
   InputLabel,
   OutlinedInput,
-  TextField,
   Typography,
 } from '@mui/material';
+import { getGlobalState } from '../App';
 import { User } from '../api/BasilApi';
 import { Logo } from '../components/Logo';
-import { UserContext } from '../contexts/user';
 import { useUser } from '../hooks/useUser';
 
 function OutlinedCard() {
+  const [passwordCheck, setPasswordCheck] = useState('');
   const [dto, setDto] = useState<Partial<User>>({});
   const { upsertUser } = useUser(null);
   const navigate = useNavigate();
@@ -31,6 +29,10 @@ function OutlinedCard() {
 
   const handleChange = (key: string, value: any) => {
     setDto(_dto => ({ ..._dto, [key]: value }));
+  };
+
+  const handlePasswordCheck = (value: string) => {
+    setPasswordCheck(value);
   };
 
   const handleRegistration = () => {
@@ -71,27 +73,42 @@ function OutlinedCard() {
             >
               Signup
             </Typography>
-            <Grid container rowSpacing={1} direction="column">
+            <Grid container rowSpacing={2} direction="column">
               <Grid item>
-                <TextField
-                  label="Name"
-                  fullWidth
-                  onChange={e => handleChange('name', e.target.value)}
-                />
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="outlined-adornment-name">
+                    Name
+                  </InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-name"
+                    onChange={e => handleChange('name', e.target.value)}
+                    label="Name"
+                  />
+                </FormControl>
               </Grid>
               <Grid item>
-                <TextField
-                  label="Surname"
-                  fullWidth
-                  onChange={e => handleChange('surname', e.target.value)}
-                />
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="outlined-adornment-surname">
+                    Surname
+                  </InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-surname"
+                    onChange={e => handleChange('surname', e.target.value)}
+                    label="Surname"
+                  />
+                </FormControl>
               </Grid>
               <Grid item>
-                <TextField
-                  label="Email"
-                  fullWidth
-                  onChange={e => handleChange('email', e.target.value)}
-                />
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="outlined-adornment-email">
+                    Email
+                  </InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-email"
+                    onChange={e => handleChange('email', e.target.value)}
+                    label="Email"
+                  />
+                </FormControl>
               </Grid>
               <Grid item>
                 <FormControl variant="outlined" fullWidth>
@@ -103,21 +120,51 @@ function OutlinedCard() {
                     type={show ? 'text' : 'password'}
                     value={dto?.password ?? ''}
                     onChange={e => handleChange('password', e.target.value)}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handleClickShowPassword}
-                          onMouseDown={handleMouseDownPassword}
-                          edge="end"
-                        >
-                          {show ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    }
                     label="Password"
                   />
                 </FormControl>
+              </Grid>
+              <Grid item>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="outlined-adornment-password-repeat">
+                    Repeat Password
+                  </InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-password-repeat"
+                    type={show ? 'text' : 'password'}
+                    value={passwordCheck ?? ''}
+                    onChange={e => handlePasswordCheck(e.target.value)}
+                    label="Repeat Password"
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item>
+                <Typography
+                  gutterBottom={true}
+                  variant="body2"
+                  color="primary.main"
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                  display="inline"
+                  sx={{ textDecoration: 'none', cursor: 'pointer' }}
+                >
+                  {show ? 'Hide password' : 'Show password'}
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Collapse in={dto?.password?.length < 8}>
+                  <Alert severity="error">
+                    Password must be of at least 8 characters
+                  </Alert>
+                </Collapse>
+                <Collapse
+                  in={
+                    dto?.password?.length >= 8 &&
+                    dto?.password !== passwordCheck
+                  }
+                >
+                  <Alert severity="error">Passwords are not matching</Alert>
+                </Collapse>
               </Grid>
             </Grid>
           </div>
@@ -133,6 +180,10 @@ function OutlinedCard() {
         >
           <Grid item sx={{ p: 2, pt: 0 }}>
             <Button
+              disabled={
+                dto?.password?.length < 8 ||
+                (dto?.password?.length >= 8 && dto?.password !== passwordCheck)
+              }
               variant="contained"
               onClick={handleRegistration}
               sx={{ px: 3 }}
@@ -148,7 +199,7 @@ function OutlinedCard() {
 
 export default function SignUp() {
   // const [logged, setLogged] = useState(false);
-  const { user } = useContext(UserContext);
+  const user = getGlobalState('user');
 
   if (user !== null && user !== false) {
     return <Navigate to="/products" />;

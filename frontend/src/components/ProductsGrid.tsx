@@ -89,6 +89,7 @@ export default function ProductsGrid({
         ?.filter(
           p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
         )
+        ?.filter(p => p.available > 0)
         .map(p => (
           <ProductCard
             key={p.id}

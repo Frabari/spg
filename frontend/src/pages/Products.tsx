@@ -1,12 +1,12 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Container } from '@mui/material';
+import { getGlobalState } from '../App';
 import ProductsGrid from '../components/ProductsGrid';
-import { UserContext } from '../contexts/user';
 import NavigationBox from './Navigation';
 
 export default function Products() {
-  const { user } = useContext(UserContext);
+  const user = getGlobalState('user');
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
 
