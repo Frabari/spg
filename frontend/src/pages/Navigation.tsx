@@ -13,6 +13,7 @@ import {
   Box,
   Button,
   Container,
+  Drawer,
   IconButton,
   InputBase,
   Menu,
@@ -25,6 +26,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { getMe, logout, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
+import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { PendingStateContext } from '../contexts/pending';
 import { UserContext } from '../contexts/user';
@@ -117,6 +119,7 @@ function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const { user, setUser } = useContext(UserContext);
   const { setPending } = useContext(PendingStateContext);
+  const [showBasket, setShowBasket] = React.useState(false);
   const navigate = useNavigate();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -139,94 +142,112 @@ function NavBar(props: any) {
       toast.error((e as ApiException).message);
     }
   };
-
   return user === null ? null : user === false ? (
     <Navigate to="/login" />
   ) : (
-    <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
-      <Container>
-        <Toolbar sx={{ px: '0!important' }}>
-          <IconButton href={'/'}>
-            <Logo />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
-            Basil
-          </Typography>
-          {props.loggedIn === 0 ? (
-            <Box sx={{ position: 'absolute', right: 0 }}>
-              <Button
-                component={Link}
-                to={'/login'}
-                sx={{ px: 3, marginRight: '16px' }}
-              >
-                Login
-              </Button>
-              <Button
-                component={Link}
-                to={'/signup'}
-                variant="contained"
-                sx={{ px: 3 }}
-              >
-                Sign Up
-              </Button>
-            </Box>
-          ) : (
-            <>
-              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                <Search>
-                  <SearchIconWrapper>
-                    <SearchIcon style={{ color: '#737373' }} />
-                  </SearchIconWrapper>
-                  <StyledInputBase
-                    placeholder="Search…"
-                    inputProps={{ 'aria-label': 'search' }}
-                    onChange={s => {
-                      props.handleSearch(s.target.value);
-                    }}
-                  />
-                </Search>
-              </Box>
-
-              <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
-                <IconButton size="large" onClick={handleMenu}>
-                  <Avatar src={user?.avatar} />
-                </IconButton>
-                <Menu
-                  id="menu-appbar"
-                  anchorEl={anchorEl}
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  open={Boolean(anchorEl)}
-                  onClose={handleClose}
+    <>
+      <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
+        <Container>
+          <Toolbar sx={{ px: '0!important' }}>
+            <IconButton href={'/'}>
+              <Logo />
+            </IconButton>
+            <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
+              Basil
+            </Typography>
+            {props.loggedIn === 0 ? (
+              <Box sx={{ position: 'absolute', right: 0 }}>
+                <Button
+                  component={Link}
+                  to={'/login'}
+                  sx={{ px: 3, marginRight: '16px' }}
                 >
-                  {user.role !== Role.CUSTOMER && (
-                    <MenuItem onClick={() => navigate('/admin')}>
-                      <Person /> Admin
-                    </MenuItem>
-                  )}
-                  <MenuItem onClick={handleLogout}>
-                    <LogoutIcon /> Logout
-                  </MenuItem>
-                </Menu>
-                <IconButton size="large" aria-label="show cart">
-                  <Badge badgeContent={4}>
-                    <ShoppingCart />
-                  </Badge>
-                </IconButton>
+                  Login
+                </Button>
+                <Button
+                  component={Link}
+                  to={'/signup'}
+                  variant="contained"
+                  sx={{ px: 3 }}
+                >
+                  Sign Up
+                </Button>
               </Box>
-            </>
-          )}
-        </Toolbar>
-        {props.products && <NavTabs {...props} />}
-      </Container>
-    </AppBar>
+            ) : (
+              <>
+                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                  <Search>
+                    <SearchIconWrapper>
+                      <SearchIcon style={{ color: '#737373' }} />
+                    </SearchIconWrapper>
+                    <StyledInputBase
+                      placeholder="Search…"
+                      inputProps={{ 'aria-label': 'search' }}
+                      onChange={s => {
+                        props.handleSearch(s.target.value);
+                      }}
+                    />
+                  </Search>
+                </Box>
+
+                <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
+                  <IconButton size="large" onClick={handleMenu}>
+                    <Avatar src={user?.avatar} />
+                  </IconButton>
+                  <Menu
+                    id="menu-appbar"
+                    anchorEl={anchorEl}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    keepMounted
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                  >
+                    {user.role !== Role.CUSTOMER && (
+                      <MenuItem onClick={() => navigate('/admin')}>
+                        <Person /> Admin
+                      </MenuItem>
+                    )}
+                    <MenuItem onClick={handleLogout}>
+                      <LogoutIcon /> Logout
+                    </MenuItem>
+                  </Menu>
+                  <IconButton size="large" aria-label="show cart">
+                    <Badge badgeContent={4}>
+                      <ShoppingCart onClick={() => setShowBasket(true)} />
+                    </Badge>
+                  </IconButton>
+                </Box>
+              </>
+            )}
+          </Toolbar>
+          {props.products && <NavTabs {...props} />}
+        </Container>
+      </AppBar>
+
+      <Drawer
+        anchor="right"
+        open={showBasket}
+        onClose={() => setShowBasket(false)}
+      >
+        <Box sx={{ width: { xs: '100%', sm: '40vw' } }}>
+          <Typography
+            variant="h5"
+            color="primary.main"
+            sx={{ p: 3, fontWeight: 'bold' }}
+          >
+            Basket
+          </Typography>
+          <Basket />
+        </Box>
+      </Drawer>
+    </>
   );
 }
 
