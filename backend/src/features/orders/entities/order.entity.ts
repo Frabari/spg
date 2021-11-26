@@ -6,7 +6,6 @@ import {
   IsString,
   Validate,
 } from 'class-validator';
-import { Computed } from 'src/core/decorators/computed.decorator';
 import {
   Column,
   CreateDateColumn,
@@ -15,6 +14,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Computed } from '../../../core/decorators/computed.decorator';
 import { User } from '../../users/entities/user.entity';
 import { DeliveredBy } from '../validators/delivered-by.validator';
 import { OrderEntry } from './order-entry.entity';
@@ -127,6 +127,9 @@ export class Order {
   @Type(() => Date)
   createdAt: Date;
 
+  /**
+   * The total amount to be paid
+   */
   @Computed((order: Order) =>
     order.entries.reduce(
       (acc, val) => acc + val.quantity * val.product.price,
