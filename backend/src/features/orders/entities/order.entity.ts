@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
   IsIn,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Validate,
 } from 'class-validator';
@@ -87,7 +87,7 @@ export class Order {
    */
   @Column({ default: OrderStatus.DRAFT, nullable: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsIn(Object.values(OrderStatus))
   status: OrderStatus;
 
@@ -95,8 +95,6 @@ export class Order {
    * An array of products with their respective quantities
    */
   @OneToMany(() => OrderEntry, entry => entry.order, { cascade: true })
-  @IsNotEmpty()
-  @ArrayMinSize(1)
   entries: OrderEntry[];
 
   /**

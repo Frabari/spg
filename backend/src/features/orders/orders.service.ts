@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { ProductsService } from '../products/products.service';
 import { User } from '../users/entities/user.entity';
+import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
@@ -80,24 +81,31 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     return dto;
   }
 
-  async checkOrderUpdate(id: OrderId, dto: UpdateOrderDto) {
+  async checkOrderUpdate(id: OrderId, dto: UpdateOrderDto, user: User) {
     const order = await this.ordersRepository.findOne(id, {
       relations: ['entries', 'entries.product'],
     });
+
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
     }
-    const oldStatusOrder = statuses.indexOf(order.status);
-    const newStatusOrder = statuses.indexOf(dto.status);
-    if (newStatusOrder < oldStatusOrder) {
-      throw new BadRequestException(
-        'Order.IllegalStatusTransition',
-        `Cannot revert an order's status change`,
-      );
+    if (dto.status) {
+      const oldStatusOrder = statuses.indexOf(order.status);
+      const newStatusOrder = statuses.indexOf(dto.status);
+      if (newStatusOrder < oldStatusOrder) {
+        throw new BadRequestException(
+          'Order.IllegalStatusTransition',
+          `Cannot revert an order's status change`,
+        );
+      }
     }
-    if (order.status === OrderStatus.LOCKED) {
-      delete dto.entries;
+    if (!ADMINS.includes(user.role)) {
+      if (order.status === OrderStatus.LOCKED) {
+        delete dto.entries;
+      }
+      delete dto.status;
     }
+
     if (dto.entries?.length) {
       for (const entry of dto.entries) {
         if (entry.quantity < 1) {
@@ -136,13 +144,14 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           await this.productsService.reserveProductAmount(product, delta);
         }
       }
-    }
-    for (const oldEntry of order.entries) {
-      if (!dto.entries.some(e => e.product.id === oldEntry.product.id)) {
-        await this.productsService.reserveProductAmount(
-          oldEntry.product,
-          -oldEntry.quantity,
-        );
+
+      for (const oldEntry of order.entries) {
+        if (!dto.entries.some(e => e.product.id === oldEntry.product.id)) {
+          await this.productsService.reserveProductAmount(
+            oldEntry.product,
+            -oldEntry.quantity,
+          );
+        }
       }
     }
     return dto;
