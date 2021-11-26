@@ -102,7 +102,7 @@ export class Order {
    * The date when the user wants the order to be delivered
    * or to pick it up at the warehouse
    */
-  @Column({ default: null })
+  @Column({ type: 'varchar', default: null })
   @Type(() => Date)
   deliverAt: Date;
 

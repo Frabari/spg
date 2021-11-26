@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { OrdersService } from '../../features/orders/orders.service';
-import { ProductsService } from '../../features/products/products.service';
+import { OrdersService } from '../orders/orders.service';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class SchedulingService {
@@ -13,7 +13,7 @@ export class SchedulingService {
   @Cron('0 23 * * 0')
   closeWeeklySales() {
     return Promise.all([
-      this.productsService.resetProductAvailability(),
+      this.productsService.resetProductsAvailability(),
       this.ordersService.lockBaskets(),
     ]);
   }
