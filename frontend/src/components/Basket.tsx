@@ -18,12 +18,6 @@ function ProductCard(props: any) {
   const [open, setOpen] = useState(false);
   const [counter, setCounter] = useState(0);
 
-  const handleInfo = () => {
-    if (!props.onSelect) {
-      setOpen(true);
-    }
-  };
-
   const handleSelect = () => {
     if (props.onSelect) {
       props.onSelect(props.product);
@@ -34,14 +28,9 @@ function ProductCard(props: any) {
     <Grid item lg={12} md={12} sm={12} xs={12}>
       <ProductInfo open={open} setOpen={setOpen} {...props} />
       <Card sx={{ display: 'flex' }}>
-        <CardMedia
-          component="img"
-          sx={{ width: 100 }}
-          image={props.image}
-          onClick={handleInfo}
-        />
+        <CardMedia component="img" sx={{ width: 100 }} image={props.image} />
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <CardContent onClick={handleInfo}>
+          <CardContent>
             <Typography gutterBottom fontSize="17px" component="div">
               {props.name}
             </Typography>
@@ -51,7 +40,7 @@ function ProductCard(props: any) {
           </CardContent>
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <CardContent onClick={handleInfo}>
+          <CardContent>
             <Typography
               gutterBottom
               fontSize="17px"
