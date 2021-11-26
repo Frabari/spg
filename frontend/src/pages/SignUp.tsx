@@ -1,4 +1,4 @@
-import { MouseEvent, useContext, useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
@@ -15,9 +15,9 @@ import {
   OutlinedInput,
   Typography,
 } from '@mui/material';
+import { getGlobalState } from '../App';
 import { User } from '../api/BasilApi';
 import { Logo } from '../components/Logo';
-import { UserContext } from '../contexts/user';
 import { useUser } from '../hooks/useUser';
 
 function OutlinedCard() {
@@ -199,7 +199,7 @@ function OutlinedCard() {
 
 export default function SignUp() {
   // const [logged, setLogged] = useState(false);
-  const { user } = useContext(UserContext);
+  const user = getGlobalState('user');
 
   if (user !== null && user !== false) {
     return <Navigate to="/products" />;

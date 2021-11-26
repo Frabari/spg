@@ -24,12 +24,12 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { getGlobalState, setGlobalState } from '../App';
 import { getMe, logout, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { PendingStateContext } from '../contexts/pending';
-import { UserContext } from '../contexts/user';
 import { useCategories } from '../hooks/useCategories';
 
 interface LinkTabProps {
@@ -117,7 +117,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const { user, setUser } = useContext(UserContext);
+  const user = getGlobalState('user');
   const { setPending } = useContext(PendingStateContext);
   const [showBasket, setShowBasket] = React.useState(false);
   const navigate = useNavigate();
@@ -135,8 +135,8 @@ function NavBar(props: any) {
       await logout();
       setPending(true);
       getMe()
-        .then(setUser)
-        .catch(() => setUser(false))
+        .then(user => setGlobalState('user', user))
+        .catch(() => setGlobalState('user', false))
         .finally(() => setPending(false));
     } catch (e) {
       toast.error((e as ApiException).message);
