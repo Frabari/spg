@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Person, ShoppingCart } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import Person from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
-import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import {
   AppBar,
+  Autocomplete,
   Avatar,
   Badge,
   Box,
@@ -15,11 +15,12 @@ import {
   Container,
   Drawer,
   IconButton,
-  InputBase,
+  InputAdornment,
   Menu,
   MenuItem,
   Tab,
   Tabs,
+  TextField,
   Toolbar,
   Typography,
 } from '@mui/material';
@@ -31,6 +32,8 @@ import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { PendingStateContext } from '../contexts/pending';
 import { useCategories } from '../hooks/useCategories';
+import { useProducts } from '../hooks/useProducts';
+import { useUsers } from '../hooks/useUsers';
 
 interface LinkTabProps {
   label: string;
@@ -101,26 +104,32 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
   justifyContent: 'center',
 }));
 
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
+const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
+  '& .MuiAutocomplete-inputRoot': {
+    padding: theme.spacing(0, 0, 0, 0),
     // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create('width'),
     width: '100%',
     [theme.breakpoints.up('md')]: {
-      width: '20ch',
+      width: '25ch',
     },
   },
 }));
 
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [list, setList] = useState([]);
   const user = getGlobalState('user');
   const { setPending } = useContext(PendingStateContext);
   const [showBasket, setShowBasket] = React.useState(false);
   const navigate = useNavigate();
+  const { products } = useProducts();
+  const { users } = useUsers();
+
+  useEffect(() => {
+    setList([...products, ...users.filter(u => u.role === Role.FARMER)]);
+  }, [products, users]);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -176,18 +185,51 @@ function NavBar(props: any) {
             ) : (
               <>
                 <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                  <Search>
-                    <SearchIconWrapper>
-                      <SearchIcon style={{ color: '#737373' }} />
-                    </SearchIconWrapper>
-                    <StyledInputBase
-                      placeholder="Search…"
-                      inputProps={{ 'aria-label': 'search' }}
-                      onChange={s => {
-                        props.handleSearch(s.target.value);
-                      }}
-                    />
-                  </Search>
+                  <StyledAutocomplete
+                    freeSolo
+                    id="free-solo-2-demo"
+                    disableClearable
+                    options={list.map(option => (
+                      <Box
+                        component="li"
+                        sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
+                        {...props}
+                      >
+                        <img
+                          loading="lazy"
+                          width="20"
+                          src={
+                            option?.role !== null
+                              ? option?.avatar
+                              : option?.image
+                          }
+                          alt=""
+                        />
+                        {option?.role !== null
+                          ? option?.name + '' + option?.surname
+                          : option?.name}
+                      </Box>
+                    ))}
+                    autoHighlight
+                    renderInput={params => (
+                      <TextField
+                        sx={{ padding: 0 }}
+                        {...params}
+                        InputProps={{
+                          ...params.InputProps,
+                          type: 'search',
+                          startAdornment: (
+                            <InputAdornment
+                              position="start"
+                              sx={{ marginLeft: 1 }}
+                            >
+                              <SearchIcon />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    )}
+                  />
                 </Box>
 
                 <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
