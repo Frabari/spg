@@ -9,6 +9,6 @@ export class SchedulingController {
 
   @Get('close-weekly-sales')
   endService() {
-    return this.schedulingService.closeWeeklySales();
+    return this.schedulingService.closeWeeklySales(true);
   }
 }
