@@ -18,11 +18,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { getGlobalState, setGlobalState } from '../App';
 import { getMe, login } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { Logo } from '../components/Logo';
 import { PendingStateContext } from '../contexts/pending';
-import { UserContext } from '../contexts/user';
 
 interface State {
   password: string;
@@ -157,7 +157,7 @@ function OutlinedCard(props: any) {
 
 export default function Login(props: any) {
   // const [logged, setLogged] = useState(false);
-  const { user, setUser } = useContext(UserContext);
+  const user = getGlobalState('user');
   const { setPending } = useContext(PendingStateContext);
 
   const handleLogin = async (email: string, password: string) => {
@@ -165,8 +165,8 @@ export default function Login(props: any) {
       await login(email, password);
       setPending(true);
       getMe()
-        .then(setUser)
-        .catch(() => setUser(false))
+        .then(user => setGlobalState('user', user))
+        .catch(() => setGlobalState('user', false))
         .finally(() => setPending(false));
     } catch (e) {
       toast.error((e as ApiException).message);
