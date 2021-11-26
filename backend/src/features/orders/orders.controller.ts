@@ -81,7 +81,11 @@ export class OrdersController implements CrudController<Order> {
       { field: 'id', operator: '$eq', value: basket.id },
     ];
     crudRequest.parsed.join = [{ field: 'deliveredBy' }];
-    const order = await this.service.checkOrderUpdate(basket.id, dto);
+    const order = await this.service.checkOrderUpdate(
+      basket.id,
+      dto,
+      request.user,
+    );
     return this.base.updateOneBase(crudRequest, order as Order);
   }
 
@@ -106,12 +110,13 @@ export class OrdersController implements CrudController<Order> {
   @Override()
   @Roles(...ADMINS)
   async updateOne(
-    @ParsedRequest() request: CrudRequest,
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
     @ParsedBody() dto: UpdateOrderDto,
     @Param('id') id: number,
   ) {
-    request.parsed.join = [{ field: 'deliveredBy' }];
-    const order = await this.service.checkOrderUpdate(id, dto);
-    return this.base.updateOneBase(request, order as Order);
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    const order = await this.service.checkOrderUpdate(id, dto, request.user);
+    return this.base.updateOneBase(crudRequest, order as Order);
   }
 }
