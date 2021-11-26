@@ -1,12 +1,13 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { getBasket, Order, Product, updateBasket } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
-import { PendingStateContext } from '../contexts/pending';
+import { useGlobalState } from '../index';
+import { usePendingState } from './usePendingState';
 
 export const useBasket = () => {
-  const { setPending } = useContext(PendingStateContext);
-  const [basket, setBasket] = useState<Order>(null);
+  const { setPending } = usePendingState();
+  const [basket, setBasket] = useGlobalState('basket');
   const [error, setError] = useState<ApiException>(null);
 
   const _updateBasket = (basket: Partial<Order>) => {
@@ -24,7 +25,7 @@ export const useBasket = () => {
   };
 
   const upsertEntry = (product: Product, quantity: number) => {
-    const dto = { ...basket };
+    const dto = { ...(basket as Order) };
     if (!dto.entries) {
       dto.entries = [];
     }
@@ -41,7 +42,7 @@ export const useBasket = () => {
   };
 
   const deleteEntry = (product: Product) => {
-    const dto = { ...basket };
+    const dto = { ...(basket as Order) };
     if (!dto.entries) {
       return;
     }

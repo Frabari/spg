@@ -13,7 +13,8 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import { useProducts } from '../hooks/useProducts';
+import { Order } from '../api/BasilApi';
+import { getGlobalState } from '../index';
 
 function ProductCard(props: any) {
   const [counter, setCounter] = useState(0);
@@ -96,7 +97,7 @@ export default function Basket({
   filter?: string;
   search?: string;
 }) {
-  const { products } = useProducts();
+  const products = (getGlobalState('basket') as Order)?.entries;
 
   return (
     <>
@@ -110,18 +111,20 @@ export default function Basket({
         width="auto"
       >
         {products
-          ?.filter(p => !filter || p.category.slug === filter)
+          ?.filter(e => !filter || e.product.category.slug === filter)
           ?.filter(
-            p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
+            e =>
+              !search ||
+              e.product.name.toLowerCase().includes(search.toLowerCase()),
           )
-          .map(p => (
+          .map(e => (
             <ProductCard
-              key={p.id}
-              name={p.name.split(' ')[2]}
-              image={p.image}
-              price={p.price}
-              description={p.description}
-              product={p}
+              key={e.product.id}
+              name={e.product.name.split(' ')[2]}
+              image={e.product.image}
+              price={e.product.price}
+              description={e.product.description}
+              product={e}
             />
           ))}
       </Grid>

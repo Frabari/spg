@@ -25,15 +25,15 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { getGlobalState, setGlobalState } from '../App';
-import { getMe, logout, Role } from '../api/BasilApi';
+import { logout, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
-import { PendingStateContext } from '../contexts/pending';
 import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 import { useUsers } from '../hooks/useUsers';
+import { usePendingState } from '../hooks/usePendingState';
+import { useProfile } from '../hooks/useProfile';
 
 interface LinkTabProps {
   label: string;
@@ -120,8 +120,8 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [list, setList] = useState([]);
-  const user = getGlobalState('user');
-  const { setPending } = useContext(PendingStateContext);
+  const { profile } = useProfile();
+  const { setPending } = usePendingState();
   const [showBasket, setShowBasket] = React.useState(false);
   const navigate = useNavigate();
   const { products } = useProducts();
@@ -143,15 +143,11 @@ function NavBar(props: any) {
     try {
       await logout();
       setPending(true);
-      getMe()
-        .then(user => setGlobalState('user', user))
-        .catch(() => setGlobalState('user', false))
-        .finally(() => setPending(false));
     } catch (e) {
       toast.error((e as ApiException).message);
     }
   };
-  return user === null ? null : user === false ? (
+  return profile === null ? null : profile === false ? (
     <Navigate to="/login" />
   ) : (
     <>
@@ -234,7 +230,7 @@ function NavBar(props: any) {
 
                 <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
                   <IconButton size="large" onClick={handleMenu}>
-                    <Avatar src={user?.avatar} />
+                    <Avatar src={profile?.avatar} />
                   </IconButton>
                   <Menu
                     id="menu-appbar"
@@ -251,7 +247,7 @@ function NavBar(props: any) {
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
-                    {user.role !== Role.CUSTOMER && (
+                    {profile.role !== Role.CUSTOMER && (
                       <MenuItem onClick={() => navigate('/admin')}>
                         <Person /> Admin
                       </MenuItem>

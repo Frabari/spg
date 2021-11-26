@@ -23,9 +23,11 @@ function ProductCard(props: any) {
     }
   };
 
-  const handleSelect = () => {
+  const handleSelect = (product: Product) => {
     if (props.onSelect) {
-      props.onSelect(props.product);
+      props.onSelect(product);
+    } else {
+      // TODO: upsert entry
     }
   };
 
@@ -53,7 +55,7 @@ function ProductCard(props: any) {
         </CardContent>
         <CardActions>
           <Box marginLeft="auto" padding="0.5rem">
-            <IconButton onClick={handleSelect}>
+            <IconButton onClick={() => handleSelect(props.product)}>
               <AddIcon />
             </IconButton>
           </Box>

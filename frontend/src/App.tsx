@@ -1,53 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
-import { createGlobalState } from 'react-hooks-global-state';
 import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LinearProgress } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './Theme';
-import { getMe, User } from './api/BasilApi';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { PendingStateContext } from './contexts/pending';
+import { usePendingState } from './hooks/usePendingState';
+import { useProfile } from './hooks/useProfile';
 import { Admin } from './pages/Admin';
 import Homepage from './pages/Homepage';
 import Login from './pages/Login';
 import Products from './pages/Products';
 import SignUp from './pages/SignUp';
 
-const globalUser: User | null | false = null;
-
-const { useGlobalState, setGlobalState, getGlobalState } = createGlobalState({
-  user: globalUser,
-});
-
 function App() {
-  const [pending, setPending] = useState(false);
-  const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
-  const timerRef = useRef<number>();
-
-  useEffect(() => {
-    setPending(true);
-    getMe()
-      .then(user => setGlobalState('user', user))
-      .catch(() => setGlobalState('user', false))
-      .finally(() => {
-        setPending(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (!pending) {
-      timerRef.current = window.setTimeout(() => {
-        setShowLoadingIndicator(false);
-      }, 1000);
-    } else {
-      clearTimeout(timerRef.current);
-      setShowLoadingIndicator(true);
-    }
-  }, [pending]);
+  const { showLoadingIndicator } = usePendingState();
+  const { profile } = useProfile();
 
   return (
-    <PendingStateContext.Provider value={{ pending, setPending }}>
+    <>
       <Toaster />
       <ThemeProvider theme={themeOptions}>
         <BrowserRouter>
@@ -83,8 +53,8 @@ function App() {
           />
         )}
       </ThemeProvider>
-    </PendingStateContext.Provider>
+    </>
   );
 }
 
-export { useGlobalState, setGlobalState, getGlobalState, App };
+export default App;

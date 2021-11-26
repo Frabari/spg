@@ -15,9 +15,9 @@ import {
   OutlinedInput,
   Typography,
 } from '@mui/material';
-import { getGlobalState } from '../App';
 import { User } from '../api/BasilApi';
 import { Logo } from '../components/Logo';
+import { useProfile } from '../hooks/useProfile';
 import { useUser } from '../hooks/useUser';
 
 function OutlinedCard() {
@@ -199,9 +199,9 @@ function OutlinedCard() {
 
 export default function SignUp() {
   // const [logged, setLogged] = useState(false);
-  const user = getGlobalState('user');
+  const { profile } = useProfile();
 
-  if (user !== null && user !== false) {
+  if (profile !== null && profile !== false) {
     return <Navigate to="/products" />;
   }
   return (
