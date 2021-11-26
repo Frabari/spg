@@ -6,6 +6,7 @@ import {
   IsString,
   Validate,
 } from 'class-validator';
+import { Computed } from 'src/core/decorators/computed.decorator';
 import {
   Column,
   CreateDateColumn,
@@ -127,4 +128,12 @@ export class Order {
   @CreateDateColumn()
   @Type(() => Date)
   createdAt: Date;
+
+  @Computed((order: Order) =>
+    order.entries.reduce(
+      (acc, val) => acc + val.quantity * val.product.price,
+      0,
+    ),
+  )
+  total: number;
 }
