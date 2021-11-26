@@ -1,16 +1,17 @@
+import { DateTime } from 'luxon';
+import { Repository } from 'typeorm';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { DateTime } from 'luxon';
-import { Order, OrderId, OrderStatus } from './entities/order.entity';
-import { CreateOrderDto } from './dtos/create-order.dto';
+import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { ProductsService } from '../products/products.service';
+import { User } from '../users/entities/user.entity';
+import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
+import { Order, OrderId, OrderStatus } from './entities/order.entity';
 
 const statuses = Object.values(OrderStatus);
 
@@ -22,6 +23,22 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     private readonly productsService: ProductsService,
   ) {
     super(ordersRepository);
+  }
+
+  async resolveBasket(user: User) {
+    const basket = await this.ordersRepository.findOne(
+      {
+        status: OrderStatus.DRAFT,
+        user,
+      },
+      {
+        relations: ['entries', 'entries.product'],
+      },
+    );
+    if (basket) {
+      return basket;
+    }
+    return this.ordersRepository.save({ user });
   }
 
   async checkOrder(dto: CreateOrderDto) {
@@ -64,7 +81,9 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   async checkOrderUpdate(id: OrderId, dto: UpdateOrderDto) {
-    const order = await this.ordersRepository.findOne(id);
+    const order = await this.ordersRepository.findOne(id, {
+      relations: ['entries', 'entries.product'],
+    });
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
     }
@@ -76,6 +95,67 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         `Cannot revert an order's status change`,
       );
     }
+    if (order.status === OrderStatus.LOCKED) {
+      delete dto.entries;
+    }
+    if (dto.entries?.length) {
+      for (const entry of dto.entries) {
+        if (entry.quantity < 1) {
+          throw new BadRequestException(
+            'Order.QuantityZero',
+            `You make an order with a wrong quantity`,
+          );
+        }
+        const product = await this.productsService.findOne(entry.product?.id);
+        if (!product) {
+          throw new BadRequestException(
+            'Order.EntryProductNotFound',
+            'An entry in your order references an invalid product',
+          );
+        }
+        const existingEntry = order.entries.find(e => e.id === entry.id);
+        let delta = 0;
+        if (existingEntry) {
+          delta = entry.quantity - existingEntry.quantity;
+          if (product.available - delta < 0) {
+            throw new BadRequestException(
+              'Order.InsufficientEntry',
+              `There is not enough ${product.name} to satisfy your request`,
+            );
+          }
+        } else {
+          if (product.available < entry.quantity) {
+            throw new BadRequestException(
+              'Order.InsufficientEntry',
+              `There is not enough ${product.name} to satisfy your request`,
+            );
+          }
+          delta = entry.quantity;
+        }
+        if (delta !== 0) {
+          await this.productsService.reserveProductAmount(product, delta);
+        }
+      }
+    }
+    for (const oldEntry of order.entries) {
+      if (!dto.entries.some(e => e.product.id === oldEntry.product.id)) {
+        await this.productsService.reserveProductAmount(
+          oldEntry.product,
+          -oldEntry.quantity,
+        );
+      }
+    }
     return dto;
+  }
+
+  lockBaskets() {
+    return this.ordersRepository.update(
+      {
+        status: OrderStatus.DRAFT,
+      },
+      {
+        status: OrderStatus.LOCKED,
+      },
+    );
   }
 }

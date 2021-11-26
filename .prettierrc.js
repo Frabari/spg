@@ -6,4 +6,5 @@ module.exports = {
   bracketSpacing: true,
   importOrder: ['react', '^(?!react)\\w+$', '^\\@', '^[./]'],
   importOrderSeparation: false,
+  endOfLine: "auto"
 };

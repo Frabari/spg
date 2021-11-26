@@ -31,5 +31,6 @@ module.exports = {
         argsIgnorePattern: '^_',
       },
     ],
+    'linebreak-style': 'off',
   },
 };

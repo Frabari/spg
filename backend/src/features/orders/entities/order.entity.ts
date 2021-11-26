@@ -27,6 +27,12 @@ export enum OrderStatus {
   DRAFT = 'draft',
 
   /**
+   * The entries cannot be changed anymore while waiting
+   * for confirmation from farmers and payment
+   */
+  LOCKED = 'locked',
+
+  /**
    * The products were confirmed and the
    * payment was processed
    */
