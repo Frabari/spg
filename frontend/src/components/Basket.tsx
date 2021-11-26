@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import {
   Box,
   Button,
@@ -12,64 +14,76 @@ import {
   Typography,
 } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
-import ProductInfo from '../pages/ProductInfo';
 
 function ProductCard(props: any) {
-  const [open, setOpen] = useState(false);
   const [counter, setCounter] = useState(0);
 
-  const handleSelect = () => {
-    if (props.onSelect) {
-      props.onSelect(props.product);
-    }
-  };
-
   return (
-    <Grid item lg={12} md={12} sm={12} xs={12}>
-      <ProductInfo open={open} setOpen={setOpen} {...props} />
-      <Card sx={{ display: 'flex' }}>
-        <CardMedia component="img" sx={{ width: 100 }} image={props.image} />
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <CardContent>
-            <Typography gutterBottom fontSize="17px" component="div">
-              {props.name}
-            </Typography>
-            <Typography fontSize="14px" color="text.secondary">
-              quantità
-            </Typography>
-          </CardContent>
-        </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <CardContent>
-            <Typography
-              gutterBottom
-              fontSize="17px"
-              component="div"
-              align="center"
-            >
-              € {props.price}
-            </Typography>
-          </CardContent>
-        </Box>
-        <Box sx={{ display: 'flex', pl: 20 }}>
-          <CardActions>
-            <IconButton
-              disabled={counter === 0}
-              onClick={() => setCounter(counter - 1)}
-            >
-              -
-            </IconButton>
-            <Typography variant="body2" display="inline">
-              {counter}
-            </Typography>
-            <IconButton
-              disabled={counter === props.product?.available}
-              onClick={() => setCounter(counter + 1)}
-            >
-              +
-            </IconButton>
-          </CardActions>
-        </Box>
+    <Grid item xs={12}>
+      <Card sx={{ width: '500px' }}>
+        <Grid
+          container
+          direction="row"
+          justifyItems="center"
+          alignItems="center"
+          spacing="1rem"
+        >
+          <Grid item xs={3}>
+            <CardMedia
+              component="img"
+              sx={{ width: 100 }}
+              image={props.image}
+            />
+          </Grid>
+          <Grid item xs={3}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <CardContent>
+                <Typography gutterBottom fontSize="17px" component="div">
+                  {props.name}
+                </Typography>
+                <Typography fontSize="14px" color="text.secondary">
+                  quantità
+                </Typography>
+              </CardContent>
+            </Box>
+          </Grid>
+          <Grid item xs={3}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <CardContent>
+                <Typography
+                  gutterBottom
+                  fontSize="17px"
+                  component="div"
+                  align="center"
+                >
+                  € {props.price}
+                </Typography>
+              </CardContent>
+            </Box>
+          </Grid>
+          <Grid item xs={3}>
+            <Box sx={{ display: 'flex' }}>
+              <CardActions>
+                <IconButton
+                  disabled={counter === 0}
+                  onClick={() => setCounter(counter - 1)}
+                >
+                  <RemoveIcon />
+                </IconButton>
+                <Typography variant="body2" display="inline">
+                  {counter}
+                </Typography>
+                <IconButton
+                  disabled={counter === props.product?.available}
+                  onClick={() => setCounter(counter + 1)}
+                  sx={{ pl: 0 }}
+                >
+                  <AddIcon />
+                </IconButton>
+              </CardActions>
+            </Box>
+          </Grid>
+        </Grid>
       </Card>
     </Grid>
   );
@@ -88,9 +102,9 @@ export default function Basket({
     <>
       <Grid
         container
-        direction="row"
-        spacing="2rem"
-        padding="1rem"
+        direction="column"
+        spacing="1rem"
+        padding="0.5rem"
         alignItems="center"
         justifyItems="center"
         width="auto"
