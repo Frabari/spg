@@ -13,8 +13,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import { Order } from '../api/BasilApi';
-import { getGlobalState } from '../hooks/useGlobalState';
+import { useBasket } from '../hooks/useBasket';
 
 function ProductCard(props: any) {
   const [counter, setCounter] = useState(0);
@@ -97,7 +96,7 @@ export default function Basket({
   filter?: string;
   search?: string;
 }) {
-  const products = (getGlobalState('basket') as Order)?.entries;
+  const { basket } = useBasket();
 
   return (
     <>
@@ -110,7 +109,7 @@ export default function Basket({
         justifyItems="center"
         width="auto"
       >
-        {products
+        {basket.entries
           ?.filter(e => !filter || e.product.category.slug === filter)
           ?.filter(
             e =>

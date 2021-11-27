@@ -11,11 +11,13 @@ import {
   Typography,
 } from '@mui/material';
 import { Product } from '../api/BasilApi';
+import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
 import ProductInfo from '../pages/ProductInfo';
 
 function ProductCard(props: any) {
   const [open, setOpen] = useState(false);
+  const { basket, upsertEntry } = useBasket();
 
   const handleInfo = () => {
     if (!props.onSelect) {
@@ -27,7 +29,7 @@ function ProductCard(props: any) {
     if (props.onSelect) {
       props.onSelect(product);
     } else {
-      // TODO: upsert entry
+      upsertEntry(product, 1).then();
     }
   };
 
