@@ -12,6 +12,7 @@ import {
   Badge,
   Box,
   Button,
+  Chip,
   Container,
   Drawer,
   IconButton,
@@ -106,14 +107,33 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   color: 'inherit',
+  '& .MuiFormControl-root': {
+    border: 'none !important',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: '#f7f7f7',
+    '&:hover': {
+      backgroundColor: '#f7f7f7',
+    },
+    marginRight: theme.spacing(2),
+    marginLeft: 0,
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: theme.spacing(3),
+      width: 'auto',
+    },
+  },
   '& .MuiAutocomplete-inputRoot': {
     padding: theme.spacing(0, 0, 0, 0),
     // vertical padding + font size from searchIcon
     transition: theme.transitions.create('width'),
     width: '100%',
     [theme.breakpoints.up('md')]: {
-      width: '25ch',
+      width: '35ch',
     },
+  },
+
+  '& .MuiOutlinedInput-notchedOutline': {
+    border: 'none',
   },
 }));
 
@@ -128,7 +148,21 @@ function NavBar(props: any) {
   const { users } = useUsers();
 
   useEffect(() => {
-    setList([...products, ...users.filter(u => u.role === Role.FARMER)]);
+    const u = users
+      .filter(u => u.role === Role.FARMER)
+      .map(user => ({
+        name: user.name + ' ' + user.surname,
+        image: user.avatar,
+        email: user.email,
+        type: 'Farmers',
+      }));
+    setList([...products, ...u]);
+    const p = products.map(product => ({
+      name: product.name,
+      image: product.image,
+      type: 'Products',
+    }));
+    setList([...p, ...u]);
   }, [products, users]);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -182,44 +216,50 @@ function NavBar(props: any) {
               <>
                 <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                   <StyledAutocomplete
-                    freeSolo
                     id="free-solo-2-demo"
                     disableClearable
-                    options={list.map(option => (
+                    freeSolo
+                    options={list}
+                    groupBy={(option: any) => option?.type}
+                    getOptionLabel={(option: any) => option?.name}
+                    onChange={(event, value: any) => {
+                      if (value.type === 'Farmers') {
+                        props.setFarmer(value.email);
+                      } else {
+                        props.handleSearch(value.name);
+                      }
+                    }}
+                    renderOption={(props, option: any) => (
                       <Box
                         component="li"
                         sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
                         {...props}
                       >
-                        <img
-                          loading="lazy"
-                          width="20"
-                          src={
-                            option?.role !== null
-                              ? option?.avatar
-                              : option?.image
-                          }
-                          alt=""
-                        />
-                        {option?.role !== null
-                          ? option?.name + '' + option?.surname
-                          : option?.name}
+                        <Avatar sx={{ margin: 1 }} src={option?.image} />
+                        {option?.name}
                       </Box>
-                    ))}
+                    )}
                     autoHighlight
                     renderInput={params => (
                       <TextField
+                        onChange={e => props.handleSearch(e.target.value)}
+                        placeholder="Search..."
                         sx={{ padding: 0 }}
                         {...params}
                         InputProps={{
                           ...params.InputProps,
-                          type: 'search',
+                          autoComplete: 'new-password',
                           startAdornment: (
                             <InputAdornment
                               position="start"
                               sx={{ marginLeft: 1 }}
                             >
                               <SearchIcon />
+                            </InputAdornment>
+                          ),
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Chip label="Deletable" />
                             </InputAdornment>
                           ),
                         }}

@@ -9,6 +9,7 @@ export default function Products() {
   const { profile } = useProfile();
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
+  const [farmer, setFarmer] = useState('');
 
   if (!profile) {
     return <Navigate to="/" />;
@@ -21,12 +22,14 @@ export default function Products() {
   return (
     <>
       <NavigationBox.NavBar
+        setFarmer={setFarmer}
         loggedIn={1}
         products={true}
         handleSearch={handleSearch}
       />
       <Container sx={{ mt: 18 }}>
         <ProductsGrid
+          farmer={farmer}
           filter={queryParams.get('category')}
           search={search}
           onSelect={null}

@@ -66,10 +66,12 @@ function ProductCard(props: any) {
 }
 
 export default function ProductsGrid({
+  farmer,
   filter,
   onSelect,
   search,
 }: {
+  farmer?: string;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
@@ -90,6 +92,9 @@ export default function ProductsGrid({
         ?.filter(p => !filter || p.category.slug === filter)
         ?.filter(
           p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
+        )
+        ?.filter(
+          p => !farmer || p.farmer.email.toLowerCase() === farmer.toLowerCase(),
         )
         ?.filter(p => p.available > 0)
         .map(p => (
