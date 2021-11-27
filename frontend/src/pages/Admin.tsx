@@ -52,7 +52,7 @@ const pages = [
 
 export const Admin = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { profile } = useProfile();
+  const { profile, load } = useProfile();
   const { pending, setPending } = usePendingState();
 
   const handleDrawerToggle = () => {
@@ -63,6 +63,7 @@ export const Admin = () => {
     try {
       await logout();
       setPending(true);
+      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }

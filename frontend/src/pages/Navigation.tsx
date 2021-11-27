@@ -29,6 +29,7 @@ import { logout, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
+import { useBasket } from '../hooks/useBasket';
 import { useCategories } from '../hooks/useCategories';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProducts } from '../hooks/useProducts';
@@ -139,12 +140,13 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [list, setList] = useState([]);
-  const { profile } = useProfile();
+  const { profile, load } = useProfile();
   const { setPending } = usePendingState();
   const [showBasket, setShowBasket] = React.useState(false);
   const navigate = useNavigate();
   const { products } = useProducts();
   const { users } = useUsers();
+  const { basket } = useBasket();
 
   useEffect(() => {
     const u = users
@@ -174,6 +176,7 @@ function NavBar(props: any) {
     try {
       await logout();
       setPending(true);
+      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }
@@ -308,9 +311,13 @@ function NavBar(props: any) {
                       <LogoutIcon /> Logout
                     </MenuItem>
                   </Menu>
-                  <IconButton size="large" aria-label="show cart">
-                    <Badge badgeContent={4}>
-                      <ShoppingCart onClick={() => setShowBasket(true)} />
+                  <IconButton
+                    size="large"
+                    aria-label="show cart"
+                    onClick={() => setShowBasket(true)}
+                  >
+                    <Badge badgeContent={basket?.entries?.length}>
+                      <ShoppingCart />
                     </Badge>
                   </IconButton>
                 </Box>

@@ -4,9 +4,11 @@ import { getBasket, Order, Product, updateBasket } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { useGlobalState } from './useGlobalState';
 import { usePendingState } from './usePendingState';
+import { useProfile } from './useProfile';
 
 export const useBasket = () => {
   const { setPending } = usePendingState();
+  const { profile } = useProfile();
   const [basket, setBasket] = useGlobalState('basket');
   const [error, setError] = useState<ApiException>(null);
 
@@ -62,7 +64,7 @@ export const useBasket = () => {
         toast.error(e.message);
       })
       .finally(() => setPending(false));
-  }, [setPending]);
+  }, [setPending, profile]);
 
   return {
     basket,
