@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  Allow,
   IsIn,
   IsNotEmpty,
   IsOptional,
@@ -7,6 +8,7 @@ import {
   Validate,
 } from 'class-validator';
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   Entity,
@@ -14,7 +16,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Computed } from '../../../core/decorators/computed.decorator';
 import { User } from '../../users/entities/user.entity';
 import { DeliveredBy } from '../validators/delivered-by.validator';
 import { OrderEntry } from './order-entry.entity';
@@ -95,6 +96,7 @@ export class Order {
    * An array of products with their respective quantities
    */
   @OneToMany(() => OrderEntry, entry => entry.order, { cascade: true })
+  @Allow()
   entries: OrderEntry[];
 
   /**
@@ -130,11 +132,13 @@ export class Order {
   /**
    * The total amount to be paid
    */
-  @Computed((order: Order) =>
-    order.entries.reduce(
-      (acc, val) => acc + val.quantity * val.product.price,
+  total?: number;
+
+  @AfterLoad()
+  calculateTotal() {
+    this.total = this.entries?.reduce(
+      (acc, val) => acc + val.quantity * val.product?.price,
       0,
-    ),
-  )
-  total: number;
+    );
+  }
 }

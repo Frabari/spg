@@ -141,9 +141,6 @@ describe('BasketController (e2e)', () => {
           },
         ],
       })
-      .expect(r => {
-        console.log(r);
-      })
       .expect(200)
       .expect(r => {
         expect(r.body.entries[0].quantity).toEqual(5);

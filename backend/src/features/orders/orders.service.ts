@@ -56,27 +56,32 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         );
       }
     }
-    for (const entry of dto.entries) {
-      if (entry.quantity < 1) {
-        throw new BadRequestException(
-          'Order.QuantityZero',
-          `You make an order with a wrong quantity`,
+    if (dto.entries?.length) {
+      for (const entry of dto.entries) {
+        if (entry.quantity < 1) {
+          throw new BadRequestException(
+            'Order.QuantityZero',
+            `You make an order with a wrong quantity`,
+          );
+        }
+        const product = await this.productsService.findOne(entry.product?.id);
+        if (!product) {
+          throw new BadRequestException(
+            'Order.EntryProductNotFound',
+            'An entry in your order references an invalid product',
+          );
+        }
+        if (product.available < entry.quantity) {
+          throw new BadRequestException(
+            'Order.InsufficientEntry',
+            `There is not enough ${product.name} to satisfy your request`,
+          );
+        }
+        await this.productsService.reserveProductAmount(
+          product,
+          entry.quantity,
         );
       }
-      const product = await this.productsService.findOne(entry.product?.id);
-      if (!product) {
-        throw new BadRequestException(
-          'Order.EntryProductNotFound',
-          'An entry in your order references an invalid product',
-        );
-      }
-      if (product.available < entry.quantity) {
-        throw new BadRequestException(
-          'Order.InsufficientEntry',
-          `There is not enough ${product.name} to satisfy your request`,
-        );
-      }
-      await this.productsService.reserveProductAmount(product, entry.quantity);
     }
     return dto;
   }
@@ -100,7 +105,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       }
     }
     if (!ADMINS.includes(user.role)) {
-      if (order.status === OrderStatus.LOCKED) {
+      if (order.status !== OrderStatus.DRAFT) {
         delete dto.entries;
       }
       delete dto.status;

@@ -30,7 +30,11 @@ export const useBasket = () => {
     }
     const existingEntry = dto.entries.find(e => e.product.id === product.id);
     if (existingEntry) {
-      existingEntry.quantity = quantity;
+      if (quantity === 0) {
+        dto.entries = dto.entries.filter(e => e !== existingEntry);
+      } else {
+        existingEntry.quantity = quantity;
+      }
     } else {
       dto.entries.push({
         product,
