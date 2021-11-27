@@ -30,6 +30,7 @@ import { logout, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
+import { useBasket } from '../hooks/useBasket';
 import { useCategories } from '../hooks/useCategories';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProducts } from '../hooks/useProducts';
@@ -146,6 +147,7 @@ function NavBar(props: any) {
   const navigate = useNavigate();
   const { products } = useProducts();
   const { users } = useUsers();
+  const { basket } = useBasket();
 
   useEffect(() => {
     const u = users
@@ -297,9 +299,13 @@ function NavBar(props: any) {
                       <LogoutIcon /> Logout
                     </MenuItem>
                   </Menu>
-                  <IconButton size="large" aria-label="show cart">
-                    <Badge badgeContent={4}>
-                      <ShoppingCart onClick={() => setShowBasket(true)} />
+                  <IconButton
+                    size="large"
+                    aria-label="show cart"
+                    onClick={() => setShowBasket(true)}
+                  >
+                    <Badge badgeContent={basket?.entries?.length}>
+                      <ShoppingCart />
                     </Badge>
                   </IconButton>
                 </Box>
