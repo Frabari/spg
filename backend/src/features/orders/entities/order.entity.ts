@@ -134,6 +134,12 @@ export class Order {
    */
   total?: number;
 
+  /**
+   * A flag to check if the balance of the user
+   * is enough to purchase the products selected
+   */
+  insufficientBalance?: boolean;
+
   @AfterLoad()
   calculateTotal() {
     this.total = this.entries?.reduce(
