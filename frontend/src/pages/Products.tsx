@@ -9,7 +9,7 @@ export default function Products() {
   const { profile } = useProfile();
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
-  const [farmer, setFarmer] = useState('');
+  const [farmer, setFarmer] = useState(null);
 
   if (!profile) {
     return <Navigate to="/" />;
@@ -19,9 +19,14 @@ export default function Products() {
     setSearch(value);
   };
 
+  const handleDelete = () => {
+    setFarmer('');
+  };
+
   return (
     <>
       <NavigationBox.NavBar
+        farmer={farmer}
         setFarmer={setFarmer}
         loggedIn={1}
         products={true}
@@ -33,6 +38,7 @@ export default function Products() {
           filter={queryParams.get('category')}
           search={search}
           onSelect={null}
+          handleDelete={handleDelete}
         />
       </Container>
     </>

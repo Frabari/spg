@@ -6,11 +6,12 @@ import {
   CardActions,
   CardContent,
   CardMedia,
+  Chip,
   Grid,
   IconButton,
   Typography,
 } from '@mui/material';
-import { Product } from '../api/BasilApi';
+import { Product, User } from '../api/BasilApi';
 import { useProducts } from '../hooks/useProducts';
 import ProductInfo from '../pages/ProductInfo';
 
@@ -70,44 +71,58 @@ export default function ProductsGrid({
   filter,
   onSelect,
   search,
+  handleDelete,
 }: {
-  farmer?: string;
+  farmer?: User;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
+  handleDelete?: () => void;
 }) {
   const { products } = useProducts();
 
   return (
-    <Grid
-      container
-      direction="row"
-      spacing="2rem"
-      padding="1rem"
-      alignItems="center"
-      justifyItems="center"
-      width="auto"
-    >
-      {products
-        ?.filter(p => !filter || p.category.slug === filter)
-        ?.filter(
-          p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
-        )
-        ?.filter(
-          p => !farmer || p.farmer.email.toLowerCase() === farmer.toLowerCase(),
-        )
-        ?.filter(p => p.available > 0)
-        .map(p => (
-          <ProductCard
-            key={p.id}
-            name={p.name.split(' ')[2]}
-            image={p.image}
-            price={p.price}
-            description={p.description}
-            product={p}
-            onSelect={onSelect}
-          />
-        ))}
-    </Grid>
+    <>
+      {farmer && (
+        <Chip
+          sx={{ marginLeft: 2 }}
+          onDelete={handleDelete}
+          variant="outlined"
+          label={`Product by ${farmer.name} ${farmer.surname}`}
+        />
+      )}
+      <Grid
+        container
+        direction="row"
+        spacing="2rem"
+        padding="1rem"
+        alignItems="center"
+        justifyItems="center"
+        width="auto"
+      >
+        {products
+          ?.filter(p => !filter || p.category.slug === filter)
+          ?.filter(
+            p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
+          )
+          ?.filter(
+            p =>
+              !farmer ||
+              p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
+          )
+          ?.filter(p => p.available > 0)
+          .map(p => (
+            <ProductCard
+              key={p.id}
+              name={p.name.split(' ')[2]}
+              image={p.image}
+              price={p.price}
+              description={p.description}
+              product={p}
+              onSelect={onSelect}
+            />
+          ))}
+      </Grid>
+    </>
   );
 }

@@ -12,7 +12,6 @@ import {
   Badge,
   Box,
   Button,
-  Chip,
   Container,
   Drawer,
   IconButton,
@@ -151,17 +150,15 @@ function NavBar(props: any) {
     const u = users
       .filter(u => u.role === Role.FARMER)
       .map(user => ({
-        name: user.name + ' ' + user.surname,
-        image: user.avatar,
-        email: user.email,
+        ...user,
         type: 'Farmers',
       }));
-    setList([...products, ...u]);
-    const p = products.map(product => ({
-      name: product.name,
-      image: product.image,
-      type: 'Products',
-    }));
+    const p = products
+      .filter(product => product.available > 0)
+      .map(product => ({
+        ...product,
+        type: 'Products',
+      }));
     setList([...p, ...u]);
   }, [products, users]);
 
@@ -219,12 +216,23 @@ function NavBar(props: any) {
                     id="free-solo-2-demo"
                     disableClearable
                     freeSolo
-                    options={list}
+                    options={
+                      props.farmer
+                        ? list.filter(
+                            option =>
+                              option.farmer?.email === props.farmer?.email,
+                          )
+                        : list
+                    }
                     groupBy={(option: any) => option?.type}
-                    getOptionLabel={(option: any) => option?.name}
+                    getOptionLabel={(option: any) =>
+                      option?.type === 'Farmers'
+                        ? option?.name + ' ' + option?.surname
+                        : option?.name
+                    }
                     onChange={(event, value: any) => {
                       if (value.type === 'Farmers') {
-                        props.setFarmer(value.email);
+                        props.setFarmer(value);
                       } else {
                         props.handleSearch(value.name);
                       }
@@ -235,8 +243,17 @@ function NavBar(props: any) {
                         sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
                         {...props}
                       >
-                        <Avatar sx={{ margin: 1 }} src={option?.image} />
-                        {option?.name}
+                        <Avatar
+                          sx={{ margin: 1 }}
+                          src={
+                            option?.type === 'Farmers'
+                              ? option?.avatar
+                              : option?.image
+                          }
+                        />
+                        {option?.type === 'Farmers'
+                          ? option?.name + ' ' + option?.surname
+                          : option?.name}
                       </Box>
                     )}
                     autoHighlight
@@ -255,11 +272,6 @@ function NavBar(props: any) {
                               sx={{ marginLeft: 1 }}
                             >
                               <SearchIcon />
-                            </InputAdornment>
-                          ),
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <Chip label="Deletable" />
                             </InputAdornment>
                           ),
                         }}
