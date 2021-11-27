@@ -43,6 +43,40 @@ describe('OrdersService', () => {
     service = module.get<OrdersService>(OrdersService);
   });
 
+  describe('resolveBasket', () => {
+    it('should return an existing draft order as the basket', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      const order = await entityManager.save(Order, {
+        user,
+      });
+      const basket = await service.resolveBasket(user);
+      expect(order.id).toEqual(basket.id);
+    });
+
+    it('should return a new draft order as the basket when an existing one is missing', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      await service.resolveBasket(user);
+      const orders = await entityManager.find(Order, {});
+      expect(orders.length).toEqual(1);
+    });
+  });
+
   describe('checkOrder', () => {
     it('should validate if the date of the order is between (Wed 08:00 - Fri 18:00)', async () => {
       const email = 'test@example.com';
