@@ -146,6 +146,59 @@ describe('BasketController (e2e)', () => {
         expect(r.body.entries[0].quantity).toEqual(5);
       });
   });
+
+  it('should verify customer insufficient balance', async () => {
+    const email = 'test@example.com';
+    const password = 'testpwd';
+    const entityManager = app.get(EntityManager);
+    const user = await entityManager.save(User, {
+      email,
+      password: await hash(password, 10),
+      name: 'John',
+      surname: 'Doe',
+      balance: 50,
+      role: Role.CUSTOMER,
+    });
+    const product = await entityManager.save(Product, {
+      name: 'onions',
+      description: 'very good onions',
+      price: 10,
+      available: 20,
+    });
+    const order = await entityManager.save(Order, {
+      user: { id: user.id },
+      entries: [
+        {
+          quantity: 6,
+          product: { id: product.id },
+        },
+      ],
+    });
+
+    const server = app.getHttpServer();
+    const response = await request(server)
+      .post('/users/login')
+      .send({ username: email, password });
+    const authToken = response.body.token;
+    return request(server)
+      .patch('/orders/basket')
+      .auth(authToken, { type: 'bearer' })
+      .send({
+        user: { id: user.id },
+        id: order.id,
+        entries: [
+          {
+            id: order.entries[0].id,
+            quantity: 7,
+            product: { id: product.id },
+          },
+        ],
+      })
+      .expect(200)
+      .expect(r => {
+        expect(r.body.insufficientBalance).toEqual(true);
+      });
+  });
   afterEach(() => {
     return app.close();
   });
