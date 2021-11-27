@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import { getUsers, User } from '../api/BasilApi';
-import { PendingStateContext } from '../contexts/pending';
 import { toast } from 'react-hot-toast';
+import { getUsers, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
+import { PendingStateContext } from '../contexts/pending';
 
 export const useUsers = () => {
   const { setPending } = useContext(PendingStateContext);

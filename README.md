@@ -2,6 +2,8 @@
 
 A modern solidarity purchase groups web app
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Frabari_spg&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Frabari_spg)
+
 > PoliTO SoftEng II 2021, team P11 project
 
 ## Prerequisites
