@@ -1,7 +1,7 @@
 import { hash } from 'bcrypt';
 import { DateTime } from 'luxon';
 import { EntityManager } from 'typeorm';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from '../categories/categories.module';
@@ -78,7 +78,7 @@ describe('OrdersService', () => {
   });
 
   describe('checkOrder', () => {
-    it('should validate if the date of the order is between (Wed 08:00 - Fri 18:00)', async () => {
+    it('should fail if the date of the order is not between (Wed 08:00 - Fri 18:00)', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = module.get(EntityManager);
@@ -108,7 +108,7 @@ describe('OrdersService', () => {
       ).rejects.toThrowError(BadRequestException);
     });
 
-    it('should validate if the quantity of the order is higher than its product', async () => {
+    it('should fail if the quantity of the order is higher than its product', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = module.get(EntityManager);
@@ -130,6 +130,81 @@ describe('OrdersService', () => {
           entries: [{ product, quantity: 20 }] as OrderEntry[],
         } as CreateOrderDto),
       ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should fail if the quantity of the order is minor than 1', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      });
+      return expect(
+        service.checkOrder({
+          user: { id: user.id } as User,
+          entries: [{ product, quantity: 0 }] as OrderEntry[],
+        } as CreateOrderDto),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should fail if an entry in your order references is an invalid product', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      return expect(
+        service.checkOrder({
+          user: { id: user.id } as User,
+          entries: [
+            {
+              product: {
+                id: 100,
+                name: 'outProduct',
+                description: 'no description',
+              },
+              quantity: 1,
+            },
+          ] as OrderEntry[],
+        } as CreateOrderDto),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should check an order dto', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      });
+      return expect(
+        service.checkOrder({
+          user: { id: user.id } as User,
+          entries: [{ product, quantity: 5 }] as OrderEntry[],
+        } as CreateOrderDto),
+      ).resolves.toBeDefined();
     });
   });
 
@@ -232,6 +307,388 @@ describe('OrdersService', () => {
       });
       expect(order.entries[0].quantity).toEqual(5);
     });
+
+    it('should fail if the order does not exist', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      return expect(
+        service.checkOrderUpdate(100, {} as UpdateOrderDto, user),
+      ).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should fail if the customer tries to change the entries of a LOCKED order', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.LOCKED,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      const finalDto = await service.checkOrderUpdate(
+        order.id,
+        {
+          entries: [
+            {
+              ...order.entries[0],
+              quantity: 10,
+            },
+          ],
+        } as UpdateOrderDto,
+        user,
+      );
+
+      expect(finalDto.entries).toBeUndefined();
+    });
+
+    it('should fail if the quantity of entries is less than 1', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      return expect(
+        service.checkOrderUpdate(
+          order.id,
+          {
+            status: OrderStatus.COMPLETED,
+            entries: [
+              {
+                ...order.entries[0],
+                quantity: 0,
+              },
+            ],
+          } as UpdateOrderDto,
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should fail if an entry in your order references is an invalid product', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      return expect(
+        service.checkOrderUpdate(
+          order.id,
+          {
+            status: OrderStatus.COMPLETED,
+            entries: [
+              {
+                product: {
+                  id: 100,
+                },
+                quantity: 2,
+              },
+            ],
+          } as UpdateOrderDto,
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should fail if there is not enough quantity of product to satisfy your request', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 2,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 1,
+          },
+        ],
+      });
+      return expect(
+        service.checkOrderUpdate(
+          order.id,
+          {
+            status: OrderStatus.COMPLETED,
+            entries: [
+              {
+                ...order.entries[0],
+                quantity: 100,
+              },
+            ],
+          } as UpdateOrderDto,
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should fail if there is not enough quantity of product to satisfy a new entry', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      const product1 = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 2,
+      });
+      const product2 = await entityManager.save(Product, {
+        name: 'apples',
+        description: 'very good apples',
+        price: 5,
+        available: 3,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product1.id,
+            },
+            quantity: 1,
+          },
+        ],
+      });
+      return expect(
+        service.checkOrderUpdate(
+          order.id,
+          {
+            status: OrderStatus.COMPLETED,
+            entries: [
+              order.entries[0],
+              {
+                product: {
+                  id: product2.id,
+                },
+                quantity: 100,
+              },
+            ],
+          } as UpdateOrderDto,
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should update the available and reserved fields of a product', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 5,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      await service.checkOrderUpdate(
+        order.id,
+        {
+          status: OrderStatus.COMPLETED,
+          entries: [],
+        } as UpdateOrderDto,
+        user,
+      );
+
+      const finalProduct = await entityManager.findOne(Product, product.id);
+      expect(finalProduct.available).toEqual(5);
+    });
+  });
+
+  describe('lockBaskets', () => {
+    it('should change the status of basket from DRAFT to LOCKED', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.EMPLOYEE,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      });
+      let order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      await service.lockBaskets();
+
+      order = await entityManager.findOne(Order, order.id);
+      expect(order.status).toEqual(OrderStatus.LOCKED);
+    });
+    /* it('should fail if the user does not has sufficient balance ', async () => {
+     const email = 'test@example.com';
+     const password = 'testpwd';
+     const entityManager = module.get(EntityManager);
+     const user = await entityManager.save(User, {
+       email,
+       password: await hash(password, 10),
+       name: 'John',
+       surname: 'Doe',
+       balance: 50,
+       role: Role.CUSTOMER,
+     });
+     const product = await entityManager.save(Product, {
+       name: 'onions',
+       description: 'very good onions',
+       price: 10,
+       available: 10,
+     });
+     let order = await entityManager.save(Order, {
+       status: OrderStatus.DRAFT,
+       user: { id: user.id },
+       entries: [
+         {
+           product: {
+             id: product.id,
+           },
+           quantity: 6,
+         },
+       ],
+     });
+     await service.checkOrderUpdate(
+       order.id,
+       {
+         entries: [
+           {
+             id: order.entries[0].id,
+             product: {
+               id: product.id,
+             },
+             quantity: 6,
+           },
+         ],
+       } as UpdateOrderDto,
+       user,
+     );
+
+     expect(order.total).toBeGreaterThan(user.balance);
+   });*/
   });
 
   afterEach(() => {

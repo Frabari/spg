@@ -86,7 +86,14 @@ export class OrdersController implements CrudController<Order> {
       dto,
       request.user,
     );
-    return this.base.updateOneBase(crudRequest, order as Order);
+    return this.base.updateOneBase(crudRequest, order as Order).then(order => {
+      console.log(order, request.user);
+
+      if (request.user.balance < order.total) {
+        order.insufficientBalance = true;
+      }
+      return order;
+    });
   }
 
   @Override()
