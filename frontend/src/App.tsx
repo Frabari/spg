@@ -5,7 +5,6 @@ import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './Theme';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { usePendingState } from './hooks/usePendingState';
-import { useProfile } from './hooks/useProfile';
 import { Admin } from './pages/Admin';
 import Homepage from './pages/Homepage';
 import Login from './pages/Login';
@@ -14,8 +13,6 @@ import SignUp from './pages/SignUp';
 
 function App() {
   const { showLoadingIndicator } = usePendingState();
-  const { profile } = useProfile();
-
   return (
     <>
       <Toaster />

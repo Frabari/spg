@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useGlobalState } from '../index';
+import { useGlobalState } from './useGlobalState';
 
 export const usePendingState = () => {
-  const [pending, setPending] = useGlobalState('pendingState');
+  const [pending, setPending] = useGlobalState('pending');
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const timerRef = useRef<number>();
 

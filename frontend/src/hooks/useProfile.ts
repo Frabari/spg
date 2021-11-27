@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'react-hot-toast';
 import { getMe } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
-import { useGlobalState } from '../index';
+import { useGlobalState } from './useGlobalState';
 import { usePendingState } from './usePendingState';
 
 export const useProfile = () => {
-  const { setPending } = usePendingState();
+  const { setPending: setGlobalPending } = usePendingState();
+  const [pending, setPending] = useGlobalState('profilePending');
   const [profile, setProfile] = useGlobalState('profile');
   const [error, setError] = useState<ApiException>(null);
 
@@ -17,15 +17,26 @@ export const useProfile = () => {
       .then(setProfile)
       .catch(e => {
         setError(e);
-        toast.error(e.message);
-        throw e;
+        setProfile(false);
       })
       .finally(() => setPending(false));
   };
 
   useEffect(() => {
-    load.current();
-  }, [setPending, load]);
+    setGlobalPending(pending);
+  }, [pending, setGlobalPending]);
 
-  return { load: load.current, profile, error };
+  useEffect(() => {
+    if (!pending && profile === null) {
+      console.log(
+        'Loading profile because !pending',
+        !pending,
+        ' && profile === null',
+        profile === null,
+      );
+      load.current();
+    }
+  }, [pending, profile]);
+
+  return { load: load.current, profile, pending, error };
 };

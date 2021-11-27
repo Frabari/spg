@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Order } from '../api/BasilApi';
-import { getGlobalState } from '../index';
+import { getGlobalState } from '../hooks/useGlobalState';
 
 function ProductCard(props: any) {
   const [counter, setCounter] = useState(0);

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Person, ShoppingCart } from '@mui/icons-material';
@@ -30,10 +30,10 @@ import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { useCategories } from '../hooks/useCategories';
-import { useProducts } from '../hooks/useProducts';
-import { useUsers } from '../hooks/useUsers';
 import { usePendingState } from '../hooks/usePendingState';
+import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
+import { useUsers } from '../hooks/useUsers';
 
 interface LinkTabProps {
   label: string;

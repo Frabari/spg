@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { getBasket, Order, Product, updateBasket } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
-import { useGlobalState } from '../index';
+import { useGlobalState } from './useGlobalState';
 import { usePendingState } from './usePendingState';
 
 export const useBasket = () => {
