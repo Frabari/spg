@@ -1,16 +1,6 @@
 import { waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
-import { PendingStateContext } from '../contexts/pending';
 import { useCategories } from '../hooks/useCategories';
-
-// @ts-ignore
-const wrapper = ({ children }) => (
-  <PendingStateContext.Provider
-    value={{ pending: true, setPending: (value: boolean) => true }}
-  >
-    {children}
-  </PendingStateContext.Provider>
-);
 
 jest.mock('../api/BasilApi', () => {
   const originalModule = jest.requireActual('../api/BasilApi');
@@ -32,7 +22,7 @@ jest.mock('../api/BasilApi', () => {
 });
 
 test('load products', async () => {
-  const { result } = renderHook(() => useCategories(), { wrapper });
+  const { result } = renderHook(() => useCategories());
   await waitFor(() =>
     expect(result.current.categories.find(c => c.id === 42).name).toEqual(
       'Fruits',
