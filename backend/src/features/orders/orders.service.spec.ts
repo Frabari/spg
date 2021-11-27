@@ -607,6 +607,54 @@ describe('OrdersService', () => {
       order = await entityManager.findOne(Order, order.id);
       expect(order.status).toEqual(OrderStatus.LOCKED);
     });
+    /* it('should fail if the user does not has sufficient balance ', async () => {
+     const email = 'test@example.com';
+     const password = 'testpwd';
+     const entityManager = module.get(EntityManager);
+     const user = await entityManager.save(User, {
+       email,
+       password: await hash(password, 10),
+       name: 'John',
+       surname: 'Doe',
+       balance: 50,
+       role: Role.CUSTOMER,
+     });
+     const product = await entityManager.save(Product, {
+       name: 'onions',
+       description: 'very good onions',
+       price: 10,
+       available: 10,
+     });
+     let order = await entityManager.save(Order, {
+       status: OrderStatus.DRAFT,
+       user: { id: user.id },
+       entries: [
+         {
+           product: {
+             id: product.id,
+           },
+           quantity: 6,
+         },
+       ],
+     });
+     await service.checkOrderUpdate(
+       order.id,
+       {
+         entries: [
+           {
+             id: order.entries[0].id,
+             product: {
+               id: product.id,
+             },
+             quantity: 6,
+           },
+         ],
+       } as UpdateOrderDto,
+       user,
+     );
+
+     expect(order.total).toBeGreaterThan(user.balance);
+   });*/
   });
 
   afterEach(() => {

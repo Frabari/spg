@@ -126,6 +126,8 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             'An entry in your order references an invalid product',
           );
         }
+        entry.product = product;
+
         const existingEntry = order.entries.find(e => e.id === entry.id);
         let delta = 0;
         if (existingEntry) {
@@ -158,6 +160,16 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           );
         }
       }
+      /*const total = dto.entries?.reduce(
+        (acc, val) => acc + val.quantity * val.product?.price,
+        0,
+      );
+      if(user.balance < total){
+        throw new BadRequestException(
+          'Order.InsufficientBalance',
+          `The  user balance is insufficient to satisfy your request`,
+        );
+      }*/
     }
     return dto;
   }
