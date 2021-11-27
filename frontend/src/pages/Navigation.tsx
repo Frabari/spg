@@ -140,7 +140,7 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [list, setList] = useState([]);
-  const { profile } = useProfile();
+  const { profile, load } = useProfile();
   const { setPending } = usePendingState();
   const [showBasket, setShowBasket] = React.useState(false);
   const navigate = useNavigate();
@@ -177,6 +177,7 @@ function NavBar(props: any) {
     try {
       await logout();
       setPending(true);
+      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }
