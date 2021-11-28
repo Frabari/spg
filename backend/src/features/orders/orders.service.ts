@@ -27,13 +27,14 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   async resolveBasket(user: User) {
+    console.log(user);
     const basket = await this.ordersRepository.findOne(
       {
         status: OrderStatus.DRAFT,
         user,
       },
       {
-        relations: ['entries', 'entries.product'],
+        relations: ['entries', 'entries.product', 'user'],
       },
     );
     if (basket) {
@@ -86,13 +87,20 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     return dto;
   }
 
-  async checkOrderUpdate(id: OrderId, dto: UpdateOrderDto, user: User) {
+  async checkOrderUpdate(
+    id: OrderId,
+    dto: UpdateOrderDto,
+    user: User,
+    isBasket = false,
+  ) {
     const order = await this.ordersRepository.findOne(id, {
-      relations: ['entries', 'entries.product'],
+      relations: ['entries', 'entries.product', 'user'],
     });
-
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
+    }
+    if (isBasket) {
+      (dto as Order).user = user;
     }
     if (dto.status) {
       const oldStatusOrder = statuses.indexOf(order.status);
