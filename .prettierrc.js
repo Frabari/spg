@@ -4,7 +4,7 @@ module.exports = {
   trailingComma: 'all',
   arrowParens: 'avoid',
   bracketSpacing: true,
-  importOrder: ['react', '^(?!react)\\w+$', '^\\@', '^[./]'],
+  importOrder: ['\\.mock$', 'react', '^(?!react)\\w+$', '^\\@', '^[./]'],
   importOrderSeparation: false,
   endOfLine: "auto"
 };

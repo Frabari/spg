@@ -1,38 +1,13 @@
+import './BasilApi.mock';
 import { waitFor } from '@testing-library/react';
 import { act, renderHook } from '@testing-library/react-hooks';
+import { BrowserRouter } from 'react-router-dom';
 import { User } from '../api/BasilApi';
 import { useUser } from '../hooks/useUser';
 import { useUsers } from '../hooks/useUsers';
 
-jest.mock('../api/BasilApi', () => {
-  // Require the original module to not be mocked...
-  const originalModule = jest.requireActual('../api/BasilApi');
-  const mockUser: Partial<User> = {
-    id: 30,
-    name: 'Mario',
-    surname: 'Rossi',
-    email: 'mario@rossi.com',
-    password: 'mariorossi',
-  };
-  const mockUsers = [
-    {
-      id: 30,
-      name: 'Mario',
-    },
-    {
-      id: 31,
-      name: 'Luigi',
-    },
-  ];
-
-  return {
-    __esModule: true, // Use it when dealing with esModules
-    ...originalModule,
-    getUser: () => Promise.resolve(mockUser),
-    createUser: (_user: Partial<User>) => Promise.resolve(_user),
-    getUsers: () => Promise.resolve(mockUsers),
-  };
-});
+// @ts-ignore
+const wrapper = ({ children }) => <BrowserRouter>{children}</BrowserRouter>;
 
 test('create user', async () => {
   const user: Partial<User> = {
@@ -42,7 +17,7 @@ test('create user', async () => {
     password: 'mariorossi',
   };
 
-  const { result } = renderHook(() => useUser());
+  const { result } = renderHook(() => useUser(), { wrapper });
   await act(async () =>
     expect((await result.current.upsertUser(user)).email).toEqual(
       'mario@rossi.com',
@@ -51,7 +26,7 @@ test('create user', async () => {
 });
 
 test('get users', async () => {
-  const { result } = renderHook(() => useUsers());
+  const { result } = renderHook(() => useUsers(), { wrapper });
   await waitFor(() =>
     expect(result.current.users.find(u => u.id === 31).name).toEqual('Luigi'),
   );

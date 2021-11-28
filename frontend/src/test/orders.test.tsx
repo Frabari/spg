@@ -1,27 +1,8 @@
+import './BasilApi.mock';
 import { waitFor } from '@testing-library/react';
 import { act, renderHook } from '@testing-library/react-hooks';
 import { Order } from '../api/BasilApi';
 import { useOrder } from '../hooks/useOrder';
-
-jest.mock('../api/BasilApi', () => {
-  const originalModule = jest.requireActual('../api/BasilApi');
-  let order: Partial<Order> = {
-    id: 30,
-  };
-  return {
-    __esModule: true, // Use it when dealing with esModules
-    ...originalModule,
-    createOrder: (_order: Partial<Order>) => {
-      order = _order;
-      return Promise.resolve(order);
-    },
-    updateOrder: (_id: number, _order: Partial<Order>) => {
-      order = _order;
-      return Promise.resolve(order);
-    },
-    getOrder: (_id: number) => Promise.resolve(order),
-  };
-});
 
 test('create order', async () => {
   const order: Partial<Order> = {

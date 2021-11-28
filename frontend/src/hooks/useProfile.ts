@@ -28,12 +28,6 @@ export const useProfile = () => {
 
   useEffect(() => {
     if (!pending && profile === null) {
-      console.log(
-        'Loading profile because !pending',
-        !pending,
-        ' && profile === null',
-        profile === null,
-      );
       load.current();
     }
   }, [pending, profile]);
