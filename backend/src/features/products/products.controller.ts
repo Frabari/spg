@@ -11,12 +11,12 @@ import {
   Override,
   ParsedRequest,
 } from '@nestjsx/crud';
+import { Crud } from '../../core/decorators/crud.decorator';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { Role } from '../users/roles.enum';
 import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
-import { Crud } from '../../core/decorators/crud.decorator';
 
 @Crud(Product, {
   routes: {

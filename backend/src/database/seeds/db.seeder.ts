@@ -1,11 +1,11 @@
 import { Factory, Seeder } from 'typeorm-seeding';
-import { Connection } from 'typeorm';
 import * as faker from 'faker';
-import { Product } from '../../features/products/entities/product.entity';
+import { Connection } from 'typeorm';
 import { Category } from '../../features/categories/entities/category.entity';
+import { Product } from '../../features/products/entities/product.entity';
 import { User } from '../../features/users/entities/user.entity';
-import { passwordTest } from '../constants';
 import { Role } from '../../features/users/roles.enum';
+import { passwordTest } from '../constants';
 
 const avatars = [
   'https://images.unsplash.com/photo-1597233709017-e4a73325d37b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258MXwzMjMzODM4Mnx8fHx8Mnx8MTYzNjY1MTE1Mw&ixlib=rb-1.2.1&q=80&w=1080',

@@ -1,12 +1,12 @@
+import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { JwtService } from '@nestjs/jwt';
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { User } from './entities/user.entity';
 import { Tokens } from './dtos/tokens.dto';
 import { JwtTokenPayload } from './entities/jwt-token-payload.entity';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService extends TypeOrmCrudService<User> {

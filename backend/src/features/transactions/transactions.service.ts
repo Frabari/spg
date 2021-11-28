@@ -1,3 +1,4 @@
+import { Repository } from 'typeorm';
 import {
   BadRequestException,
   Injectable,
@@ -5,10 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
-import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
+import { Transaction } from './entities/transaction.entity';
 
 @Injectable()
 export class TransactionsService extends TypeOrmCrudService<Transaction> {

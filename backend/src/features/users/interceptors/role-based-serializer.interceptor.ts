@@ -1,9 +1,9 @@
+import { map } from 'rxjs';
 import {
   CallHandler,
   ClassSerializerInterceptor,
   ExecutionContext,
 } from '@nestjs/common';
-import { map } from 'rxjs';
 
 export class RoleBasedSerializerInterceptor extends ClassSerializerInterceptor {
   intercept(context: ExecutionContext, next: CallHandler) {
