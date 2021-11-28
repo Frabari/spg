@@ -1,13 +1,33 @@
 {
-  "moduleFileExtensions": [
-    "js",
-    "json",
-    "ts"
-  ],
-  "rootDir": ".",
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "..",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  "collectCoverage": true,
+  "coverageReporters": [
+    "json",
+    [
+      "lcov",
+      {
+        "file": "lcov-e2e.info",
+        "projectRoot": "../../"
+      }
+    ]
+  ],
+  "reporters": [
+    "default",
+    [
+      "jest-sonar",
+      {
+        "outputDirectory": "coverage",
+        "outputName": "test-report-e2e.xml",
+        "reportedFilePath": "relative",
+        "relativeRootDir": "../"
+      }
+    ]
+  ],
+  "coverageDirectory": "coverage"
 }
