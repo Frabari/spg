@@ -65,24 +65,91 @@ export default class DbSeeder implements Seeder {
       {
         name: 'Vegetables',
         slug: 'vegetables',
-        products: products.slice(0, 10),
+        products: products.filter(
+          p =>
+            p.name === 'Onions Borettana' ||
+            p.name === 'Chilli Peppers' ||
+            p.name === 'Hardneck Garlics' ||
+            p.name === 'Tomatoes' ||
+            p.name === 'White Radishes' ||
+            p.name === 'Gherkins' ||
+            p.name === 'Red Potatoes' ||
+            p.name === 'Grape Tomatoes' ||
+            p.name === 'Dill Pickles' ||
+            p.name === 'Beets' ||
+            p.name === 'Ciliegino Tomatoes' ||
+            p.name === 'Lemons' ||
+            p.name === 'Graffiti Eggplants' ||
+            p.name === 'Calabrese Broccoli' ||
+            p.name === 'Pumpkins' ||
+            p.name === 'Broccolini' ||
+            p.name === 'Green Squashes' ||
+            p.name === 'Beefsteak Tomatoes' ||
+            p.name === 'Red Radishes',
+        ),
       },
       {
         name: 'Fruits',
         slug: 'fruits',
-        products: products.slice(10, 20),
+        products: products.filter(
+          p =>
+            p.name === 'Daytona Watermelons' ||
+            p.name === 'Green Kiwis' ||
+            p.name === 'Aroma Strawberries' ||
+            p.name === 'Nectarines' ||
+            p.name === 'Asahi Miyako Watermelons' ||
+            p.name === 'Golden Kiwis' ||
+            p.name === 'Cavendish Bananas' ||
+            p.name === 'Gooseberries' ||
+            p.name === 'Mangos' ||
+            p.name === 'Clementine Tangerines' ||
+            p.name === 'Albion Strawberries' ||
+            p.name === 'Peaches' ||
+            p.name === 'Raspberries' ||
+            p.name === 'Red Currants' ||
+            p.name === 'White Melon' ||
+            p.name === 'Red Pomegranates' ||
+            p.name === 'Pears' ||
+            p.name === 'Velvet Pomegranates' ||
+            p.name === 'White Grapes',
+        ),
       },
       {
-        name: 'Dairy Products',
-        slug: 'dairy-products',
-        products: products.slice(20, 30),
+        name: 'Dried Fruits',
+        slug: 'dried-fruits',
+        products: products.filter(
+          p =>
+            p.name === 'Shelled Walnuts' ||
+            p.name === 'Shelled Almonds' ||
+            p.name === 'Walnuts' ||
+            p.name === 'Cashews' ||
+            p.name === 'Pistachios',
+        ),
       },
       {
         name: 'Breeding',
         slug: 'breeding',
-        products: products.slice(30, 40),
+        products: products.filter(
+          p => p.name === 'Eggs' || p.name === 'Quail Eggs',
+        ),
       },
-      { name: 'Meat', slug: 'meat', products: products.slice(40, 50) },
+      {
+        name: 'Legumes',
+        slug: 'legumes',
+        products: products.filter(
+          p =>
+            p.name === 'Shelled Peas' ||
+            p.name === 'Green Peas Pods' ||
+            p.name === 'Fayot Beans',
+        ),
+      },
+      {
+        name: 'Wheat',
+        slug: 'wheat',
+        products: products.filter(
+          p => p.name === 'Wheat' || p.name === 'Corns',
+        ),
+      },
     ]);
   }
 }
