@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { useContext, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Person, ShoppingCart } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import Person from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
-import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import {
   AppBar,
+  Autocomplete,
   Avatar,
   Badge,
   Box,
@@ -15,22 +15,26 @@ import {
   Container,
   Drawer,
   IconButton,
-  InputBase,
+  InputAdornment,
   Menu,
   MenuItem,
   Tab,
   Tabs,
+  TextField,
   Toolbar,
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { getGlobalState, setGlobalState } from '../App';
-import { getMe, logout, Role } from '../api/BasilApi';
+import { logout, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
-import { PendingStateContext } from '../contexts/pending';
+import { useBasket } from '../hooks/useBasket';
 import { useCategories } from '../hooks/useCategories';
+import { usePendingState } from '../hooks/usePendingState';
+import { useProducts } from '../hooks/useProducts';
+import { useProfile } from '../hooks/useProfile';
+import { useUsers } from '../hooks/useUsers';
 
 interface LinkTabProps {
   label: string;
@@ -101,26 +105,64 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
   justifyContent: 'center',
 }));
 
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
+const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
+  '& .MuiFormControl-root': {
+    border: 'none !important',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: '#f7f7f7',
+    '&:hover': {
+      backgroundColor: '#f7f7f7',
+    },
+    marginRight: theme.spacing(2),
+    marginLeft: 0,
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: theme.spacing(3),
+      width: 'auto',
+    },
+  },
+  '& .MuiAutocomplete-inputRoot': {
+    padding: theme.spacing(0, 0, 0, 0),
     // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create('width'),
     width: '100%',
     [theme.breakpoints.up('md')]: {
-      width: '20ch',
+      width: '35ch',
     },
+  },
+
+  '& .MuiOutlinedInput-notchedOutline': {
+    border: 'none',
   },
 }));
 
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const user = getGlobalState('user');
-  const { setPending } = useContext(PendingStateContext);
+  const [list, setList] = useState([]);
+  const { profile, load } = useProfile();
+  const { setPending } = usePendingState();
   const [showBasket, setShowBasket] = React.useState(false);
   const navigate = useNavigate();
+  const { products } = useProducts();
+  const { users } = useUsers();
+  const { basket } = useBasket();
+
+  useEffect(() => {
+    const u = users
+      .filter(u => u.role === Role.FARMER)
+      .map(user => ({
+        ...user,
+        type: 'Farmers',
+      }));
+    const p = products
+      .filter(product => product.available > 0)
+      .map(product => ({
+        ...product,
+        type: 'Products',
+      }));
+    setList([...p, ...u]);
+  }, [products, users]);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -134,15 +176,12 @@ function NavBar(props: any) {
     try {
       await logout();
       setPending(true);
-      getMe()
-        .then(user => setGlobalState('user', user))
-        .catch(() => setGlobalState('user', false))
-        .finally(() => setPending(false));
+      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }
   };
-  return user === null ? null : user === false ? (
+  return profile === null ? null : profile === false ? (
     <Navigate to="/login" />
   ) : (
     <>
@@ -176,23 +215,77 @@ function NavBar(props: any) {
             ) : (
               <>
                 <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                  <Search>
-                    <SearchIconWrapper>
-                      <SearchIcon style={{ color: '#737373' }} />
-                    </SearchIconWrapper>
-                    <StyledInputBase
-                      placeholder="Search…"
-                      inputProps={{ 'aria-label': 'search' }}
-                      onChange={s => {
-                        props.handleSearch(s.target.value);
-                      }}
-                    />
-                  </Search>
+                  <StyledAutocomplete
+                    id="free-solo-2-demo"
+                    disableClearable
+                    freeSolo
+                    options={
+                      props.farmer
+                        ? list.filter(
+                            option =>
+                              option.farmer?.email === props.farmer?.email,
+                          )
+                        : list
+                    }
+                    groupBy={(option: any) => option?.type}
+                    getOptionLabel={(option: any) =>
+                      option?.type === 'Farmers'
+                        ? option?.name + ' ' + option?.surname
+                        : option?.name
+                    }
+                    onChange={(event, value: any) => {
+                      if (value.type === 'Farmers') {
+                        props.setFarmer(value);
+                      } else {
+                        props.handleSearch(value.name);
+                      }
+                    }}
+                    renderOption={(props, option: any) => (
+                      <Box
+                        component="li"
+                        sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
+                        {...props}
+                      >
+                        <Avatar
+                          sx={{ margin: 1 }}
+                          src={
+                            option?.type === 'Farmers'
+                              ? option?.avatar
+                              : option?.image
+                          }
+                        />
+                        {option?.type === 'Farmers'
+                          ? option?.name + ' ' + option?.surname
+                          : option?.name}
+                      </Box>
+                    )}
+                    autoHighlight
+                    renderInput={params => (
+                      <TextField
+                        onChange={e => props.handleSearch(e.target.value)}
+                        placeholder="Search..."
+                        sx={{ padding: 0 }}
+                        {...params}
+                        InputProps={{
+                          ...params.InputProps,
+                          autoComplete: 'new-password',
+                          startAdornment: (
+                            <InputAdornment
+                              position="start"
+                              sx={{ marginLeft: 1 }}
+                            >
+                              <SearchIcon />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    )}
+                  />
                 </Box>
 
                 <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
                   <IconButton size="large" onClick={handleMenu}>
-                    <Avatar src={user?.avatar} />
+                    <Avatar src={profile?.avatar} />
                   </IconButton>
                   <Menu
                     id="menu-appbar"
@@ -209,7 +302,7 @@ function NavBar(props: any) {
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
-                    {user.role !== Role.CUSTOMER && (
+                    {profile.role !== Role.CUSTOMER && (
                       <MenuItem onClick={() => navigate('/admin')}>
                         <Person /> Admin
                       </MenuItem>
@@ -218,9 +311,13 @@ function NavBar(props: any) {
                       <LogoutIcon /> Logout
                     </MenuItem>
                   </Menu>
-                  <IconButton size="large" aria-label="show cart">
-                    <Badge badgeContent={4}>
-                      <ShoppingCart onClick={() => setShowBasket(true)} />
+                  <IconButton
+                    size="large"
+                    aria-label="show cart"
+                    onClick={() => setShowBasket(true)}
+                  >
+                    <Badge badgeContent={basket?.entries?.length}>
+                      <ShoppingCart />
                     </Badge>
                   </IconButton>
                 </Box>

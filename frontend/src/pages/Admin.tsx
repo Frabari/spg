@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
@@ -18,13 +18,13 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { getGlobalState, setGlobalState } from '../App';
-import { getMe, logout, Role, User } from '../api/BasilApi';
+import { logout, Role, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { Logo } from '../components/Logo';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { drawerWidth } from '../constants';
-import { PendingStateContext } from '../contexts/pending';
+import { usePendingState } from '../hooks/usePendingState';
+import { useProfile } from '../hooks/useProfile';
 import { AdminOrder } from './AdminOrder';
 import { AdminOrders } from './AdminOrders';
 import { AdminProduct } from './AdminProduct';
@@ -52,8 +52,8 @@ const pages = [
 
 export const Admin = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const user = getGlobalState('user');
-  const { pending, setPending } = useContext(PendingStateContext);
+  const { profile, load } = useProfile();
+  const { pending, setPending } = usePendingState();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -63,10 +63,7 @@ export const Admin = () => {
     try {
       await logout();
       setPending(true);
-      getMe()
-        .then(user => setGlobalState('user', user))
-        .catch(() => setGlobalState('user', false))
-        .finally(() => setPending(false));
+      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }
@@ -101,7 +98,7 @@ export const Admin = () => {
       </List>
       <List sx={{ position: 'absolute', bottom: 0 }}>
         <ListItem>
-          <Avatar src={(user as User)?.avatar} />
+          <Avatar src={(profile as User)?.avatar} />
           <ListItemButton onClick={handleLogout}>
             <ListItemIcon>
               <LogoutIcon />
@@ -113,7 +110,7 @@ export const Admin = () => {
     </div>
   );
 
-  if (typeof user === 'object' && user.role === Role.CUSTOMER) {
+  if (typeof profile === 'object' && profile.role === Role.CUSTOMER) {
     return <Navigate to="/products" />;
   }
 

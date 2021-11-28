@@ -1,17 +1,7 @@
 import { waitFor } from '@testing-library/react';
 import { act, renderHook } from '@testing-library/react-hooks';
 import { Order } from '../api/BasilApi';
-import { PendingStateContext } from '../contexts/pending';
 import { useOrder } from '../hooks/useOrder';
-
-// @ts-ignore
-const wrapper = ({ children }) => (
-  <PendingStateContext.Provider
-    value={{ pending: true, setPending: (value: boolean) => true }}
-  >
-    {children}
-  </PendingStateContext.Provider>
-);
 
 jest.mock('../api/BasilApi', () => {
   const originalModule = jest.requireActual('../api/BasilApi');
@@ -38,7 +28,7 @@ test('create order', async () => {
     deliveryLocation: 'Turin',
   };
 
-  const { result } = renderHook(() => useOrder(), { wrapper });
+  const { result } = renderHook(() => useOrder());
   await act(async () =>
     expect(
       ((await result.current.upsertOrder(order)) as Order).deliveryLocation,
@@ -51,7 +41,7 @@ test('update order', async () => {
     id: 30,
     deliveryLocation: 'Milan',
   };
-  const { result } = renderHook(() => useOrder(30), { wrapper });
+  const { result } = renderHook(() => useOrder(30));
   await act(async () =>
     expect(
       ((await result.current.upsertOrder(order)) as Order).deliveryLocation,
@@ -60,7 +50,7 @@ test('update order', async () => {
 });
 
 test('get order', async () => {
-  const { result } = renderHook(() => useOrder(30), { wrapper });
+  const { result } = renderHook(() => useOrder(30));
   await waitFor(() =>
     expect(result.current.order.deliveryLocation).toEqual('Milan'),
   );

@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { getUsers, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
-import { PendingStateContext } from '../contexts/pending';
+import { usePendingState } from './usePendingState';
 
 export const useUsers = () => {
-  const { setPending } = useContext(PendingStateContext);
+  const { setPending } = usePendingState();
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<ApiException>(null);
   useEffect(() => {

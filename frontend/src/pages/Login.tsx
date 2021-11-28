@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEvent, useContext, useState } from 'react';
+import { ChangeEvent, MouseEvent, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
 import Visibility from '@mui/icons-material/Visibility';
@@ -18,11 +18,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { getGlobalState, setGlobalState } from '../App';
-import { getMe, login } from '../api/BasilApi';
+import { login } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { Logo } from '../components/Logo';
-import { PendingStateContext } from '../contexts/pending';
+import { usePendingState } from '../hooks/usePendingState';
+import { useProfile } from '../hooks/useProfile';
 
 interface State {
   password: string;
@@ -157,23 +157,20 @@ function OutlinedCard(props: any) {
 
 export default function Login(props: any) {
   // const [logged, setLogged] = useState(false);
-  const user = getGlobalState('user');
-  const { setPending } = useContext(PendingStateContext);
+  const { profile, load } = useProfile();
+  const { setPending } = usePendingState();
 
   const handleLogin = async (email: string, password: string) => {
     try {
       await login(email, password);
       setPending(true);
-      getMe()
-        .then(user => setGlobalState('user', user))
-        .catch(() => setGlobalState('user', false))
-        .finally(() => setPending(false));
+      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }
   };
 
-  if (user) {
+  if (profile) {
     return <Navigate to="/products" />;
   }
   return (

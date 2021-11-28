@@ -1,21 +1,8 @@
 import { waitFor } from '@testing-library/react';
 import { act, renderHook } from '@testing-library/react-hooks';
-import { BrowserRouter as Router } from 'react-router-dom';
 import { User } from '../api/BasilApi';
-import { PendingStateContext } from '../contexts/pending';
 import { useUser } from '../hooks/useUser';
 import { useUsers } from '../hooks/useUsers';
-
-// @ts-ignore
-const wrapper = ({ children }) => (
-  <Router>
-    <PendingStateContext.Provider
-      value={{ pending: true, setPending: (value: boolean) => true }}
-    >
-      {children}
-    </PendingStateContext.Provider>
-  </Router>
-);
 
 jest.mock('../api/BasilApi', () => {
   // Require the original module to not be mocked...
@@ -55,7 +42,7 @@ test('create user', async () => {
     password: 'mariorossi',
   };
 
-  const { result } = renderHook(() => useUser(), { wrapper });
+  const { result } = renderHook(() => useUser());
   await act(async () =>
     expect((await result.current.upsertUser(user)).email).toEqual(
       'mario@rossi.com',
@@ -64,7 +51,7 @@ test('create user', async () => {
 });
 
 test('get users', async () => {
-  const { result } = renderHook(() => useUsers(), { wrapper });
+  const { result } = renderHook(() => useUsers());
   await waitFor(() =>
     expect(result.current.users.find(u => u.id === 31).name).toEqual('Luigi'),
   );

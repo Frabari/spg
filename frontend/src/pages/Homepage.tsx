@@ -1,13 +1,13 @@
 import { Navigate } from 'react-router-dom';
 import { Container, Grid, Typography } from '@mui/material';
-import { getGlobalState } from '../App';
+import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
 import { ReactComponent as ImageHome } from './images/image-home.svg';
 
 export default function Homepage() {
-  const user = getGlobalState('user');
+  const { profile } = useProfile();
 
-  return user === null ? null : user === false ? (
+  return profile === null ? null : profile === false ? (
     <>
       <NavigationBox.NavBar loggedIn={0} />
       <Container>
