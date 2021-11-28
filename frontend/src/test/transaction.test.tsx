@@ -11,9 +11,8 @@ test('create transaction', async () => {
   const { result } = renderHook(() => useTransaction());
   await act(async () =>
     expect(
-      (
-        await result.current.upsertTransaction(transaction)
-      ).amount,
+      ((await result.current.upsertTransaction(transaction)) as Transaction)
+        .amount,
     ).toEqual(10),
   );
 });
