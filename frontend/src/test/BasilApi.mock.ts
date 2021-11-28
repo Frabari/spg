@@ -20,6 +20,12 @@ const mockUsers = [
     name: 'Luigi',
   },
 ];
+const mockOrders = [
+  {
+    id: 1,
+    user: mockUser as User,
+  },
+];
 const mockProduct: Partial<Product> = {
   id: 30,
   name: 'Apple',
@@ -78,6 +84,7 @@ jest.mock('../api/BasilApi', () => {
       return Promise.resolve(mockOrder);
     },
     getOrder: (_id: number) => Promise.resolve(mockOrder),
+    getOrders: () => Promise.resolve(mockOrders),
     getUser: () => Promise.resolve(mockUser),
     getMe: () => Promise.resolve(mockUser),
     createUser: (_user: Partial<User>) => Promise.resolve(_user),
