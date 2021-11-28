@@ -85,6 +85,7 @@ export class OrdersController implements CrudController<Order> {
       basket.id,
       dto,
       request.user,
+      true,
     );
     return this.base.updateOneBase(crudRequest, order as Order).then(order => {
       console.log(order, request.user);
