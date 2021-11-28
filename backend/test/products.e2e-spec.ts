@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm';
 import { hash } from 'bcrypt';
-import { UsersModule } from '../src/features/users/users.module';
-import { OrdersModule } from '../src/features/orders/orders.module';
-import { ProductsModule } from '../src/features/products/products.module';
+import * as request from 'supertest';
+import { EntityManager } from 'typeorm';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
+import { OrdersModule } from '../src/features/orders/orders.module';
+import { Product } from '../src/features/products/entities/product.entity';
+import { ProductsModule } from '../src/features/products/products.module';
 import { TransactionsModule } from '../src/features/transactions/transactions.module';
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
-import { validation } from '../src/constants';
-import { Product } from '../src/features/products/entities/product.entity';
+import { UsersModule } from '../src/features/users/users.module';
 
 describe('ProductssController (e2e)', () => {
   let app: INestApplication;

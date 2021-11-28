@@ -1,21 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { OrdersService } from './orders.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from '../users/users.module';
-import { ProductsModule } from '../products/products.module';
-import { CategoriesModule } from '../categories/categories.module';
-import { TransactionsModule } from '../transactions/transactions.module';
-import { OrdersModule } from './orders.module';
-import { EntityManager } from 'typeorm';
-import { Order, OrderStatus } from './entities/order.entity';
-import { User } from '../users/entities/user.entity';
 import { hash } from 'bcrypt';
-import { Product } from '../products/entities/product.entity';
 import { DateTime } from 'luxon';
-import { OrderEntry } from './entities/order-entry.entity';
-import { CreateOrderDto } from './dtos/create-order.dto';
+import { EntityManager } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CategoriesModule } from '../categories/categories.module';
+import { Product } from '../products/entities/product.entity';
+import { ProductsModule } from '../products/products.module';
+import { TransactionsModule } from '../transactions/transactions.module';
+import { User } from '../users/entities/user.entity';
+import { UsersModule } from '../users/users.module';
+import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
+import { OrderEntry } from './entities/order-entry.entity';
+import { Order, OrderStatus } from './entities/order.entity';
+import { OrdersModule } from './orders.module';
+import { OrdersService } from './orders.service';
 
 describe('OrdersService', () => {
   let service: OrdersService;

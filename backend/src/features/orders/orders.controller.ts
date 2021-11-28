@@ -1,4 +1,5 @@
 import { Controller, Param, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CrudController,
   CrudRequest,
@@ -6,16 +7,15 @@ import {
   ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Order } from './entities/order.entity';
-import { OrdersService } from './orders.service';
+import { Crud } from '../../core/decorators/crud.decorator';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
-import { Roles } from '../users/roles.decorator';
 import { RolesGuard } from '../users/guards/roles.guard';
+import { Roles } from '../users/roles.decorator';
 import { ADMINS, Role, STAFF } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
-import { Crud } from '../../core/decorators/crud.decorator';
+import { Order } from './entities/order.entity';
+import { OrdersService } from './orders.service';
 
 @Crud(Order, {
   routes: {
