@@ -41,9 +41,6 @@ function ProductCard(props: any) {
                 <Typography gutterBottom fontSize="17px" component="div">
                   {props.name}
                 </Typography>
-                <Typography fontSize="14px" color="text.secondary">
-                  quantità
-                </Typography>
               </CardContent>
             </Box>
           </Grid>
@@ -109,23 +106,16 @@ export default function Basket({
         justifyItems="center"
         width="auto"
       >
-        {basket.entries
-          ?.filter(e => !filter || e.product.category.slug === filter)
-          ?.filter(
-            e =>
-              !search ||
-              e.product.name.toLowerCase().includes(search.toLowerCase()),
-          )
-          .map(e => (
-            <ProductCard
-              key={e.product.id}
-              name={e.product.name.split(' ')[2]}
-              image={e.product.image}
-              price={e.product.price}
-              description={e.product.description}
-              product={e}
-            />
-          ))}
+        {basket?.entries?.map(e => (
+          <ProductCard
+            key={e.product.id}
+            name={e.product.name.split(' ')[2]}
+            image={e.product.image}
+            price={e.product.price}
+            description={e.product.description}
+            product={e}
+          />
+        ))}
       </Grid>
       <Box
         sx={{
@@ -142,7 +132,7 @@ export default function Basket({
           component="div"
           sx={{ width: '100%', float: 'right' }}
         >
-          Total € ammontare
+          Total € {basket.total}
         </Typography>
         <Button
           component={Link}
