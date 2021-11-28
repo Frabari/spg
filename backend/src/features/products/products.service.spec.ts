@@ -1,16 +1,17 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProductsService } from './products.service';
-import { UsersModule } from '../users/users.module';
-import { ProductsModule } from './products.module';
-import { CategoriesModule } from '../categories/categories.module';
-import { TransactionsModule } from '../transactions/transactions.module';
-import { OrdersModule } from '../orders/orders.module';
-import { Product } from './entities/product.entity';
 import { EntityManager } from 'typeorm';
 import { Not } from 'typeorm';
+import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CategoriesModule } from '../categories/categories.module';
+import { OrdersModule } from '../orders/orders.module';
+import { TransactionsModule } from '../transactions/transactions.module';
 import { User } from '../users/entities/user.entity';
-import { hash } from 'bcrypt';
+import { Role } from '../users/roles.enum';
+import { UsersModule } from '../users/users.module';
+import { CreateProductDto } from './dtos/create-product.dto';
+import { Product } from './entities/product.entity';
+import { ProductsModule } from './products.module';
+import { ProductsService } from './products.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -65,6 +66,37 @@ describe('ProductsService', () => {
       });
       expect(productUpdated.available).toEqual(2);
       expect(productUpdated.reserved).toEqual(8);
+    });
+  });
+
+  describe('checkProduct', () => {
+    it('should validate a product dto', async () => {
+      const dto = {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      } as CreateProductDto;
+      const result = await service.checkProduct(dto, {
+        id: 1,
+        role: Role.EMPLOYEE,
+      } as User);
+      expect(result).toBeDefined();
+    });
+
+    it('should limit the fields for farmers', async () => {
+      const dto = {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+        reserved: 5,
+      } as CreateProductDto;
+      const result = await service.checkProduct(dto, {
+        id: 1,
+        role: Role.FARMER,
+      } as User);
+      expect(result.reserved).toBeUndefined();
     });
   });
 

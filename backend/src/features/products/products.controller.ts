@@ -10,19 +10,25 @@ import {
   CrudController,
   CrudRequest,
   Override,
+  ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
 import { Crud } from '../../core/decorators/crud.decorator';
 import { ParseBoolFlagPipe } from '../../core/pipes/parse-bool-flag.pipe';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
-import { Role } from '../users/roles.enum';
+import { Roles } from '../users/roles.decorator';
+import { ADMINS, Role } from '../users/roles.enum';
+import { CreateProductDto } from './dtos/create-product.dto';
 import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
 
 @Crud(Product, {
   routes: {
-    only: ['getOneBase', 'getManyBase'],
+    only: ['getOneBase', 'getManyBase', 'createOneBase'],
+  },
+  dto: {
+    create: CreateProductDto,
   },
   query: {
     join: {
@@ -82,5 +88,16 @@ export class ProductsController implements CrudController<Product> {
       }
       return p;
     });
+  }
+
+  @Override()
+  @Roles(...ADMINS)
+  async createOne(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @ParsedBody() dto: CreateProductDto,
+  ) {
+    const product = await this.service.checkProduct(dto, request.user);
+    return this.base.createOneBase(crudRequest, product as Product);
   }
 }
