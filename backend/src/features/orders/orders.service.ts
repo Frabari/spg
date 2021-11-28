@@ -27,13 +27,14 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   async resolveBasket(user: User) {
+    console.log(user);
     const basket = await this.ordersRepository.findOne(
       {
         status: OrderStatus.DRAFT,
         user,
       },
       {
-        relations: ['entries', 'entries.product'],
+        relations: ['entries', 'entries.product', 'user'],
       },
     );
     if (basket) {
