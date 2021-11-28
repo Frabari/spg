@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -18,7 +17,6 @@ import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
 
 function ProductCard(props: any) {
-  const [open, setOpen] = useState(false);
   const { basket, upsertEntry } = useBasket();
   const navigate = useNavigate();
 
@@ -122,7 +120,7 @@ export default function ProductsGrid({
           .map(p => (
             <ProductCard
               key={p.id}
-              name={p.name.split(' ')[2]}
+              name={p.name}
               image={p.image}
               price={p.price}
               description={p.description}
