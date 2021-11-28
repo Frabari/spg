@@ -1,4 +1,9 @@
-import { Order, Product, ProductId, User } from '../api/BasilApi';
+import { Order, Product, ProductId, Transaction, User } from '../api/BasilApi';
+
+const mockTransaction: Partial<Transaction> = {
+  id: 10,
+  amount: 10,
+};
 
 let mockOrder: Partial<Order> = {
   id: 30,
@@ -81,6 +86,8 @@ jest.mock('../api/BasilApi', () => {
     getProduct: (id?: ProductId) => Promise.resolve(mockProduct),
     getProducts: () => Promise.resolve(mockProducts),
     getCategories: () => Promise.resolve(mockCategories),
+    createTransaction: (_transaction: Partial<Transaction>) =>
+      Promise.resolve(_transaction),
     getBasket: () => Promise.resolve(mockBasket),
     updateBasket(_basket: Partial<Order>) {
       mockBasket = _basket;
