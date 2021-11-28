@@ -30,3 +30,42 @@ test('updateBasket', async () => {
     ).toMatchObject(dto);
   });
 });
+
+test('upsert Empty Basket', async () => {
+  const { result } = renderHook(() => useBasket());
+  return act(async () => {
+    const product: Partial<Product> = {
+      id: 1,
+    };
+    const dto = {
+      id: 1,
+      user: { id: 1 },
+      entries: [
+        {
+          id: 1,
+          product: { id: 1 } as Product,
+          quantity: 2,
+        },
+      ],
+    };
+    return expect(
+      await result.current.upsertEntry(product as Product, 2),
+    ).toMatchObject(dto);
+  });
+});
+
+test('delete entry', async () => {
+  const { result } = renderHook(() => useBasket());
+  return act(async () => {
+    const product: Partial<Product> = {
+      id: 1,
+    };
+    const dto = {
+      id: 1,
+      user: { id: 1 },
+    };
+    return expect(
+      await result.current.deleteEntry(product as Product),
+    ).toMatchObject(dto);
+  });
+});
