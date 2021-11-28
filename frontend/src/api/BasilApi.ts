@@ -130,7 +130,8 @@ export const getMe = () => client.get<User>('/users/me');
 export const createUser = (user: Partial<User>) =>
   client.post<User>('/users', user);
 
-export const getProducts = () => client.get<Product[]>('/products');
+export const getProducts = (loadAllStock = false) =>
+  client.get<Product[]>(`/products${loadAllStock ? '?stock' : ''}`);
 
 export const getProduct = (id: ProductId) =>
   client.get<Product>(`/products/${id}`);
