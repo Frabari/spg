@@ -5,6 +5,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { Body, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   CrudController,
@@ -25,7 +26,7 @@ import { ProductsService } from './products.service';
 
 @Crud(Product, {
   routes: {
-    only: ['getOneBase', 'getManyBase', 'createOneBase'],
+    only: ['getOneBase', 'getManyBase', 'createOneBase', 'updateOneBase'],
   },
   dto: {
     create: CreateProductDto,
@@ -99,5 +100,20 @@ export class ProductsController implements CrudController<Product> {
   ) {
     const product = await this.service.checkProduct(dto, request.user);
     return this.base.createOneBase(crudRequest, product as Product);
+  }
+  @Override()
+  @Roles(...ADMINS)
+  async updateOne(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @Body() dto: Product,
+    @Param('id') id: number,
+  ) {
+    const product = await this.service.checkProductsUpdate(
+      id,
+      dto,
+      request.user,
+    );
+    return this.base.updateOneBase(crudRequest, product as Product);
   }
 }
