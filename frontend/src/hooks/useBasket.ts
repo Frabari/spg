@@ -70,7 +70,6 @@ export const useBasket = () => {
     setPending(true);
     getBasket()
       .then(b => {
-        console.log(b);
         setBasket(b);
       })
       .catch(e => {
