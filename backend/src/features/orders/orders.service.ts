@@ -2,6 +2,7 @@ import { DateTime } from 'luxon';
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -100,6 +101,12 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
     }
     if (isBasket) {
+      if (order.user.id !== user.id) {
+        throw new ForbiddenException(
+          'Order.ForbiddenEdit',
+          `Cannot edit someone else's basket`,
+        );
+      }
       (dto as Order).user = user;
     }
     if (dto.status) {
