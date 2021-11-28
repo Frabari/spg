@@ -35,7 +35,7 @@ function App() {
             />
 
             <Route
-              path="/products"
+              path="/products/*"
               element={
                 <ProtectedRoute>
                   <Products />

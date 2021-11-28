@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Navigate, Routes, Route, useSearchParams } from 'react-router-dom';
 import { Container } from '@mui/material';
 import ProductsGrid from '../components/ProductsGrid';
 import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
+import ProductInfo from './ProductInfo';
 
 export default function Products() {
   const { profile } = useProfile();
@@ -32,15 +33,23 @@ export default function Products() {
         products={true}
         handleSearch={handleSearch}
       />
-      <Container sx={{ mt: 18 }}>
-        <ProductsGrid
-          farmer={farmer}
-          filter={queryParams.get('category')}
-          search={search}
-          onSelect={null}
-          handleDelete={handleDelete}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Container sx={{ mt: 18 }}>
+              <ProductsGrid
+                farmer={farmer}
+                filter={queryParams.get('category')}
+                search={search}
+                onSelect={null}
+                handleDelete={handleDelete}
+              />
+            </Container>
+          }
         />
-      </Container>
+        <Route path="/:id" element={<ProductInfo />} />
+      </Routes>
     </>
   );
 }

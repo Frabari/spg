@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
@@ -14,15 +16,17 @@ import {
 import { Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
-import ProductInfo from '../pages/ProductInfo';
 
 function ProductCard(props: any) {
   const [open, setOpen] = useState(false);
   const { basket, upsertEntry } = useBasket();
+  const navigate = useNavigate();
 
   const handleInfo = () => {
     if (!props.onSelect) {
-      setOpen(true);
+      navigate(`/products/${props.product.id}`, {
+        state: { product: props.product },
+      });
     }
   };
 
@@ -30,13 +34,14 @@ function ProductCard(props: any) {
     if (props.onSelect) {
       props.onSelect(product);
     } else {
-      upsertEntry(product, 1).then();
+      upsertEntry(product, 1).then(o => {
+        toast.success(`${product.name} succesfully added!`);
+      });
     }
   };
 
   return (
     <Grid item lg={3} md={4} sm={6} xs={12}>
-      <ProductInfo open={open} setOpen={setOpen} {...props} />
       <Card sx={{ height: '400' }}>
         <CardMedia
           component="img"
@@ -44,8 +49,9 @@ function ProductCard(props: any) {
           width="200"
           image={props.image}
           onClick={handleInfo}
+          sx={{ cursor: 'pointer' }}
         />
-        <CardContent onClick={handleInfo}>
+        <CardContent onClick={handleInfo} sx={{ cursor: 'pointer' }}>
           <Typography gutterBottom variant="h5" component="div" align="center">
             {props.name}
           </Typography>
@@ -53,7 +59,7 @@ function ProductCard(props: any) {
             {props.product?.available} kg available
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center">
-            € {props.price}/kg
+            € {props.price}/{props.product.unitOfMeasure}
           </Typography>
         </CardContent>
         <CardActions>

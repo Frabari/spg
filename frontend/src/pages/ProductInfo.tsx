@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import { Box, Button, IconButton, Modal, Typography } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { toast } from 'react-hot-toast';
+import { useLocation, useNavigate } from 'react-router-dom';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import {
+  Avatar,
+  Box,
+  Button,
+  Container,
+  Chip,
+  Grid,
+  Typography,
+  TextField,
+  MenuItem,
+  IconButton,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useBasket } from '../hooks/useBasket';
 
 const Img = styled('img')({
   margin: 'auto',
@@ -14,103 +26,194 @@ const Img = styled('img')({
 
 export default function ProductInfo(props: any) {
   const [counter, setCounter] = useState(1);
-  const handleClose = () => {
-    props.setOpen(false);
-    setCounter(0);
-  };
+  const location = useLocation();
+  const navigate = useNavigate();
+  const product = location.state.product;
+  const farmer = product.farmer;
+  const { basket, upsertEntry } = useBasket();
+  let quantity = [];
+
+  for (let i = 1; i <= product.available; i++) {
+    quantity.push(i);
+  }
 
   const style = {
-    position: 'absolute' as 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 350,
+    width: '90%',
     bgcolor: 'background.paper',
-    boxShadow: 24,
+    boxShadow: 1,
+    borderRadius: '16px',
+    marginInline: 'auto',
+    justifySelf: 'center',
+    alignSelf: 'center',
     p: 4,
   };
 
+  const handleChange = (q: number) => {
+    setCounter(q);
+  };
+
+  const handleClick = () => {
+    upsertEntry(product, counter).then(o => {
+      toast.success(`${product.name} succesfully added!`);
+      navigate('/products');
+    });
+  };
+
   return (
-    <Modal open={props.open} onClose={handleClose}>
+    <Container sx={{ my: 18 }}>
       <Box sx={style}>
-        <Grid
-          container
-          direction="column"
-          spacing="2rem"
-          padding="30px"
-          alignItems="center"
-          justifyItems="center"
-        >
-          <Grid item xs={12}>
-            <Img width="800" src={props.image} />
-          </Grid>
+        <Grid container direction="column" spacing={2}>
           <Grid item xs={12}>
             <Grid
               container
-              direction="column"
+              direction="row"
               spacing={2}
               alignItems="center"
               justifyItems="center"
             >
-              <Grid item xs>
-                <Typography gutterBottom variant="h4" component="div">
-                  {props.name}
-                </Typography>
-                <Typography align="center" variant="body2" color="info">
-                  {props.description}
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography
-                  align="left"
-                  variant="subtitle1"
-                  component="div"
-                  display="inline"
-                >
-                  {props.product?.available} available
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography
-                  align="left"
-                  variant="subtitle1"
-                  component="div"
-                  display="inline"
-                >
-                  € {props.price}
-                </Typography>
-                <Typography
-                  align="left"
-                  variant="caption"
-                  color="text.secondary"
-                >
-                  /kg
-                </Typography>
-              </Grid>
-              <Grid item>
-                <IconButton
-                  disabled={counter === 1}
-                  onClick={() => setCounter(counter - 1)}
-                >
-                  <RemoveCircleOutlineIcon />
-                </IconButton>
-                <Typography variant="body2" display="inline">
-                  {counter}
-                </Typography>
-                <IconButton
-                  disabled={counter === props.product?.available}
-                  onClick={() => setCounter(counter + 1)}
-                >
-                  <AddCircleOutlineIcon />
+              <Grid item xs={1}>
+                <IconButton onClick={() => navigate('/products')}>
+                  <ArrowBackIcon />
                 </IconButton>
               </Grid>
-              <Grid item>
-                <Button>Add to cart</Button>
+              <Grid item xs={10}>
+                <Typography
+                  align="right"
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                >
+                  {'Product by ' + farmer.name + ' ' + farmer.surname}
+                </Typography>
+              </Grid>
+              <Grid item xs={1}>
+                <Avatar src={farmer.avatar} sx={{ boxShadow: 2, right: 0 }} />
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid item xs={12}>
+            <Grid
+              container
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              justifyItems="center"
+            >
+              <Grid item xs={4}>
+                <Img width="800" src={product.image} />
+              </Grid>
+              <Grid item xs={8}>
+                <Grid
+                  container
+                  direction="column"
+                  spacing={3}
+                  justifyItems="center"
+                >
+                  <Grid item>
+                    <Grid
+                      container
+                      direction="row"
+                      spacing={2}
+                      justifyItems="center"
+                      alignItems="center"
+                    >
+                      <Grid item>
+                        <Typography
+                          align="left"
+                          gutterBottom
+                          variant="h5"
+                          fontSize={40}
+                          component="div"
+                        >
+                          {product.name}
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Chip
+                          sx={{
+                            color: '#ffffff',
+                            backgroundColor: '#5dd886',
+                            marginBottom: '16px',
+                            fontWeight: 'bold',
+                            fontSize: 20,
+                            py: 3,
+                          }}
+                          label={`${product?.available} ${product.unitOfMeasure} left!`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Typography
+                      align="left"
+                      variant="h5"
+                      color="info"
+                      textAlign="justify"
+                      fontSize={20}
+                      pr={8}
+                    >
+                      {product.description === 'description'
+                        ? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+                        : product.description}
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <Typography
+                      align="left"
+                      variant="h5"
+                      component="div"
+                      display="inline"
+                      fontWeight="bold"
+                    >
+                      € {product.price}
+                    </Typography>
+                    <Typography
+                      align="left"
+                      variant="h6"
+                      color="text.secondary"
+                      display="inline"
+                      fontWeight="bold"
+                    >
+                      /{product.unitOfMeasure}
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <Grid
+                      container
+                      direction="row"
+                      spacing={2}
+                      justifyItems="center"
+                      alignItems="center"
+                    >
+                      <Grid item xs={4}>
+                        <TextField
+                          id="outlined-select-quantity"
+                          select
+                          label="Quantity"
+                          value={counter}
+                          onChange={e => handleChange(parseInt(e.target.value))}
+                          helperText="Select the desired quantity"
+                        >
+                          {quantity.map(option => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                      <Grid item xs={8} mb={5}>
+                        <Button onClick={() => handleClick()}>
+                          Add to basket
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
           </Grid>
         </Grid>
       </Box>
-    </Modal>
+    </Container>
   );
 }
