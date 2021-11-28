@@ -41,7 +41,7 @@ export const useBasket = () => {
       if (quantity === 0) {
         dto.entries = dto.entries.filter(e => e !== existingEntry);
       } else {
-        existingEntry.quantity = quantity;
+        existingEntry.quantity += quantity;
       }
     } else {
       dto.entries.push({
