@@ -160,6 +160,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           );
         }
       }
+
       /*const total = dto.entries?.reduce(
         (acc, val) => acc + val.quantity * val.product?.price,
         0,
