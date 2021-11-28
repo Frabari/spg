@@ -1,3 +1,5 @@
+import { Type } from 'class-transformer';
+import { IsNotEmpty } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -5,9 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
-import { Type } from 'class-transformer';
 
 export type TransactionId = number;
 
