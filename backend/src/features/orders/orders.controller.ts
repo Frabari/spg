@@ -21,7 +21,7 @@ import { Crud } from '../../core/decorators/crud.decorator';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
-import { ADMINS, ALL, Role, STAFF } from '../users/roles.enum';
+import { ADMINS, Role, STAFF } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -63,14 +63,12 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Get('basket')
-  @Roles(...ALL)
   getBasket(@Request() request) {
     return this.service.resolveBasket(request.user);
   }
 
   @Patch('basket')
   @UseInterceptors(CrudRequestInterceptor)
-  @Roles(...ALL)
   async updateBasket(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,

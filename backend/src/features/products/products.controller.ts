@@ -1,10 +1,11 @@
 import {
   Controller,
   NotFoundException,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   CrudController,
   CrudRequest,
@@ -12,6 +13,7 @@ import {
   ParsedRequest,
 } from '@nestjsx/crud';
 import { Crud } from '../../core/decorators/crud.decorator';
+import { ParseBoolFlagPipe } from '../../core/pipes/parse-bool-flag.pipe';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { Role } from '../users/roles.enum';
@@ -41,9 +43,19 @@ export class ProductsController implements CrudController<Product> {
   }
 
   @Override()
-  getMany(@ParsedRequest() crudReq: CrudRequest, @Request() req) {
+  @ApiQuery({
+    name: 'stock',
+    type: Boolean,
+    allowEmptyValue: true,
+    required: false,
+  })
+  getMany(
+    @ParsedRequest() crudReq: CrudRequest,
+    @Request() req,
+    @Query('stock', ParseBoolFlagPipe) stock = false,
+  ) {
     const user = req.user as User;
-    if (user.role === Role.CUSTOMER) {
+    if (!stock || user.role === Role.CUSTOMER) {
       crudReq.parsed.search = {
         $and: crudReq.parsed.search.$and.concat({
           public: true,

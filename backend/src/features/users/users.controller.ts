@@ -23,7 +23,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './roles.decorator';
-import { ADMINS, ALL, Role } from './roles.enum';
+import { ADMINS, Role } from './roles.enum';
 import { UsersService } from './users.service';
 
 @Crud(User, {
@@ -46,7 +46,6 @@ export class UsersController implements CrudController<User> {
   @Override()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(...ALL)
   getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() req) {
     const user = req.user as User;
     if (user.role === Role.CUSTOMER) {
