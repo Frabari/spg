@@ -563,7 +563,7 @@ describe('OrdersService', () => {
       ).rejects.toThrowError(BadRequestException);
     });
 
-    it('should update the available and reserved fields of a product', async () => {
+    it('should restore the availability of a product after has been removed from the basket', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = module.get(EntityManager);
@@ -641,6 +641,7 @@ describe('OrdersService', () => {
       order = await entityManager.findOne(Order, order.id);
       expect(order.status).toEqual(OrderStatus.LOCKED);
     });
+
     /* it('should fail if the user does not has sufficient balance ', async () => {
      const email = 'test@example.com';
      const password = 'testpwd';
