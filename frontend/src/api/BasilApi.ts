@@ -138,6 +138,12 @@ export const getProducts = (loadAllStock = false) =>
 export const getProduct = (id: ProductId) =>
   client.get<Product>(`/products/${id}`);
 
+export const createProduct = (product: Partial<Product>) =>
+  client.post<Product>('/products', product);
+
+export const updateProduct = (id: ProductId, product: Partial<Product>) =>
+  client.patch<Product>(`/products/${id}`, product);
+
 export const getCategories = () => client.get<Category[]>('/categories');
 
 export const getOrders = () => client.get<Order[]>('/orders');
