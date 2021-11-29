@@ -6,7 +6,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
 import DoneIcon from '@mui/icons-material/Done';
 import DraftsIcon from '@mui/icons-material/Drafts';
-import { Box, Button, Chip, TableSortLabel, Typography } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import {
+  Box,
+  Button,
+  Chip,
+  InputBase,
+  styled,
+  TableSortLabel,
+  Typography,
+} from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -67,6 +76,46 @@ const columns: {
   },
 ];
 
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: '#f7f7f7',
+  '&:hover': {
+    backgroundColor: '#f7f7f7',
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
+
 export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { orders } = useOrders();
@@ -103,6 +152,22 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
     });
   };
 
+  const handleChange = (value: any) => {
+    setSortedOrders(
+      orders.filter(
+        o =>
+          o.user.email
+            .toLocaleLowerCase()
+            .includes(value.toLocaleLowerCase()) ||
+          o.user.name.toLocaleLowerCase().includes(value.toLocaleLowerCase()) ||
+          o.user.surname
+            .toLocaleLowerCase()
+            .includes(value.toLocaleLowerCase()) ||
+          o.status.toLocaleLowerCase().includes(value.toLocaleLowerCase()),
+      ),
+    );
+  };
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -112,10 +177,20 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
           component="h1"
           color="primary.main"
           fontWeight="bold"
-          sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
+          sx={{ minWidth: '6rem', fontSize: { sm: 28 }, mr: 'auto' }}
         >
           Orders
         </Typography>
+        <Search>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="Search…"
+            inputProps={{ 'aria-label': 'search' }}
+            onChange={e => handleChange(e.target.value)}
+          />
+        </Search>
         <Button
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           variant="contained"

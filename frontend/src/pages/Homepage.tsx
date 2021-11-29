@@ -1,14 +1,13 @@
-import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Container, Grid, Typography } from '@mui/material';
-import { UserContext } from '../contexts/user';
+import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
 import { ReactComponent as ImageHome } from './images/image-home.svg';
 
 export default function Homepage() {
-  const { user } = useContext(UserContext);
+  const { profile } = useProfile();
 
-  return user === null ? null : user === false ? (
+  return profile === null ? null : profile === false ? (
     <>
       <NavigationBox.NavBar loggedIn={0} />
       <Container>

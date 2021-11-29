@@ -6,16 +6,20 @@ import {
   CardActions,
   CardContent,
   CardMedia,
+  Chip,
   Grid,
   IconButton,
   Typography,
 } from '@mui/material';
-import { Product } from '../api/BasilApi';
+import { Product, User } from '../api/BasilApi';
+import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
 import ProductInfo from '../pages/ProductInfo';
 
 function ProductCard(props: any) {
   const [open, setOpen] = useState(false);
+  const { basket, upsertEntry } = useBasket();
+  props.setBalanceWarnig(basket.insufficientBalance);
 
   const handleInfo = () => {
     if (!props.onSelect) {
@@ -23,10 +27,13 @@ function ProductCard(props: any) {
     }
   };
 
-  const handleSelect = () => {
+  const handleSelect = (product: Product) => {
     if (props.onSelect) {
-      props.onSelect(props.product);
+      props.onSelect(product);
+    } else {
+      upsertEntry(product, 1).then();
     }
+    props.setBalanceWarnig(basket.insufficientBalance);
   };
 
   return (
@@ -53,7 +60,7 @@ function ProductCard(props: any) {
         </CardContent>
         <CardActions>
           <Box marginLeft="auto" padding="0.5rem">
-            <IconButton onClick={handleSelect}>
+            <IconButton onClick={() => handleSelect(props.product)}>
               <AddIcon />
             </IconButton>
           </Box>
@@ -64,42 +71,65 @@ function ProductCard(props: any) {
 }
 
 export default function ProductsGrid({
+  farmer,
   filter,
   onSelect,
   search,
+  handleDelete,
+  setBalanceWarnig,
 }: {
+  farmer?: User;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
+  handleDelete?: () => void;
+  setBalanceWarnig?: (bol: boolean) => void;
 }) {
   const { products } = useProducts();
 
   return (
-    <Grid
-      container
-      direction="row"
-      spacing="2rem"
-      padding="1rem"
-      alignItems="center"
-      justifyItems="center"
-      width="auto"
-    >
-      {products
-        ?.filter(p => !filter || p.category.slug === filter)
-        ?.filter(
-          p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
-        )
-        .map(p => (
-          <ProductCard
-            key={p.id}
-            name={p.name.split(' ')[2]}
-            image={p.image}
-            price={p.price}
-            description={p.description}
-            product={p}
-            onSelect={onSelect}
-          />
-        ))}
-    </Grid>
+    <>
+      {farmer && (
+        <Chip
+          sx={{ marginLeft: 2 }}
+          onDelete={handleDelete}
+          variant="outlined"
+          label={`Product by ${farmer.name} ${farmer.surname}`}
+        />
+      )}
+      <Grid
+        container
+        direction="row"
+        spacing="2rem"
+        padding="1rem"
+        alignItems="center"
+        justifyItems="center"
+        width="auto"
+      >
+        {products
+          ?.filter(p => !filter || p.category.slug === filter)
+          ?.filter(
+            p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
+          )
+          ?.filter(
+            p =>
+              !farmer ||
+              p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
+          )
+          ?.filter(p => p.available > 0)
+          .map(p => (
+            <ProductCard
+              key={p.id}
+              name={p.name.split(' ')[2]}
+              image={p.image}
+              price={p.price}
+              description={p.description}
+              product={p}
+              onSelect={onSelect}
+              setBalanceWarnig={setBalanceWarnig}
+            />
+          ))}
+      </Grid>
+    </>
   );
 }

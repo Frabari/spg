@@ -1,12 +1,14 @@
 import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
+  Allow,
   IsIn,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Validate,
 } from 'class-validator';
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   Entity,
@@ -86,7 +88,7 @@ export class Order {
    */
   @Column({ default: OrderStatus.DRAFT, nullable: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsIn(Object.values(OrderStatus))
   status: OrderStatus;
 
@@ -94,8 +96,7 @@ export class Order {
    * An array of products with their respective quantities
    */
   @OneToMany(() => OrderEntry, entry => entry.order, { cascade: true })
-  @IsNotEmpty()
-  @ArrayMinSize(1)
+  @Allow()
   entries: OrderEntry[];
 
   /**
@@ -127,4 +128,23 @@ export class Order {
   @CreateDateColumn()
   @Type(() => Date)
   createdAt: Date;
+
+  /**
+   * The total amount to be paid
+   */
+  total?: number;
+
+  /**
+   * A flag to check if the balance of the user
+   * is enough to purchase the products selected
+   */
+  insufficientBalance?: boolean;
+
+  @AfterLoad()
+  calculateTotal() {
+    this.total = this.entries?.reduce(
+      (acc, val) => acc + val.quantity * val.product?.price,
+      0,
+    );
+  }
 }

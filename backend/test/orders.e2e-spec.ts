@@ -1,22 +1,22 @@
+import { hash } from 'bcrypt';
+import * as request from 'supertest';
+import { EntityManager } from 'typeorm';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from '../src/features/users/users.module';
-import { OrdersModule } from '../src/features/orders/orders.module';
-import { ProductsModule } from '../src/features/products/products.module';
-import { CategoriesModule } from '../src/features/categories/categories.module';
-import { TransactionsModule } from '../src/features/transactions/transactions.module';
 import { validation } from '../src/constants';
-import { EntityManager } from 'typeorm';
-import { User } from '../src/features/users/entities/user.entity';
-import { hash } from 'bcrypt';
-import { Role } from '../src/features/users/roles.enum';
+import { CategoriesModule } from '../src/features/categories/categories.module';
 import {
   Order,
   OrderStatus,
 } from '../src/features/orders/entities/order.entity';
+import { OrdersModule } from '../src/features/orders/orders.module';
 import { Product } from '../src/features/products/entities/product.entity';
+import { ProductsModule } from '../src/features/products/products.module';
+import { TransactionsModule } from '../src/features/transactions/transactions.module';
+import { User } from '../src/features/users/entities/user.entity';
+import { Role } from '../src/features/users/roles.enum';
+import { UsersModule } from '../src/features/users/users.module';
 
 describe('OrdersController (e2e)', () => {
   let app: INestApplication;
@@ -245,74 +245,6 @@ describe('OrdersController (e2e)', () => {
           entries: [
             {
               quantity: 0,
-              product: { id: product.id },
-            },
-          ],
-        })
-        .expect(400);
-    });
-
-    it('should fail if the are not entries', async () => {
-      const email = 'test@example.com';
-      const password = 'testpwd';
-      const entityManager = app.get(EntityManager);
-      const user = await entityManager.save(User, {
-        email,
-        password: await hash(password, 10),
-        name: 'John',
-        surname: 'Doe',
-        role: Role.EMPLOYEE,
-      });
-      const product = await entityManager.save(Product, {
-        name: 'onions',
-        description: 'very good onions',
-        price: 10,
-        available: 10,
-      });
-      const server = app.getHttpServer();
-      const response = await request(server)
-        .post('/users/login')
-        .send({ username: email, password });
-      const authToken = response.body.token;
-      return request(server)
-        .post('/orders')
-        .auth(authToken, { type: 'bearer' })
-        .send({
-          user: { id: user.id },
-        })
-        .expect(400);
-    });
-
-    it('should fail if the are not entries', async () => {
-      const email = 'test@example.com';
-      const password = 'testpwd';
-      const entityManager = app.get(EntityManager);
-      const user = await entityManager.save(User, {
-        email,
-        password: await hash(password, 10),
-        name: 'John',
-        surname: 'Doe',
-        role: Role.EMPLOYEE,
-      });
-      const product = await entityManager.save(Product, {
-        name: 'onions',
-        description: 'very good onions',
-        price: 10,
-        available: 2,
-      });
-      const server = app.getHttpServer();
-      const response = await request(server)
-        .post('/users/login')
-        .send({ username: email, password });
-      const authToken = response.body.token;
-      return request(server)
-        .post('/orders')
-        .auth(authToken, { type: 'bearer' })
-        .send({
-          user: { id: user.id },
-          entries: [
-            {
-              quantity: 10,
               product: { id: product.id },
             },
           ],

@@ -2,6 +2,7 @@ import { DateTime } from 'luxon';
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { ProductsService } from '../products/products.service';
 import { User } from '../users/entities/user.entity';
+import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
@@ -32,7 +34,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         user,
       },
       {
-        relations: ['entries', 'entries.product'],
+        relations: ['entries', 'entries.product', 'user'],
       },
     );
     if (basket) {
@@ -55,49 +57,6 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         );
       }
     }
-    for (const entry of dto.entries) {
-      if (entry.quantity < 1) {
-        throw new BadRequestException(
-          'Order.QuantityZero',
-          `You make an order with a wrong quantity`,
-        );
-      }
-      const product = await this.productsService.findOne(entry.product?.id);
-      if (!product) {
-        throw new BadRequestException(
-          'Order.EntryProductNotFound',
-          'An entry in your order references an invalid product',
-        );
-      }
-      if (product.available < entry.quantity) {
-        throw new BadRequestException(
-          'Order.InsufficientEntry',
-          `There is not enough ${product.name} to satisfy your request`,
-        );
-      }
-      await this.productsService.reserveProductAmount(product, entry.quantity);
-    }
-    return dto;
-  }
-
-  async checkOrderUpdate(id: OrderId, dto: UpdateOrderDto) {
-    const order = await this.ordersRepository.findOne(id, {
-      relations: ['entries', 'entries.product'],
-    });
-    if (!order) {
-      throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
-    }
-    const oldStatusOrder = statuses.indexOf(order.status);
-    const newStatusOrder = statuses.indexOf(dto.status);
-    if (newStatusOrder < oldStatusOrder) {
-      throw new BadRequestException(
-        'Order.IllegalStatusTransition',
-        `Cannot revert an order's status change`,
-      );
-    }
-    if (order.status === OrderStatus.LOCKED) {
-      delete dto.entries;
-    }
     if (dto.entries?.length) {
       for (const entry of dto.entries) {
         if (entry.quantity < 1) {
@@ -113,6 +72,76 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             'An entry in your order references an invalid product',
           );
         }
+        if (product.available < entry.quantity) {
+          throw new BadRequestException(
+            'Order.InsufficientEntry',
+            `There is not enough ${product.name} to satisfy your request`,
+          );
+        }
+        await this.productsService.reserveProductAmount(
+          product,
+          entry.quantity,
+        );
+      }
+    }
+    return dto;
+  }
+
+  async checkOrderUpdate(
+    id: OrderId,
+    dto: UpdateOrderDto,
+    user: User,
+    isBasket = false,
+  ) {
+    const order = await this.ordersRepository.findOne(id, {
+      relations: ['entries', 'entries.product', 'user'],
+    });
+    if (!order) {
+      throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
+    }
+    if (isBasket) {
+      if (order.user.id !== user.id) {
+        throw new ForbiddenException(
+          'Order.ForbiddenEdit',
+          `Cannot edit someone else's basket`,
+        );
+      }
+      (dto as Order).user = user;
+    }
+    if (dto.status) {
+      const oldStatusOrder = statuses.indexOf(order.status);
+      const newStatusOrder = statuses.indexOf(dto.status);
+      if (newStatusOrder < oldStatusOrder) {
+        throw new BadRequestException(
+          'Order.IllegalStatusTransition',
+          `Cannot revert an order's status change`,
+        );
+      }
+    }
+    if (!ADMINS.includes(user.role)) {
+      if (order.status !== OrderStatus.DRAFT) {
+        delete dto.entries;
+      }
+      delete dto.status;
+    }
+
+    if (dto.entries?.length) {
+      for (const entry of dto.entries) {
+        if (entry.quantity < 1) {
+          throw new BadRequestException(
+            'Order.QuantityZero',
+            `You make an order with a wrong quantity`,
+          );
+        }
+        const product = await this.productsService.findOne(entry.product?.id);
+        if (!product) {
+          throw new BadRequestException(
+            'Order.EntryProductNotFound',
+            'An entry in your order references an invalid product',
+          );
+        }
+        entry.product = product;
+
         const existingEntry = order.entries.find(e => e.id === entry.id);
         let delta = 0;
         if (existingEntry) {
@@ -136,14 +165,26 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           await this.productsService.reserveProductAmount(product, delta);
         }
       }
-    }
-    for (const oldEntry of order.entries) {
-      if (!dto.entries.some(e => e.product.id === oldEntry.product.id)) {
-        await this.productsService.reserveProductAmount(
-          oldEntry.product,
-          -oldEntry.quantity,
-        );
+
+      for (const oldEntry of order.entries) {
+        if (!dto.entries.some(e => e.product.id === oldEntry.product.id)) {
+          await this.productsService.reserveProductAmount(
+            oldEntry.product,
+            -oldEntry.quantity,
+          );
+        }
       }
+
+      /*const total = dto.entries?.reduce(
+        (acc, val) => acc + val.quantity * val.product?.price,
+        0,
+      );
+      if(user.balance < total){
+        throw new BadRequestException(
+          'Order.InsufficientBalance',
+          `The  user balance is insufficient to satisfy your request`,
+        );
+      }*/
     }
     return dto;
   }
@@ -157,5 +198,12 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         status: OrderStatus.LOCKED,
       },
     );
+  }
+
+  checkOrderBalance(order: Order, user: User) {
+    if (user.balance < order.total) {
+      order.insufficientBalance = true;
+    }
+    return order;
   }
 }

@@ -1,16 +1,17 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Container } from '@mui/material';
 import ProductsGrid from '../components/ProductsGrid';
-import { UserContext } from '../contexts/user';
+import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
 
 export default function Products() {
-  const { user } = useContext(UserContext);
+  const { profile } = useProfile();
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
-
-  if (!user) {
+  const [farmer, setFarmer] = useState(null);
+  const [balanceWarning, setBalanceWarnig] = useState(false);
+  if (!profile) {
     return <Navigate to="/" />;
   }
 
@@ -18,18 +19,28 @@ export default function Products() {
     setSearch(value);
   };
 
+  const handleDelete = () => {
+    setFarmer('');
+  };
+
   return (
     <>
       <NavigationBox.NavBar
+        farmer={farmer}
+        setFarmer={setFarmer}
         loggedIn={1}
         products={true}
         handleSearch={handleSearch}
+        balanceWarning={balanceWarning}
       />
       <Container sx={{ mt: 18 }}>
         <ProductsGrid
+          farmer={farmer}
           filter={queryParams.get('category')}
           search={search}
           onSelect={null}
+          handleDelete={handleDelete}
+          setBalanceWarnig={setBalanceWarnig}
         />
       </Container>
     </>

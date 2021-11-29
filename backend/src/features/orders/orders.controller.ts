@@ -57,15 +57,21 @@ export class OrdersController implements CrudController<Order> {
 
   @Override()
   @Roles(...STAFF)
-  getMany(@ParsedRequest() request: CrudRequest) {
-    request.parsed.fields = ['id', 'status', 'createdAt'];
-    return this.base.getManyBase(request);
+  getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
+    crudRequest.parsed.fields = ['id', 'status', 'createdAt'];
+    return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
+      return orders?.map(order =>
+        this.service.checkOrderBalance(order, request.user),
+      );
+    });
   }
 
   @Get('basket')
   @Roles(...ALL)
   getBasket(@Request() request) {
-    return this.service.resolveBasket(request.user);
+    return this.service
+      .resolveBasket(request.user)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 
   @Patch('basket')
@@ -81,37 +87,52 @@ export class OrdersController implements CrudController<Order> {
       { field: 'id', operator: '$eq', value: basket.id },
     ];
     crudRequest.parsed.join = [{ field: 'deliveredBy' }];
-    const order = await this.service.checkOrderUpdate(basket.id, dto);
-    return this.base.updateOneBase(crudRequest, order as Order);
+    const order = await this.service.checkOrderUpdate(
+      basket.id,
+      dto,
+      request.user,
+      true,
+    );
+    return this.base
+      .updateOneBase(crudRequest, order as Order)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 
   @Override()
   @Roles(...STAFF)
-  getOne(@ParsedRequest() request: CrudRequest) {
-    request.parsed.join = [{ field: 'deliveredBy' }];
-    return this.base.getOneBase(request);
+  getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    return this.base
+      .getOneBase(crudRequest)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 
   @Override()
   @Roles(Role.MANAGER, Role.EMPLOYEE)
   async createOne(
-    @ParsedRequest() request: CrudRequest,
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
     @ParsedBody() dto: CreateOrderDto,
   ) {
-    request.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
     const order = await this.service.checkOrder(dto);
-    return this.base.createOneBase(request, order as Order);
+    return this.base
+      .createOneBase(crudRequest, order as Order)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 
   @Override()
   @Roles(...ADMINS)
   async updateOne(
-    @ParsedRequest() request: CrudRequest,
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
     @ParsedBody() dto: UpdateOrderDto,
     @Param('id') id: number,
   ) {
-    request.parsed.join = [{ field: 'deliveredBy' }];
-    const order = await this.service.checkOrderUpdate(id, dto);
-    return this.base.updateOneBase(request, order as Order);
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    const order = await this.service.checkOrderUpdate(id, dto, request.user);
+    return this.base
+      .updateOneBase(crudRequest, order as Order)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 }
