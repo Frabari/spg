@@ -37,8 +37,6 @@ export class SchedulingService {
           })
           .toString();
         process.env.FAKETIME = date;
-        console.log('Setting date to', date);
-        console.log('New date', new Date());
       }
     });
   }

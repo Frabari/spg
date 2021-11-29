@@ -1,3 +1,4 @@
+import { Settings } from 'luxon';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from '../categories/categories.module';
@@ -35,6 +36,17 @@ describe('SchedulingService', () => {
   describe('closeWeeklySales', () => {
     it('should close the weekly sales', () => {
       return expect(service.closeWeeklySales()).resolves.toBeUndefined();
+    });
+
+    it('should close the weekly sales and change the date when controlled', () => {
+      return expect(service.closeWeeklySales(true)).resolves.toBeUndefined();
+    });
+
+    it('should close the weekly sales and change the time when controlled on sunday', () => {
+      const date = new Date();
+      date.setDate(date.getDate() - date.getDay());
+      Settings.now = () => date.getTime();
+      return expect(service.closeWeeklySales(true)).resolves.toBeUndefined();
     });
   });
 
