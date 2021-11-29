@@ -147,6 +147,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
   const handleFilterByCategory = (s: string) => {
     setSortOption(s);
     setSortedProducts(products.filter(p => p.category.slug === s));
+    navigate(`/admin/products?category=${s}`);
   };
 
   return (

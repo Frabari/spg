@@ -148,6 +148,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
   const handleFilterByRole = (s: string) => {
     setSortOption(s);
     setSortedUsers(users.filter(u => u.role === s));
+    navigate(`/admin/users?role=${s}`);
   };
 
   return (
