@@ -91,7 +91,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { products } = useProducts();
+  const { products } = useProducts(true);
   const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Product;
