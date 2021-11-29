@@ -23,7 +23,7 @@ import { useProducts } from '../hooks/useProducts';
 function ProductCard(props: any) {
   const { basket, upsertEntry } = useBasket();
   const navigate = useNavigate();
-  props.setBalanceWarnig(basket.insufficientBalance);
+  props.setBalanceWarnig(basket?.insufficientBalance);
 
   const handleInfo = () => {
     if (!props.onSelect) {
@@ -39,7 +39,7 @@ function ProductCard(props: any) {
     } else {
       upsertEntry(product, 1).then(o => {
         window.location.reload();
-        toast.success(`${product.name} succesfully added!`);
+        toast.success(`${product.name} successfully added!`);
       });
     }
     props.setBalanceWarnig(basket.insufficientBalance);
@@ -95,14 +95,14 @@ export default function ProductsGrid({
   onSelect,
   search,
   handleDelete,
-  setBalanceWarnig,
+  setBalanceWarning,
 }: {
   farmer?: User;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
-  setBalanceWarnig?: (bol: boolean) => void;
+  setBalanceWarning?: (bol: boolean) => void;
 }) {
   const { products } = useProducts();
   const [sortOption, setSortOption] = useState('No sort');
@@ -197,7 +197,7 @@ export default function ProductsGrid({
               description={p.description}
               product={p}
               onSelect={onSelect}
-              setBalanceWarnig={setBalanceWarnig}
+              setBalanceWarnig={setBalanceWarning}
             />
           ))}
       </Grid>

@@ -45,7 +45,7 @@ export default function Products() {
                 search={search}
                 onSelect={null}
                 handleDelete={handleDelete}
-                setBalanceWarnig={setBalanceWarnig}
+                setBalanceWarning={setBalanceWarnig}
               />
             </Container>
           }

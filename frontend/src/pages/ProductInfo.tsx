@@ -54,7 +54,7 @@ export default function ProductInfo(props: any) {
 
   const handleClick = () => {
     upsertEntry(product, counter).then(o => {
-      toast.success(`${product.name} succesfully added!`);
+      toast.success(`${product.name} successfully added!`);
       navigate('/products');
     });
   };
