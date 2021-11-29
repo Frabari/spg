@@ -4,8 +4,8 @@ import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  Button,
   Grid,
+  IconButton,
   InputBase,
   MenuItem,
   styled,
@@ -164,7 +164,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
         >
           Users
         </Typography>
-        <Search>
+        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -174,25 +174,16 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <Button
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
-          href="/admin/users/new"
-        >
+        <IconButton className="add-icon-button" href="/admin/users/new">
           <Add />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Create user
-          </Typography>
-        </Button>
+        </IconButton>
+        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
+          Create user
+        </Typography>
       </AdminAppBar>
       <Grid item xs={12} sm={1} sx={{ pt: 2, pl: 4 }}>
         <TextField
-          id="outlined-select-category"
+          id="outlined-select-role"
           select
           value={sortOption}
           label="Filter by role"

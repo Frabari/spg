@@ -336,7 +336,7 @@ function NavBar(props: any) {
         open={showBasket}
         onClose={() => {
           setShowBasket(false);
-          window.location.reload();
+          props.setBasketListener(true);
         }}
       >
         <Box>
@@ -346,7 +346,7 @@ function NavBar(props: any) {
                 sx={{ margin: 1.5 }}
                 onClick={() => {
                   setShowBasket(false);
-                  window.location.reload();
+                  props.setBasketListener(true);
                 }}
               >
                 <ArrowBackIcon />

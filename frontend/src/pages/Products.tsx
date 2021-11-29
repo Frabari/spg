@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, Routes, Route, useSearchParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 import { Container } from '@mui/material';
 import ProductsGrid from '../components/ProductsGrid';
 import { useProfile } from '../hooks/useProfile';
@@ -8,10 +8,11 @@ import ProductInfo from './ProductInfo';
 
 export default function Products() {
   const { profile } = useProfile();
+  const [basketListener, setBasketListener] = useState(false);
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
   const [farmer, setFarmer] = useState(null);
-  const [balanceWarning, setBalanceWarnig] = useState(false);
+  const [balanceWarning, setBalanceWarning] = useState(false);
   if (!profile) {
     return <Navigate to="/" />;
   }
@@ -33,6 +34,8 @@ export default function Products() {
         products={true}
         handleSearch={handleSearch}
         balanceWarning={balanceWarning}
+        basketListener={basketListener}
+        setBasketListener={setBasketListener}
       />
       <Routes>
         <Route
@@ -45,7 +48,9 @@ export default function Products() {
                 search={search}
                 onSelect={null}
                 handleDelete={handleDelete}
-                setBalanceWarning={setBalanceWarnig}
+                setBalanceWarning={setBalanceWarning}
+                basketListener={basketListener}
+                setBasketListener={setBasketListener}
               />
             </Container>
           }
