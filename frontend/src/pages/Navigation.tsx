@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Person, ShoppingCart } from '@mui/icons-material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -14,6 +15,7 @@ import {
   Button,
   Container,
   Drawer,
+  Grid,
   IconButton,
   InputAdornment,
   Menu,
@@ -214,7 +216,7 @@ function NavBar(props: any) {
               </Box>
             ) : (
               <>
-                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                <Box>
                   <StyledAutocomplete
                     id="free-solo-2-demo"
                     disableClearable
@@ -333,7 +335,12 @@ function NavBar(props: any) {
         open={showBasket}
         onClose={() => setShowBasket(false)}
       >
-        <Box sx={{ width: { xs: '100%', sm: '40vw' } }}>
+        <Box>
+          <Grid item sx={{ mr: 2, display: { sm: 'none' } }}>
+            <IconButton onClick={() => setShowBasket(false)}>
+              <ArrowBackIcon />
+            </IconButton>
+          </Grid>
           <Typography
             variant="h5"
             color="primary.main"

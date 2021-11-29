@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
   Box,
@@ -16,11 +16,11 @@ import {
 import { useBasket } from '../hooks/useBasket';
 
 function ProductCard(props: any) {
-  const [counter, setCounter] = useState(0);
+  const { upsertEntry, deleteEntry } = useBasket();
 
   return (
     <Grid item xs={12}>
-      <Card sx={{ width: '500px' }}>
+      <Card sx={{ width: '100%' }}>
         <Grid
           container
           direction="row"
@@ -41,19 +41,30 @@ function ProductCard(props: any) {
                 <Typography gutterBottom fontSize="17px" component="div">
                   {props.name}
                 </Typography>
+                <Typography>
+                  <IconButton
+                    sx={{ p: 0, fontSize: 12 }}
+                    onClick={() => deleteEntry(props.product)}
+                  >
+                    <DeleteOutlineIcon sx={{ fontSize: 14 }} /> Delete
+                  </IconButton>
+                </Typography>
               </CardContent>
             </Box>
           </Grid>
           <Grid item xs={3}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <CardContent>
+                <Typography gutterBottom fontSize="17px" component="div">
+                  € {props.price * props.quantity}
+                </Typography>
                 <Typography
                   gutterBottom
-                  fontSize="17px"
+                  fontSize="10px"
                   component="div"
-                  align="center"
+                  sx={{ marginBottom: 0 }}
                 >
-                  € {props.price}
+                  (€ {props.price} /{props.product.unitOfMeasure})
                 </Typography>
               </CardContent>
             </Box>
@@ -62,17 +73,17 @@ function ProductCard(props: any) {
             <Box sx={{ display: 'flex' }}>
               <CardActions>
                 <IconButton
-                  disabled={counter === 0}
-                  onClick={() => setCounter(counter - 1)}
+                  disabled={props.quantity === 1}
+                  onClick={() => upsertEntry(props.product, -1)}
                 >
                   <RemoveIcon />
                 </IconButton>
                 <Typography variant="body2" display="inline">
-                  {counter}
+                  {props.quantity}
                 </Typography>
                 <IconButton
-                  disabled={counter === props.product?.available}
-                  onClick={() => setCounter(counter + 1)}
+                  disabled={props.product.available === 0}
+                  onClick={() => upsertEntry(props.product, 1)}
                   sx={{ pl: 0 }}
                 >
                   <AddIcon />
@@ -109,11 +120,12 @@ export default function Basket({
         {basket?.entries?.map(e => (
           <ProductCard
             key={e.product.id}
-            name={e.product.name.split(' ')[2]}
+            name={e.product.name}
             image={e.product.image}
             price={e.product.price}
             description={e.product.description}
-            product={e}
+            product={e.product}
+            quantity={e.quantity}
           />
         ))}
       </Grid>

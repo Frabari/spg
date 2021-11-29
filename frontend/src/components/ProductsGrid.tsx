@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,6 +12,8 @@ import {
   Chip,
   Grid,
   IconButton,
+  MenuItem,
+  TextField,
   Typography,
 } from '@mui/material';
 import { Product, User } from '../api/BasilApi';
@@ -35,6 +38,7 @@ function ProductCard(props: any) {
     } else {
       upsertEntry(product, 1).then(o => {
         toast.success(`${product.name} succesfully added!`);
+        window.location.reload();
       });
     }
   };
@@ -53,10 +57,20 @@ function ProductCard(props: any) {
             >
               {props.name}
             </Typography>
-            <Typography variant="body1" color="text.secondary" align="center">
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              align="center"
+              my={1}
+            >
               {props.product?.available} {props.product.unitOfMeasure} available
             </Typography>
-            <Typography variant="body2" color="text.secondary" align="center">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              align="center"
+              fontWeight="bold"
+            >
               € {props.price}/{props.product.unitOfMeasure}
             </Typography>
           </CardContent>
@@ -87,17 +101,65 @@ export default function ProductsGrid({
   handleDelete?: () => void;
 }) {
   const { products } = useProducts();
+  const [sortOption, setSortOption] = useState('No sort');
+  const [sortPrice, setSortPrice] = useState(false);
+  const [sortAlpha, setSortAlpha] = useState(false);
+  const sort = [
+    'Highest price',
+    'Lowest price',
+    'Ascending name',
+    'Descending name',
+  ];
+
+  const handleChange = (s: string) => {
+    setSortOption(s);
+  };
+
+  const sortProducts = (a: Product, b: Product) => {
+    switch (sortOption) {
+      case 'Lowest price':
+        return a.price - b.price;
+      case 'Highest price':
+        return b.price - a.price;
+      case 'Ascending name':
+        if (a.name < b.name) return -1;
+        else return 1;
+      case 'Descending name':
+        if (b.name < a.name) return -1;
+        else return 1;
+    }
+  };
 
   return (
     <>
-      {farmer && (
-        <Chip
-          sx={{ marginLeft: 2 }}
-          onDelete={handleDelete}
-          variant="outlined"
-          label={`Product by ${farmer.name} ${farmer.surname}`}
-        />
-      )}
+      <Grid container direction="row">
+        <Grid item xs={10}>
+          {farmer && (
+            <Chip
+              sx={{ marginLeft: 2 }}
+              onDelete={handleDelete}
+              variant="outlined"
+              label={`Product by ${farmer.name} ${farmer.surname}`}
+            />
+          )}
+        </Grid>
+        <Grid item xs={2}>
+          <TextField
+            id="outlined-select-sort"
+            select
+            value={sortOption}
+            label="Sort by"
+            sx={{ width: '150px' }}
+            onChange={e => handleChange(e.target.value)}
+          >
+            {sort.map(option => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      </Grid>
       <Grid
         container
         direction="row"
@@ -118,6 +180,7 @@ export default function ProductsGrid({
               p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
           )
           ?.filter(p => p.available > 0)
+          ?.sort((a, b) => sortProducts(a, b))
           .map(p => (
             <ProductCard
               key={p.id}
