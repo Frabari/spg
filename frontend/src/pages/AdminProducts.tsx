@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
+  Alert,
   Box,
   Button,
   InputBase,
@@ -204,6 +205,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                     )}
                   </TableCell>
                 ))}
+                <TableCell>Notes</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -235,6 +237,13 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                   <TableCell>{product.description}</TableCell>
                   <TableCell>{product.price}</TableCell>
                   <TableCell>{product.category.name}</TableCell>
+                  <TableCell>
+                    {product.available === 0 && product.public === true && (
+                      <Alert severity="warning">
+                        {'Remember to update the availability field'}
+                      </Alert>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
