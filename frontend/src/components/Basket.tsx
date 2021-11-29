@@ -113,7 +113,7 @@ export default function Basket({
         {balanceWarning && (
           <Alert severity="warning">
             <AlertTitle>Warning</AlertTitle>
-            Insufficient balance — <strong>pop it up!</strong>
+            Insufficient balance — <strong>top it up!</strong>
           </Alert>
         )}
         {basket?.entries?.map(e => (
