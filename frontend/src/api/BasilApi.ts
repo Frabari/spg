@@ -112,9 +112,7 @@ export interface Notification {
 
 export let socket = SocketIo('http://localhost:3001', {
   transports: ['websocket'],
-  extraHeaders: {
-    Authorization: `Bearer ${localStorage.getItem('API_TOKEN')}`,
-  },
+  query: { token: localStorage.getItem('API_TOKEN') },
 });
 
 const client = createHttpClient('');
@@ -138,9 +136,7 @@ export const login = (username: string, password: string) =>
       socket?.disconnect();
       socket = SocketIo('http://localhost:3001', {
         transports: ['websocket'],
-        extraHeaders: {
-          Authorization: `Bearer ${tokens.token}`,
-        },
+        query: { token: tokens.token },
       });
       client.setBearerAuth(tokens.token);
       localStorage.setItem('API_TOKEN', tokens.token);
