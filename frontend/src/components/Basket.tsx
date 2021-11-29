@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
   Card,
@@ -89,9 +91,11 @@ function ProductCard(props: any) {
 export default function Basket({
   filter,
   search,
+  balanceWarning,
 }: {
   filter?: string;
   search?: string;
+  balanceWarning?: boolean;
 }) {
   const { basket } = useBasket();
 
@@ -106,6 +110,12 @@ export default function Basket({
         justifyItems="center"
         width="auto"
       >
+        {balanceWarning && (
+          <Alert severity="warning">
+            <AlertTitle>Warning</AlertTitle>
+            Insufficient balance — <strong>pop it up!</strong>
+          </Alert>
+        )}
         {basket?.entries?.map(e => (
           <ProductCard
             key={e.product.id}
@@ -114,6 +124,7 @@ export default function Basket({
             price={e.product.price}
             description={e.product.description}
             product={e}
+            balanceWarning={balanceWarning}
           />
         ))}
       </Grid>
