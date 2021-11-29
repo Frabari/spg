@@ -331,23 +331,38 @@ function NavBar(props: any) {
       </AppBar>
 
       <Drawer
+        sx={{ width: '300px' }}
         anchor="right"
         open={showBasket}
-        onClose={() => setShowBasket(false)}
+        onClose={() => {
+          setShowBasket(false);
+          window.location.reload();
+        }}
       >
         <Box>
-          <Grid item sx={{ mr: 2, display: { sm: 'none' } }}>
-            <IconButton onClick={() => setShowBasket(false)}>
-              <ArrowBackIcon />
-            </IconButton>
+          <Grid container direction="row" spacing={1}>
+            <Grid item xs={1}>
+              <IconButton
+                sx={{ margin: 1.5 }}
+                onClick={() => {
+                  setShowBasket(false);
+                  window.location.reload();
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </Grid>
+            <Grid item xs={11}>
+              <Typography
+                variant="h5"
+                color="primary.main"
+                fontWeight="bold"
+                m={2}
+              >
+                Basket
+              </Typography>
+            </Grid>
           </Grid>
-          <Typography
-            variant="h5"
-            color="primary.main"
-            sx={{ p: 3, fontWeight: 'bold' }}
-          >
-            Basket
-          </Typography>
           <Basket />
         </Box>
       </Drawer>

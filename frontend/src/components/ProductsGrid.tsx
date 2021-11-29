@@ -37,8 +37,8 @@ function ProductCard(props: any) {
       props.onSelect(product);
     } else {
       upsertEntry(product, 1).then(o => {
-        toast.success(`${product.name} succesfully added!`);
         window.location.reload();
+        toast.success(`${product.name} succesfully added!`);
       });
     }
   };
@@ -102,8 +102,6 @@ export default function ProductsGrid({
 }) {
   const { products } = useProducts();
   const [sortOption, setSortOption] = useState('No sort');
-  const [sortPrice, setSortPrice] = useState(false);
-  const [sortAlpha, setSortAlpha] = useState(false);
   const sort = [
     'Highest price',
     'Lowest price',
@@ -133,23 +131,28 @@ export default function ProductsGrid({
   return (
     <>
       <Grid container direction="row">
-        <Grid item xs={10}>
+        <Grid item xs={12} sm={11}>
           {farmer && (
             <Chip
-              sx={{ marginLeft: 2 }}
+              sx={{ m: 2 }}
               onDelete={handleDelete}
               variant="outlined"
               label={`Product by ${farmer.name} ${farmer.surname}`}
             />
           )}
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={12} sm={1} display={onSelect ? 'none' : 'block'}>
           <TextField
             id="outlined-select-sort"
             select
             value={sortOption}
             label="Sort by"
-            sx={{ width: '150px' }}
+            sx={{
+              width: '200px',
+              float: { xs: 'left', sm: 'right' },
+              mr: 2,
+              ml: 2,
+            }}
             onChange={e => handleChange(e.target.value)}
           >
             {sort.map(option => (
