@@ -5,9 +5,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
+  Grid,
   InputBase,
+  MenuItem,
   styled,
   TableSortLabel,
+  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -131,6 +134,22 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
+  const [sortOption, setSortOption] = useState('No sort');
+  const sort = [
+    'customer',
+    'farmer',
+    'rider',
+    'employee',
+    'warehouse_worker',
+    'warehouse_manager',
+    'manager',
+  ];
+
+  const handleFilterByRole = (s: string) => {
+    setSortOption(s);
+    setSortedUsers(users.filter(u => u.role === s));
+  };
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -170,9 +189,23 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
           </Typography>
         </Button>
       </AdminAppBar>
-      <Box
-        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
-      >
+      <Grid item xs={12} sm={1} sx={{ pt: 2, pl: 4 }}>
+        <TextField
+          id="outlined-select-category"
+          select
+          value={sortOption}
+          label="Filter by role"
+          sx={{ width: '150px' }}
+          onChange={e => handleFilterByRole(e.target.value)}
+        >
+          {sort.map(option => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+      <Box sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1 }}>
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}

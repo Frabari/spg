@@ -6,8 +6,11 @@ import {
   Alert,
   Box,
   Button,
+  Grid,
   InputBase,
+  MenuItem,
   TableSortLabel,
+  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -20,6 +23,7 @@ import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
 import { Product } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 
 const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
@@ -137,6 +141,14 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
+  const [sortOption, setSortOption] = useState('No sort');
+  const sort = useCategories();
+
+  const handleFilterByCategory = (s: string) => {
+    setSortOption(s);
+    setSortedProducts(products.filter(p => p.category.slug === s));
+  };
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -177,6 +189,23 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
           </Typography>
         </Button>
       </AdminAppBar>
+      <Grid item xs={12} sm={1} sx={{ pt: 2, pl: 4 }}>
+        <TextField
+          id="outlined-select-category"
+          select
+          value={sortOption}
+          label="Filter by category"
+          sx={{ width: '150px' }}
+          onChange={e => handleFilterByCategory(e.target.value)}
+        >
+          {sort.categories.map(option => (
+            <MenuItem key={option.id} value={option.slug}>
+              {option.name}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
