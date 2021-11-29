@@ -20,7 +20,7 @@ function ProductCard(props: any) {
 
   return (
     <Grid item xs={12}>
-      <Card sx={{ width: '500px' }}>
+      <Card sx={{ width: '100%' }}>
         <Grid
           container
           direction="row"

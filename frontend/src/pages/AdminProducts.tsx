@@ -149,7 +149,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
         >
           Products
         </Typography>
-        <Search sx={{ display: { xs: 'none', sm: 'block' } }}>
+        <Search>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
