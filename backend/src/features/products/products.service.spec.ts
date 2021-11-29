@@ -38,7 +38,7 @@ describe('ProductsService', () => {
   describe('handleUpdateAvailability', () => {
     it('should validate if the concerned fields in the db have 0 value', async () => {
       const entityManager = module.get(EntityManager);
-      await service.resetProductAvailability();
+      await service.resetProductsAvailability();
       const products = await entityManager.find(Product, {
         available: Not(0),
         reserved: Not(0),
