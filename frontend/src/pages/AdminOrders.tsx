@@ -9,8 +9,8 @@ import DraftsIcon from '@mui/icons-material/Drafts';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  Button,
   Chip,
+  IconButton,
   InputBase,
   styled,
   TableSortLabel,
@@ -181,7 +181,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
         >
           Orders
         </Typography>
-        <Search>
+        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -191,21 +191,12 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <Button
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
-          href="/admin/orders/new"
-        >
+        <IconButton className="add-icon-button" href="/admin/orders/new">
           <Add />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Create order
-          </Typography>
-        </Button>
+        </IconButton>
+        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
+          Create order
+        </Typography>
       </AdminAppBar>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}

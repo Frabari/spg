@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
   Card,
-  CardActionArea,
   CardActions,
   CardContent,
   CardMedia,
@@ -20,66 +19,83 @@ import { Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
 
-function ProductCard(props: any) {
+function ProductCard({
+  product,
+  setBalanceWarning,
+  setBasketListener,
+  onSelect,
+}: {
+  product?: Product;
+  setBalanceWarning?: (bol: boolean) => void;
+  setBasketListener?: (bol: boolean) => void;
+  onSelect: (product: Product) => void;
+}) {
   const { basket, upsertEntry } = useBasket();
   const navigate = useNavigate();
-  props.setBalanceWarnig(basket?.insufficientBalance);
+
+  if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
 
   const handleInfo = () => {
-    if (!props.onSelect) {
-      navigate(`/products/${props.product.id}`, {
-        state: { product: props.product },
+    if (!onSelect) {
+      navigate(`/products/${product.id}`, {
+        state: { product: product },
       });
     }
   };
 
   const handleSelect = (product: Product) => {
-    if (props.onSelect) {
-      props.onSelect(product);
+    if (onSelect) {
+      onSelect(product);
     } else {
       upsertEntry(product, 1).then(o => {
-        window.location.reload();
+        setBasketListener(true);
         toast.success(`${product.name} successfully added!`);
       });
     }
-    props.setBalanceWarnig(basket.insufficientBalance);
+    if (setBalanceWarning) setBalanceWarning(basket.insufficientBalance);
   };
 
   return (
     <Grid item lg={3} md={4} sm={6} xs={12} height={'425px'}>
       <Card sx={{ height: '100%' }}>
-        <CardActionArea onClick={handleInfo}>
-          <CardMedia component="img" height="175px" image={props.image} />
-          <CardContent sx={{ height: '120px' }}>
-            <Typography
-              gutterBottom
-              variant="h5"
-              component="div"
-              align="center"
-            >
-              {props.name}
-            </Typography>
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              align="center"
-              my={1}
-            >
-              {props.product?.available} {props.product.unitOfMeasure} available
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              align="center"
-              fontWeight="bold"
-            >
-              € {props.price}/{props.product.unitOfMeasure}
-            </Typography>
-          </CardContent>
-        </CardActionArea>
+        <CardMedia
+          component="img"
+          height="175px"
+          image={product.image}
+          onClick={handleInfo}
+          sx={!onSelect ? { cursor: 'pointer' } : {}}
+        />
+        <CardContent
+          sx={
+            !onSelect
+              ? { cursor: 'pointer', height: '120px' }
+              : { height: '120px' }
+          }
+          onClick={handleInfo}
+        >
+          <Typography gutterBottom variant="h5" component="div" align="center">
+            {product.name}
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            align="center"
+            my={1}
+          >
+            {product?.available} {product.unitOfMeasure} available
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            align="center"
+            fontWeight="bold"
+          >
+            € {product.price}/{product.unitOfMeasure}
+          </Typography>
+        </CardContent>
         <CardActions>
           <Box marginLeft="auto" padding="0.5rem">
-            <IconButton onClick={() => handleSelect(props.product)}>
+            <IconButton onClick={() => handleSelect(product)}>
               <AddIcon />
             </IconButton>
           </Box>
@@ -96,6 +112,8 @@ export default function ProductsGrid({
   search,
   handleDelete,
   setBalanceWarning,
+  basketListener,
+  setBasketListener,
 }: {
   farmer?: User;
   filter?: string;
@@ -103,8 +121,11 @@ export default function ProductsGrid({
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
   setBalanceWarning?: (bol: boolean) => void;
+  basketListener?: boolean;
+  setBasketListener?: (bol: boolean) => void;
 }) {
-  const { products } = useProducts();
+  const { products, loadProducts } = useProducts();
+
   const [sortOption, setSortOption] = useState('No sort');
   const sort = [
     'Highest price',
@@ -112,6 +133,13 @@ export default function ProductsGrid({
     'Ascending name',
     'Descending name',
   ];
+
+  useEffect(() => {
+    if (basketListener) {
+      loadProducts();
+      setBasketListener(false);
+    }
+  }, [basketListener]);
 
   const handleChange = (s: string) => {
     setSortOption(s);
@@ -191,13 +219,10 @@ export default function ProductsGrid({
           .map(p => (
             <ProductCard
               key={p.id}
-              name={p.name}
-              image={p.image}
-              price={p.price}
-              description={p.description}
               product={p}
               onSelect={onSelect}
-              setBalanceWarnig={setBalanceWarning}
+              setBalanceWarning={setBalanceWarning}
+              setBasketListener={setBasketListener}
             />
           ))}
       </Grid>

@@ -87,6 +87,7 @@ export const Admin = () => {
               component={Link}
               to={`/admin/${page.path}`}
               sx={{ borderRadius: 2 }}
+              onClick={handleDrawerToggle}
             >
               <ListItemIcon sx={{ minWidth: 0, pr: 2 }}>
                 {page.icon}

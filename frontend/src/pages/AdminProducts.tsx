@@ -5,8 +5,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import {
   Alert,
   Box,
-  Button,
   Grid,
+  IconButton,
   InputBase,
   MenuItem,
   TableSortLabel,
@@ -163,7 +163,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
         >
           Products
         </Typography>
-        <Search>
+        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -173,22 +173,16 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <Button
+        <IconButton
           disabled
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
+          className="add-icon-button"
           href="/admin/products/new"
         >
           <Add />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Create product
-          </Typography>
-        </Button>
+        </IconButton>
+        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
+          Create product
+        </Typography>
       </AdminAppBar>
       <Grid item xs={12} sm={1} sx={{ pt: 2, pl: 4 }}>
         <TextField
