@@ -23,6 +23,7 @@ import { useProducts } from '../hooks/useProducts';
 function ProductCard(props: any) {
   const { basket, upsertEntry } = useBasket();
   const navigate = useNavigate();
+  props.setBalanceWarnig(basket?.insufficientBalance);
 
   const handleInfo = () => {
     if (!props.onSelect) {
@@ -37,10 +38,11 @@ function ProductCard(props: any) {
       props.onSelect(product);
     } else {
       upsertEntry(product, 1).then(o => {
-        toast.success(`${product.name} succesfully added!`);
         window.location.reload();
+        toast.success(`${product.name} successfully added!`);
       });
     }
+    props.setBalanceWarnig(basket.insufficientBalance);
   };
 
   return (
@@ -93,17 +95,17 @@ export default function ProductsGrid({
   onSelect,
   search,
   handleDelete,
+  setBalanceWarning,
 }: {
   farmer?: User;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
+  setBalanceWarning?: (bol: boolean) => void;
 }) {
   const { products } = useProducts();
   const [sortOption, setSortOption] = useState('No sort');
-  const [sortPrice, setSortPrice] = useState(false);
-  const [sortAlpha, setSortAlpha] = useState(false);
   const sort = [
     'Highest price',
     'Lowest price',
@@ -133,23 +135,28 @@ export default function ProductsGrid({
   return (
     <>
       <Grid container direction="row">
-        <Grid item xs={10}>
+        <Grid item xs={12} sm={11}>
           {farmer && (
             <Chip
-              sx={{ marginLeft: 2 }}
+              sx={{ m: 2 }}
               onDelete={handleDelete}
               variant="outlined"
               label={`Product by ${farmer.name} ${farmer.surname}`}
             />
           )}
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={12} sm={1} display={onSelect ? 'none' : 'block'}>
           <TextField
             id="outlined-select-sort"
             select
             value={sortOption}
             label="Sort by"
-            sx={{ width: '150px' }}
+            sx={{
+              width: '200px',
+              float: { xs: 'left', sm: 'right' },
+              mr: 2,
+              ml: 2,
+            }}
             onChange={e => handleChange(e.target.value)}
           >
             {sort.map(option => (
@@ -190,6 +197,7 @@ export default function ProductsGrid({
               description={p.description}
               product={p}
               onSelect={onSelect}
+              setBalanceWarnig={setBalanceWarning}
             />
           ))}
       </Grid>

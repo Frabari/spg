@@ -11,7 +11,7 @@ export default function Products() {
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
   const [farmer, setFarmer] = useState(null);
-
+  const [balanceWarning, setBalanceWarnig] = useState(false);
   if (!profile) {
     return <Navigate to="/" />;
   }
@@ -32,6 +32,7 @@ export default function Products() {
         loggedIn={1}
         products={true}
         handleSearch={handleSearch}
+        balanceWarning={balanceWarning}
       />
       <Routes>
         <Route
@@ -44,6 +45,7 @@ export default function Products() {
                 search={search}
                 onSelect={null}
                 handleDelete={handleDelete}
+                setBalanceWarning={setBalanceWarnig}
               />
             </Container>
           }

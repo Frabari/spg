@@ -38,7 +38,7 @@ export default function ProductInfo(props: any) {
   }
 
   const style = {
-    width: '90%',
+    width: { xs: '75%', sm: '90%' },
     bgcolor: 'background.paper',
     boxShadow: 1,
     borderRadius: '16px',
@@ -54,7 +54,7 @@ export default function ProductInfo(props: any) {
 
   const handleClick = () => {
     upsertEntry(product, counter).then(o => {
-      toast.success(`${product.name} succesfully added!`);
+      toast.success(`${product.name} successfully added!`);
       navigate('/products');
     });
   };
@@ -71,12 +71,12 @@ export default function ProductInfo(props: any) {
               alignItems="center"
               justifyItems="center"
             >
-              <Grid item xs={1}>
+              <Grid item xs={2} sm={1}>
                 <IconButton onClick={() => navigate('/products')}>
                   <ArrowBackIcon />
                 </IconButton>
               </Grid>
-              <Grid item xs={10}>
+              <Grid item xs={8} sm={10}>
                 <Typography
                   align="right"
                   gutterBottom
@@ -96,7 +96,7 @@ export default function ProductInfo(props: any) {
                   </Typography>
                 </Typography>
               </Grid>
-              <Grid item xs={1}>
+              <Grid item xs={2} sm={1}>
                 <Avatar src={farmer.avatar} sx={{ boxShadow: 2, right: 0 }} />
               </Grid>
             </Grid>
