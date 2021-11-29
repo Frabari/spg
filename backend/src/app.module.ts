@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as DbConfig from '../ormconfig.json';
 import { SchedulingService } from './core/services/scheduling.service';
 import { CategoriesModule } from './features/categories/categories.module';
+import { NotificationsModule } from './features/notifications/notifications.module';
 import { OrdersModule } from './features/orders/orders.module';
 import { ProductsModule } from './features/products/products.module';
 import { TransactionsModule } from './features/transactions/transactions.module';
@@ -24,6 +25,7 @@ const { entities, ...dbConfig } = DbConfig;
     OrdersModule,
     TransactionsModule,
     ScheduleModule.forRoot(),
+    NotificationsModule,
   ],
   providers: [SchedulingService],
 })

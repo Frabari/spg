@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { CategoriesModule } from '../categories/categories.module';
 import { OrdersModule } from '../orders/orders.module';
 import { ProductsModule } from '../products/products.module';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { UsersModule } from '../users/users.module';
-import { CategoriesModule } from './categories.module';
-import { CategoriesService } from './categories.service';
+import { NotificationsModule } from './notifications.module';
+import { NotificationsService } from './notifications.service';
 
-describe('CategoriesService', () => {
-  let service: CategoriesService;
+describe('NotificationsService', () => {
+  let service: NotificationsService;
+  let module: TestingModule;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
           type: 'sqlite',
@@ -30,10 +31,14 @@ describe('CategoriesService', () => {
       ],
     }).compile();
 
-    service = module.get<CategoriesService>(CategoriesService);
+    service = module.get<NotificationsService>(NotificationsService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  afterEach(() => {
+    return module.close();
   });
 });

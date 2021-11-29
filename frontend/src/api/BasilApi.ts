@@ -145,6 +145,7 @@ export const login = (username: string, password: string) =>
 
 export const logout = () => {
   client.removeAuth();
+  socket?.disconnect();
   localStorage.removeItem('API_TOKEN');
 };
 

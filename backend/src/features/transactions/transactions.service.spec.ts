@@ -1,15 +1,16 @@
+import { hash } from 'bcrypt';
+import { EntityManager } from 'typeorm';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { TransactionsService } from './transactions.service';
-import { UsersModule } from '../users/users.module';
-import { ProductsModule } from '../products/products.module';
 import { CategoriesModule } from '../categories/categories.module';
-import { TransactionsModule } from './transactions.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { OrdersModule } from '../orders/orders.module';
+import { ProductsModule } from '../products/products.module';
 import { User } from '../users/entities/user.entity';
-import { EntityManager } from 'typeorm';
-import { hash } from 'bcrypt';
+import { UsersModule } from '../users/users.module';
+import { TransactionsModule } from './transactions.module';
+import { TransactionsService } from './transactions.service';
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
@@ -30,6 +31,7 @@ describe('TransactionsService', () => {
         CategoriesModule,
         TransactionsModule,
         OrdersModule,
+        NotificationsModule,
       ],
     }).compile();
 
