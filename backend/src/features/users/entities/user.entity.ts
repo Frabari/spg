@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import {
   IsEmail,
   IsIn,
@@ -7,10 +7,10 @@ import {
   IsString,
   IsUrl,
 } from 'class-validator';
-import { Transaction } from '../../transactions/entities/transaction.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Order } from '../../orders/entities/order.entity';
 import { Product } from '../../products/entities/product.entity';
-import { Exclude } from 'class-transformer';
+import { Transaction } from '../../transactions/entities/transaction.entity';
 import { Role } from '../roles.enum';
 
 export type UserId = number;
