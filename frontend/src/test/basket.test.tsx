@@ -1,7 +1,7 @@
 import './BasilApi.mock';
-import { waitFor } from '@testing-library/react';
-import { act, renderHook } from '@testing-library/react-hooks';
-import { Order, Product } from '../api/BasilApi';
+import { act, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react-hooks';
+import { Product } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 
 test('basket', async () => {
@@ -11,22 +11,41 @@ test('basket', async () => {
   });
 });
 
-test('updateBasket', async () => {
+test('update basket', async () => {
   const { result } = renderHook(() => useBasket());
   return act(async () => {
+    const product: Partial<Product> = {
+      id: 1,
+    };
     const dto = {
       id: 1,
-      user: { id: 1 },
+      user: { id: 30 },
       entries: [
         {
           id: 1,
           product: { id: 1 } as Product,
-          quantity: 2,
+          quantity: 4,
         },
       ],
     };
     return expect(
-      await result.current.updateBasket(dto as Order),
+      await result.current.upsertEntry(product as Product, 2),
+    ).toMatchObject(dto);
+  });
+});
+
+test('delete entry basket', async () => {
+  const { result } = renderHook(() => useBasket());
+  return act(async () => {
+    const product: Partial<Product> = {
+      id: 1,
+    };
+    const dto = {
+      id: 1,
+      user: { id: 30 },
+    };
+    return expect(
+      await result.current.deleteEntry(product as Product),
     ).toMatchObject(dto);
   });
 });

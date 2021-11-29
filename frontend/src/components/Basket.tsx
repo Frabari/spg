@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
   Card,
@@ -40,9 +42,6 @@ function ProductCard(props: any) {
               <CardContent>
                 <Typography gutterBottom fontSize="17px" component="div">
                   {props.name}
-                </Typography>
-                <Typography fontSize="14px" color="text.secondary">
-                  quantità
                 </Typography>
               </CardContent>
             </Box>
@@ -92,9 +91,11 @@ function ProductCard(props: any) {
 export default function Basket({
   filter,
   search,
+  balanceWarning,
 }: {
   filter?: string;
   search?: string;
+  balanceWarning?: boolean;
 }) {
   const { basket } = useBasket();
 
@@ -109,23 +110,23 @@ export default function Basket({
         justifyItems="center"
         width="auto"
       >
-        {basket.entries
-          ?.filter(e => !filter || e.product.category.slug === filter)
-          ?.filter(
-            e =>
-              !search ||
-              e.product.name.toLowerCase().includes(search.toLowerCase()),
-          )
-          .map(e => (
-            <ProductCard
-              key={e.product.id}
-              name={e.product.name.split(' ')[2]}
-              image={e.product.image}
-              price={e.product.price}
-              description={e.product.description}
-              product={e}
-            />
-          ))}
+        {balanceWarning && (
+          <Alert severity="warning">
+            <AlertTitle>Warning</AlertTitle>
+            Insufficient balance — <strong>top it up!</strong>
+          </Alert>
+        )}
+        {basket?.entries?.map(e => (
+          <ProductCard
+            key={e.product.id}
+            name={e.product.name.split(' ')[2]}
+            image={e.product.image}
+            price={e.product.price}
+            description={e.product.description}
+            product={e}
+            balanceWarning={balanceWarning}
+          />
+        ))}
       </Grid>
       <Box
         sx={{
@@ -142,7 +143,7 @@ export default function Basket({
           component="div"
           sx={{ width: '100%', float: 'right' }}
         >
-          Total € ammontare
+          Total € {basket.total}
         </Typography>
         <Button
           component={Link}

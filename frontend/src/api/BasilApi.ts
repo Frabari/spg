@@ -39,6 +39,8 @@ export interface Order {
   deliveryLocation: string;
   deliveredBy: User;
   createdAt: Date;
+  total: number;
+  insufficientBalance: boolean;
 }
 
 export type ProductId = number;

@@ -1,14 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from './users.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './users.module';
-import { ProductsModule } from '../products/products.module';
-import { CategoriesModule } from '../categories/categories.module';
-import { TransactionsModule } from '../transactions/transactions.module';
-import { OrdersModule } from '../orders/orders.module';
 import { hash } from 'bcrypt';
 import { EntityManager } from 'typeorm';
+import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CategoriesModule } from '../categories/categories.module';
+import { OrdersModule } from '../orders/orders.module';
+import { ProductsModule } from '../products/products.module';
+import { TransactionsModule } from '../transactions/transactions.module';
 import { User } from './entities/user.entity';
+import { UsersModule } from './users.module';
+import { UsersService } from './users.service';
 
 describe('UsersService', () => {
   let service: UsersService;

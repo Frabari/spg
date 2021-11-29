@@ -1,6 +1,6 @@
 import { hash } from 'bcrypt';
-import { EntityManager } from 'typeorm';
 import { Not } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -43,7 +43,7 @@ describe('ProductsService', () => {
   describe('handleUpdateAvailability', () => {
     it('should validate if the concerned fields in the db have 0 value', async () => {
       const entityManager = module.get(EntityManager);
-      await service.resetProductAvailability();
+      await service.resetProductsAvailability();
       const products = await entityManager.find(Product, {
         available: Not(0),
         reserved: Not(0),

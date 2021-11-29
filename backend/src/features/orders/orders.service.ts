@@ -2,6 +2,7 @@ import { DateTime } from 'luxon';
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -33,7 +34,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         user,
       },
       {
-        relations: ['entries', 'entries.product'],
+        relations: ['entries', 'entries.product', 'user'],
       },
     );
     if (basket) {
@@ -86,13 +87,26 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     return dto;
   }
 
-  async checkOrderUpdate(id: OrderId, dto: UpdateOrderDto, user: User) {
+  async checkOrderUpdate(
+    id: OrderId,
+    dto: UpdateOrderDto,
+    user: User,
+    isBasket = false,
+  ) {
     const order = await this.ordersRepository.findOne(id, {
-      relations: ['entries', 'entries.product'],
+      relations: ['entries', 'entries.product', 'user'],
     });
-
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
+    }
+    if (isBasket) {
+      if (order.user.id !== user.id) {
+        throw new ForbiddenException(
+          'Order.ForbiddenEdit',
+          `Cannot edit someone else's basket`,
+        );
+      }
+      (dto as Order).user = user;
     }
     if (dto.status) {
       const oldStatusOrder = statuses.indexOf(order.status);
@@ -160,6 +174,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           );
         }
       }
+
       /*const total = dto.entries?.reduce(
         (acc, val) => acc + val.quantity * val.product?.price,
         0,
@@ -183,5 +198,12 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         status: OrderStatus.LOCKED,
       },
     );
+  }
+
+  checkOrderBalance(order: Order, user: User) {
+    if (user.balance < order.total) {
+      order.insufficientBalance = true;
+    }
+    return order;
   }
 }

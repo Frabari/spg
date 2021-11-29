@@ -39,7 +39,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
   /**
    * Resets the product availability
    */
-  resetProductAvailability() {
+  resetProductsAvailability() {
     return this.productsRepository.update(
       {},
       {
