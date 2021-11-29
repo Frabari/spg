@@ -101,6 +101,7 @@ export class ProductsController implements CrudController<Product> {
     const product = await this.service.checkProduct(dto, request.user);
     return this.base.createOneBase(crudRequest, product as Product);
   }
+
   @Override()
   @Roles(...ADMINS)
   async updateOne(

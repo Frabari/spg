@@ -1,5 +1,7 @@
+import { hash } from 'bcrypt';
 import { EntityManager } from 'typeorm';
 import { Not } from 'typeorm';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from '../categories/categories.module';
@@ -96,6 +98,126 @@ describe('ProductsService', () => {
         id: 1,
         role: Role.FARMER,
       } as User);
+      expect(result.reserved).toBeUndefined();
+    });
+  });
+
+  describe('checkProductsUpdate', () => {
+    it('should validate a product update dto', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.EMPLOYEE,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      });
+      expect(
+        await service.checkProductsUpdate(
+          product.id,
+          {
+            ...product,
+            available: 5,
+          },
+          user,
+        ),
+      ).toMatchObject({ available: 5 });
+    });
+
+    it('should fail if the product does not exist', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.EMPLOYEE,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      });
+      return expect(
+        service.checkProductsUpdate(
+          100,
+          {
+            ...product,
+            available: 5,
+          },
+          user,
+        ),
+      ).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should fail if the role is FARMER but he/she is not the owner of the product', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+        farmer: user,
+      });
+      return expect(
+        service.checkProductsUpdate(
+          product.id,
+          {
+            ...product,
+            available: 5,
+          },
+          {
+            ...user,
+            id: 10,
+          },
+        ),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should limit the fields for farmers', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+        reserved: 5,
+        farmer: user,
+      });
+      const result = await service.checkProductsUpdate(
+        product.id,
+        product,
+        user,
+      );
       expect(result.reserved).toBeUndefined();
     });
   });
