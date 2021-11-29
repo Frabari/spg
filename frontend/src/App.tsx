@@ -6,6 +6,7 @@ import { themeOptions } from './Theme';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { usePendingState } from './hooks/usePendingState';
 import { Admin } from './pages/Admin';
+import Checkout from './pages/Checkout';
 import Homepage from './pages/Homepage';
 import Login from './pages/Login';
 import Products from './pages/Products';
@@ -24,6 +25,8 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             <Route path="/signup" element={<SignUp />} />
+
+            <Route path="/checkout" element={<Checkout />} />
 
             <Route
               path="/admin/*"
