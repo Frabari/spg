@@ -16,3 +16,5 @@ export const ADMINS = [
 ];
 
 export const STAFF = ADMINS.concat(Role.RIDER);
+
+export const ALL = Object.values(Role);

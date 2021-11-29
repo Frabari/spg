@@ -43,27 +43,6 @@ describe('UsersController (e2e)', () => {
       return request(app.getHttpServer()).get('/users').expect(401);
     });
 
-    it('should fail if the requester is an unauthorized role', async () => {
-      const email = 'test@example.com';
-      const password = 'testpwd';
-      const entityManager = app.get(EntityManager);
-      await entityManager.insert(User, {
-        email,
-        password: await hash(password, 10),
-        name: 'John',
-        surname: 'Doe',
-      });
-      const server = app.getHttpServer();
-      const response = await request(server)
-        .post('/users/login')
-        .send({ username: email, password });
-      const authToken = response.body.token;
-      return request(server)
-        .get('/users')
-        .auth(authToken, { type: 'bearer' })
-        .expect(403);
-    });
-
     it('should return the users if the requester is an authorized role', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';

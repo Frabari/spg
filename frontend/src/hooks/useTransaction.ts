@@ -1,11 +1,11 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { createTransaction, Transaction, TransactionId } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
-import { PendingStateContext } from '../contexts/pending';
+import { usePendingState } from './usePendingState';
 
 export const useTransaction = (id?: TransactionId) => {
-  const { setPending } = useContext(PendingStateContext);
+  const { setPending } = usePendingState();
   const [transaction, setTransaction] = useState<Transaction>(null);
   const [error, setError] = useState<ApiException>(null);
 

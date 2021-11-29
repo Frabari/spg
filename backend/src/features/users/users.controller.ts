@@ -23,7 +23,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './roles.decorator';
-import { ADMINS } from './roles.enum';
+import { ADMINS, ALL, Role } from './roles.enum';
 import { UsersService } from './users.service';
 
 @Crud(User, {
@@ -46,9 +46,17 @@ export class UsersController implements CrudController<User> {
   @Override()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(...ADMINS)
-  getMany(@ParsedRequest() req: CrudRequest) {
-    return this.base.getManyBase(req) as Promise<User[]>;
+  @Roles(...ALL)
+  getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() req) {
+    const user = req.user as User;
+    if (user.role === Role.CUSTOMER) {
+      crudRequest.parsed.search = {
+        $and: crudRequest.parsed.search.$and.concat({
+          role: Role.FARMER,
+        }),
+      };
+    }
+    return this.base.getManyBase(crudRequest) as Promise<User[]>;
   }
 
   @Get('me')
@@ -79,7 +87,7 @@ export class UsersController implements CrudController<User> {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Logs in a user with local credentials' })
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,unused-imports/no-unused-vars
   login(@Request() req, @Body() dto: LoginDto) {
     return this.service.login(req.user);
   }

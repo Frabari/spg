@@ -39,6 +39,8 @@ export interface Order {
   deliveryLocation: string;
   deliveredBy: User;
   createdAt: Date;
+  total: number;
+  insufficientBalance: boolean;
 }
 
 export type ProductId = number;
@@ -149,3 +151,8 @@ export const updateOrder = (id: OrderId, order: Partial<Order>) =>
 
 export const createTransaction = (transaction: Partial<Transaction>) =>
   client.post<Transaction>('/transactions', transaction);
+
+export const getBasket = () => client.get<Order>('/orders/basket');
+
+export const updateBasket = (basket: Partial<Order>) =>
+  client.patch<Order>('/orders/basket', basket);

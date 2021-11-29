@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
-import { Box, Button, TableSortLabel, Typography } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import {
+  Box,
+  Button,
+  InputBase,
+  styled,
+  TableSortLabel,
+  Typography,
+} from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -41,6 +49,46 @@ const columns: { key: keyof User; title: string; sortable: boolean }[] = [
   },
 ];
 
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: '#f7f7f7',
+  '&:hover': {
+    backgroundColor: '#f7f7f7',
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
+
 export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { users } = useUsers();
@@ -71,6 +119,18 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
     });
   };
 
+  const handleChange = (value: any) => {
+    setSortedUsers(
+      users.filter(
+        u =>
+          u.name.toLocaleLowerCase().includes(value.toLocaleLowerCase()) ||
+          u.surname.toLocaleLowerCase().includes(value.toLocaleLowerCase()) ||
+          u.email.toLocaleLowerCase().includes(value.toLocaleLowerCase()) ||
+          u.role.toLocaleLowerCase().includes(value.toLocaleLowerCase()),
+      ),
+    );
+  };
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -80,10 +140,20 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
           component="h1"
           color="primary.main"
           fontWeight="bold"
-          sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
+          sx={{ minWidth: '6rem', fontSize: { sm: 28 }, mr: 'auto' }}
         >
           Users
         </Typography>
+        <Search>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="Search…"
+            inputProps={{ 'aria-label': 'search' }}
+            onChange={e => handleChange(e.target.value)}
+          />
+        </Search>
         <Button
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           variant="contained"

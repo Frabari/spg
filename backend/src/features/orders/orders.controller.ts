@@ -1,8 +1,18 @@
-import { Controller, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Request,
+  Patch,
+  UseInterceptors,
+  Body,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CrudController,
   CrudRequest,
+  CrudRequestInterceptor,
   Override,
   ParsedBody,
   ParsedRequest,
@@ -11,7 +21,7 @@ import { Crud } from '../../core/decorators/crud.decorator';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
-import { ADMINS, Role, STAFF } from '../users/roles.enum';
+import { ADMINS, ALL, Role, STAFF } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -47,38 +57,82 @@ export class OrdersController implements CrudController<Order> {
 
   @Override()
   @Roles(...STAFF)
-  getMany(@ParsedRequest() request: CrudRequest) {
-    request.parsed.fields = ['id', 'status', 'createdAt'];
-    return this.base.getManyBase(request);
+  getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
+    crudRequest.parsed.fields = ['id', 'status', 'createdAt'];
+    return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
+      return orders?.map(order =>
+        this.service.checkOrderBalance(order, request.user),
+      );
+    });
+  }
+
+  @Get('basket')
+  @Roles(...ALL)
+  getBasket(@Request() request) {
+    return this.service
+      .resolveBasket(request.user)
+      .then(order => this.service.checkOrderBalance(order, request.user));
+  }
+
+  @Patch('basket')
+  @UseInterceptors(CrudRequestInterceptor)
+  @Roles(...ALL)
+  async updateBasket(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @Body() dto: UpdateOrderDto,
+  ) {
+    const basket = await this.service.resolveBasket(request.user);
+    crudRequest.parsed.paramsFilter = [
+      { field: 'id', operator: '$eq', value: basket.id },
+    ];
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    const order = await this.service.checkOrderUpdate(
+      basket.id,
+      dto,
+      request.user,
+      true,
+    );
+    return this.base
+      .updateOneBase(crudRequest, order as Order)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 
   @Override()
   @Roles(...STAFF)
-  getOne(@ParsedRequest() request: CrudRequest) {
-    request.parsed.join = [{ field: 'deliveredBy' }];
-    return this.base.getOneBase(request);
+  getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    return this.base
+      .getOneBase(crudRequest)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 
   @Override()
   @Roles(Role.MANAGER, Role.EMPLOYEE)
   async createOne(
-    @ParsedRequest() request: CrudRequest,
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
     @ParsedBody() dto: CreateOrderDto,
   ) {
-    request.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
     const order = await this.service.checkOrder(dto);
-    return this.base.createOneBase(request, order as Order);
+    return this.base
+      .createOneBase(crudRequest, order as Order)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 
   @Override()
   @Roles(...ADMINS)
   async updateOne(
-    @ParsedRequest() request: CrudRequest,
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
     @ParsedBody() dto: UpdateOrderDto,
     @Param('id') id: number,
   ) {
-    request.parsed.join = [{ field: 'deliveredBy' }];
-    const order = await this.service.checkOrderUpdate(id, dto);
-    return this.base.updateOneBase(request, order as Order);
+    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    const order = await this.service.checkOrderUpdate(id, dto, request.user);
+    return this.base
+      .updateOneBase(crudRequest, order as Order)
+      .then(order => this.service.checkOrderBalance(order, request.user));
   }
 }

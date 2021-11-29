@@ -123,8 +123,15 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
 
   const handleChange = (value: any) => {
     setSortedProducts(
-      products.filter(p =>
-        p.name.toLocaleLowerCase().includes(value.toLocaleLowerCase()),
+      products.filter(
+        p =>
+          p.name.toLocaleLowerCase().includes(value.toLocaleLowerCase()) ||
+          p.category.name
+            .toLocaleLowerCase()
+            .includes(value.toLocaleLowerCase()) ||
+          p.category.slug
+            .toLocaleLowerCase()
+            .includes(value.toLocaleLowerCase()),
       ),
     );
   };
@@ -138,7 +145,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
           component="h1"
           color="primary.main"
           fontWeight="bold"
-          sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
+          sx={{ minWidth: '6rem', fontSize: { sm: 28 }, mr: 'auto' }}
         >
           Products
         </Typography>
