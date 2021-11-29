@@ -109,7 +109,7 @@ export default function Basket({
         {basket?.entries?.map(e => (
           <ProductCard
             key={e.product.id}
-            name={e.product.name.split(' ')[2]}
+            name={e.product.name}
             image={e.product.image}
             price={e.product.price}
             description={e.product.description}
