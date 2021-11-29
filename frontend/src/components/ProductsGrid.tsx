@@ -23,6 +23,7 @@ import { useProducts } from '../hooks/useProducts';
 function ProductCard(props: any) {
   const { basket, upsertEntry } = useBasket();
   const navigate = useNavigate();
+  props.setBalanceWarnig(basket.insufficientBalance);
 
   const handleInfo = () => {
     if (!props.onSelect) {
@@ -41,6 +42,7 @@ function ProductCard(props: any) {
         toast.success(`${product.name} succesfully added!`);
       });
     }
+    props.setBalanceWarnig(basket.insufficientBalance);
   };
 
   return (
@@ -93,12 +95,14 @@ export default function ProductsGrid({
   onSelect,
   search,
   handleDelete,
+  setBalanceWarnig,
 }: {
   farmer?: User;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
+  setBalanceWarnig?: (bol: boolean) => void;
 }) {
   const { products } = useProducts();
   const [sortOption, setSortOption] = useState('No sort');
@@ -193,6 +197,7 @@ export default function ProductsGrid({
               description={p.description}
               product={p}
               onSelect={onSelect}
+              setBalanceWarnig={setBalanceWarnig}
             />
           ))}
       </Grid>

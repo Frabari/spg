@@ -363,7 +363,7 @@ function NavBar(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <Basket />
+          <Basket balanceWarning={props.balanceWarning} />
         </Box>
       </Drawer>
     </>

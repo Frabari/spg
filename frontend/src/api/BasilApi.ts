@@ -40,6 +40,7 @@ export interface Order {
   deliveredBy: User;
   createdAt: Date;
   total: number;
+  insufficientBalance: boolean;
 }
 
 export type ProductId = number;

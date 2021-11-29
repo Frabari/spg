@@ -4,6 +4,8 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
   Card,
@@ -115,9 +117,11 @@ function ProductCard(props: any) {
 export default function Basket({
   filter,
   search,
+  balanceWarning,
 }: {
   filter?: string;
   search?: string;
+  balanceWarning?: boolean;
 }) {
   const { basket } = useBasket();
 
@@ -133,6 +137,12 @@ export default function Basket({
         justifyItems="center"
         width="auto"
       >
+        {balanceWarning && (
+          <Alert severity="warning">
+            <AlertTitle>Warning</AlertTitle>
+            Insufficient balance — <strong>top it up!</strong>
+          </Alert>
+        )}
         {basket?.entries
           ?.sort((a, b) => a.product.price - b.product.price)
           ?.map(e => (
@@ -143,6 +153,7 @@ export default function Basket({
               price={e.product.price}
               description={e.product.description}
               product={e.product}
+              balanceWarning={balanceWarning}
               quantity={e.quantity}
             />
           ))}
