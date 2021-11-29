@@ -35,6 +35,7 @@ function ProductCard(props: any) {
     } else {
       upsertEntry(product, 1).then(o => {
         toast.success(`${product.name} succesfully added!`);
+        window.location.reload();
       });
     }
   };
@@ -53,10 +54,20 @@ function ProductCard(props: any) {
             >
               {props.name}
             </Typography>
-            <Typography variant="body1" color="text.secondary" align="center">
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              align="center"
+              my={1}
+            >
               {props.product?.available} {props.product.unitOfMeasure} available
             </Typography>
-            <Typography variant="body2" color="text.secondary" align="center">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              align="center"
+              fontWeight="bold"
+            >
               € {props.price}/{props.product.unitOfMeasure}
             </Typography>
           </CardContent>
