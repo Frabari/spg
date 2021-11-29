@@ -26,7 +26,7 @@ const mockOrders = [
     user: mockUser as User,
   },
 ];
-const mockProduct: Partial<Product> = {
+let mockProduct: Partial<Product> = {
   id: 30,
   name: 'Apple',
 };
@@ -86,6 +86,14 @@ jest.mock('../api/BasilApi', () => {
     createUser: (_user: Partial<User>) => Promise.resolve(_user),
     getUsers: () => Promise.resolve(mockUsers),
     getProduct: (id?: ProductId) => Promise.resolve(mockProduct),
+    createProduct: (_product: Partial<Product>) => {
+      mockProduct = _product;
+      return Promise.resolve(mockProduct);
+    },
+    updateProduct: (_id: number, _product: Partial<Product>) => {
+      mockProduct = _product;
+      return Promise.resolve(mockProduct);
+    },
     getProducts: () => Promise.resolve(mockProducts),
     getCategories: () => Promise.resolve(mockCategories),
     createTransaction: (_transaction: Partial<Transaction>) =>
