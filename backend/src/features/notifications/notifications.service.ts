@@ -8,7 +8,7 @@ import { NotificationsGateway } from './notifications.gateway';
 
 @Injectable()
 export class NotificationsService {
-  activeUserIds: Record<UserId, boolean> = {};
+  private activeUserIds: Record<UserId, boolean> = {};
 
   constructor(
     @InjectRepository(Notification)
@@ -30,12 +30,13 @@ export class NotificationsService {
     notification: Notification,
     to: FindManyOptions<User>,
   ) {
-    let users = await this.usersService.find(to);
+    const users = await this.usersService.find(to);
+    let loggedUsers: User[] = [];
     if (users?.length) {
-      users = users.filter(u => u.id in this.activeUserIds);
+      loggedUsers = users.filter(u => u.id in this.activeUserIds);
     }
     this.notificationsGateway.server
-      .in(users.map(u => u.id.toString()))
+      .in(loggedUsers.map(u => u.id.toString()))
       .emit('notification', notification);
     notification.deliveredTo = users;
     await this.notificationsRepository.save(notification);
