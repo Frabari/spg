@@ -21,10 +21,10 @@ export const useNotifications = (
       socket.on('notification', n => _onNotification.current(n));
       setNotifications(profile.notifications ?? []);
     }
-    return () => {
-      socket.disconnect();
-    };
-  }, [profile]);
+    // return () => {
+    //   socket.disconnect();
+    // };
+  }, [profile, setNotifications]);
 
   return {
     notifications,

@@ -3,7 +3,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserId } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import { Notification } from './entities/notification.entity';
+import { Notification, NotificationType } from './entities/notification.entity';
 import { NotificationsGateway } from './notifications.gateway';
 
 @Injectable()
@@ -14,9 +14,21 @@ export class NotificationsService {
     @InjectRepository(Notification)
     private readonly notificationsRepository: Repository<Notification>,
     private readonly usersService: UsersService,
-    @Inject(forwardRef(() => NotificationsService))
+    @Inject(forwardRef(() => NotificationsGateway))
     private readonly notificationsGateway: NotificationsGateway,
-  ) {}
+  ) {
+    setTimeout(() => {
+      this.sendNotification(
+        {
+          title: 'Hamilton è scarso',
+          message:
+            'Hamilton è veramente un grande belin. Infatti vince Verstappen sicuramente!',
+          type: NotificationType.SUCCESS,
+        } as Notification,
+        {},
+      );
+    }, 10000);
+  }
 
   activateUser(id: UserId) {
     this.activeUserIds[id] = true;

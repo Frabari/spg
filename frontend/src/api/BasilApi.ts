@@ -110,7 +110,7 @@ export interface Notification {
   createdAt: Date;
 }
 
-export let socket = SocketIo('http://localhost:3001', {
+export const socket = SocketIo('http://localhost:3001', {
   transports: ['websocket'],
   query: { token: localStorage.getItem('API_TOKEN') },
 });
@@ -133,11 +133,8 @@ export const login = (username: string, password: string) =>
       password,
     })
     .then(tokens => {
-      socket?.disconnect();
-      socket = SocketIo('http://localhost:3001', {
-        transports: ['websocket'],
-        query: { token: tokens.token },
-      });
+      socket.io.opts.query.token = tokens.token;
+      socket.disconnect().connect();
       client.setBearerAuth(tokens.token);
       localStorage.setItem('API_TOKEN', tokens.token);
       return tokens;
@@ -145,7 +142,8 @@ export const login = (username: string, password: string) =>
 
 export const logout = () => {
   client.removeAuth();
-  socket?.disconnect();
+  socket.disconnect();
+  console.log('disconnecting logout');
   localStorage.removeItem('API_TOKEN');
 };
 

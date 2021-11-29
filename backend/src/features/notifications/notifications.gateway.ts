@@ -1,5 +1,5 @@
 import jwtDecode from 'jwt-decode';
-import { Server, Socket } from 'socket.io';
+import { forwardRef, Inject } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -13,14 +13,15 @@ import { NotificationsService } from './notifications.service';
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  @WebSocketServer() server: Server;
+  @WebSocketServer() server: any;
 
   constructor(
+    @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
     private readonly usersService: UsersService,
   ) {}
 
-  async handleConnection(client: Socket) {
+  async handleConnection(client: any) {
     let payload: any;
     try {
       payload = jwtDecode(client.handshake.query.token as string);
@@ -37,7 +38,7 @@ export class NotificationsGateway
     this.notificationsService.activateUser(user.id);
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: any) {
     try {
       const payload: any = jwtDecode(client.handshake.query.token as string);
       client.leave(payload.sub.toString());

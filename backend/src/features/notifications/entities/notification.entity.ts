@@ -19,13 +19,13 @@ export class Notification {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ default: NotificationType.INFO })
   type: NotificationType;
 
-  @Column()
+  @Column({ nullable: true })
   title: string;
 
-  @Column()
+  @Column({ nullable: true })
   message: string;
 
   @CreateDateColumn()

@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LinearProgress } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './Theme';
+import Notifications from './components/Notification';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { usePendingState } from './hooks/usePendingState';
 import { Admin } from './pages/Admin';
@@ -16,6 +17,7 @@ function App() {
   return (
     <>
       <Toaster />
+      <Notifications />
       <ThemeProvider theme={themeOptions}>
         <BrowserRouter>
           <Routes>
