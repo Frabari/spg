@@ -1,5 +1,6 @@
 import { createGlobalState } from 'react-hooks-global-state';
 import { Order, User } from '../api/BasilApi';
+import { Notification } from '../api/BasilApi';
 
 const { useGlobalState, setGlobalState, getGlobalState } = createGlobalState({
   profile: null as User | false,
@@ -7,6 +8,7 @@ const { useGlobalState, setGlobalState, getGlobalState } = createGlobalState({
   profilePending: false,
   basketPending: false,
   pending: false,
+  notifications: [] as Notification[],
 });
 
 export { useGlobalState, setGlobalState, getGlobalState };
