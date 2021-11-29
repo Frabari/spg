@@ -60,7 +60,7 @@ export default function ProductInfo(props: any) {
   };
 
   return (
-    <Container sx={{ my: 18 }}>
+    <Container sx={{ mt: 18, mb: 9 }}>
       <Box sx={style}>
         <Grid container direction="column" spacing={2}>
           <Grid item xs={12}>
@@ -83,7 +83,17 @@ export default function ProductInfo(props: any) {
                   variant="h6"
                   component="div"
                 >
-                  {'Product by ' + farmer.name + ' ' + farmer.surname}
+                  {'Product by '}
+                  <Typography
+                    fontWeight="bold"
+                    align="right"
+                    gutterBottom
+                    variant="h6"
+                    component="div"
+                    display="inline"
+                  >
+                    {farmer.name + ' ' + farmer.surname}
+                  </Typography>
                 </Typography>
               </Grid>
               <Grid item xs={1}>
@@ -94,7 +104,7 @@ export default function ProductInfo(props: any) {
           <Grid item xs={12}>
             <Grid
               container
-              direction="row"
+              direction={{ xs: 'column', md: 'row' }}
               spacing={2}
               alignItems="center"
               justifyItems="center"
@@ -150,11 +160,9 @@ export default function ProductInfo(props: any) {
                       color="info"
                       textAlign="justify"
                       fontSize={20}
-                      pr={8}
+                      pr={{ xs: 2, md: 8 }}
                     >
-                      {product.description === 'description'
-                        ? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
-                        : product.description}
+                      {product.description}
                     </Typography>
                   </Grid>
                   <Grid item>
@@ -185,7 +193,7 @@ export default function ProductInfo(props: any) {
                       justifyItems="center"
                       alignItems="center"
                     >
-                      <Grid item xs={4}>
+                      <Grid item xs={6} sm={4}>
                         <TextField
                           id="outlined-select-quantity"
                           select
@@ -201,7 +209,7 @@ export default function ProductInfo(props: any) {
                           ))}
                         </TextField>
                       </Grid>
-                      <Grid item xs={8} mb={5}>
+                      <Grid item xs={6} sm={8} mb={5}>
                         <Button onClick={() => handleClick()}>
                           Add to basket
                         </Button>
