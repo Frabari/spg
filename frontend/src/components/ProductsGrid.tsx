@@ -178,6 +178,7 @@ export default function ProductsGrid({
             id="outlined-select-sort"
             select
             value={sortOption}
+            size="small"
             label="Sort by"
             sx={{
               width: '200px',
