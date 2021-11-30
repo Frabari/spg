@@ -7,7 +7,14 @@ import {
   IsString,
   IsUrl,
 } from 'class-validator';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Notification } from '../../notifications/entities/notification.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Product } from '../../products/entities/product.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
@@ -107,4 +114,10 @@ export class User {
   @IsUrl()
   @IsOptional()
   avatar: string;
+
+  /**
+   * The notifications delivered to this user
+   */
+  @ManyToMany(() => Notification, notification => notification.deliveredTo)
+  notifications: Notification[];
 }

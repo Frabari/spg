@@ -4,6 +4,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from '../categories/categories.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { OrdersModule } from '../orders/orders.module';
 import { ProductsModule } from '../products/products.module';
 import { User } from '../users/entities/user.entity';
@@ -30,6 +31,7 @@ describe('TransactionsService', () => {
         CategoriesModule,
         TransactionsModule,
         OrdersModule,
+        NotificationsModule,
       ],
     }).compile();
 

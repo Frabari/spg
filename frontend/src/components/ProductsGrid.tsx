@@ -126,7 +126,7 @@ export default function ProductsGrid({
 }) {
   const { products, loadProducts } = useProducts();
 
-  const [sortOption, setSortOption] = useState('No sort');
+  const [sortOption, setSortOption] = useState('');
   const sort = [
     'Highest price',
     'Lowest price',
