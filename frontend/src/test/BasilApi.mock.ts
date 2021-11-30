@@ -1,4 +1,11 @@
-import { Order, Product, ProductId, Transaction, User } from '../api/BasilApi';
+import {
+  Notification,
+  Order,
+  Product,
+  ProductId,
+  Transaction,
+  User,
+} from '../api/BasilApi';
 
 let mockOrder: Partial<Order> = {
   id: 30,
@@ -9,6 +16,12 @@ const mockUser: Partial<User> = {
   surname: 'Rossi',
   email: 'mario@rossi.com',
   password: 'mariorossi',
+  notifications: [
+    {
+      id: 1,
+      title: 'notification',
+    } as Notification,
+  ],
 };
 const mockUsers = [
   {
@@ -30,6 +43,7 @@ const mockProduct: Partial<Product> = {
   id: 30,
   name: 'Apple',
 };
+
 const mockProducts = [
   {
     id: 40,

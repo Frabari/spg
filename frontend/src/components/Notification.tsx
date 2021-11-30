@@ -36,9 +36,10 @@ export default function Notifications() {
   return (
     <Snackbar
       onClose={handleClose}
-      autoHideDuration={6000}
+      autoHideDuration={10000}
       open={open}
       message={notification?.title}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
       <Alert
         onClose={handleClose}
