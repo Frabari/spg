@@ -1,10 +1,10 @@
 import { hash } from 'bcrypt';
-import { Not } from 'typeorm';
-import { EntityManager } from 'typeorm';
+import { EntityManager, Not } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from '../categories/categories.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { OrdersModule } from '../orders/orders.module';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { User } from '../users/entities/user.entity';
@@ -34,6 +34,7 @@ describe('ProductsService', () => {
         CategoriesModule,
         TransactionsModule,
         OrdersModule,
+        NotificationsModule,
       ],
     }).compile();
 

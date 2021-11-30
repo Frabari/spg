@@ -1,3 +1,4 @@
+import SocketIo from 'socket.io-client';
 import { createHttpClient } from './createHttpClient';
 
 export type CategoryId = number;
@@ -81,6 +82,12 @@ export enum Role {
   MANAGER = 'manager',
 }
 
+export enum NotificationType {
+  INFO = 'info',
+  SUCCESS = 'success',
+  ERROR = 'error',
+}
+
 export interface User {
   id: UserId;
   name: string;
@@ -94,7 +101,21 @@ export interface User {
   transactions: Transaction[];
   deliveries: Order[];
   products: Product[];
+  notifications: Notification[];
 }
+
+export interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  type: NotificationType;
+  createdAt: Date;
+}
+
+export const socket = SocketIo('http://localhost:3001', {
+  transports: ['websocket'],
+  query: { token: localStorage.getItem('API_TOKEN') },
+});
 
 const client = createHttpClient('');
 
@@ -114,6 +135,8 @@ export const login = (username: string, password: string) =>
       password,
     })
     .then(tokens => {
+      socket.io.opts.query.token = tokens.token;
+      socket.disconnect().connect();
       client.setBearerAuth(tokens.token);
       localStorage.setItem('API_TOKEN', tokens.token);
       return tokens;
@@ -121,6 +144,7 @@ export const login = (username: string, password: string) =>
 
 export const logout = () => {
   client.removeAuth();
+  socket.disconnect();
   localStorage.removeItem('API_TOKEN');
 };
 
