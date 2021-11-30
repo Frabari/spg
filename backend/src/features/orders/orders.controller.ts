@@ -86,7 +86,10 @@ export class OrdersController implements CrudController<Order> {
     crudRequest.parsed.paramsFilter = [
       { field: 'id', operator: '$eq', value: basket.id },
     ];
-    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [
+      { field: 'deliveredBy' },
+      { field: 'deliveryLocation' },
+    ];
     const order = await this.service.checkOrderUpdate(
       basket.id,
       dto,
@@ -101,7 +104,10 @@ export class OrdersController implements CrudController<Order> {
   @Override()
   @Roles(...STAFF)
   getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
-    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [
+      { field: 'deliveredBy' },
+      { field: 'deliveryLocation' },
+    ];
     return this.base
       .getOneBase(crudRequest)
       .then(order => this.service.checkOrderBalance(order, request.user));
@@ -114,7 +120,10 @@ export class OrdersController implements CrudController<Order> {
     @Request() request,
     @ParsedBody() dto: CreateOrderDto,
   ) {
-    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [
+      { field: 'deliveredBy' },
+      { field: 'deliveryLocation' },
+    ];
     const order = await this.service.checkOrder(dto);
     return this.base
       .createOneBase(crudRequest, order as Order)
@@ -129,7 +138,10 @@ export class OrdersController implements CrudController<Order> {
     @ParsedBody() dto: UpdateOrderDto,
     @Param('id') id: number,
   ) {
-    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [
+      { field: 'deliveredBy' },
+      { field: 'deliveryLocation' },
+    ];
     const order = await this.service.checkOrderUpdate(id, dto, request.user);
     return this.base
       .updateOneBase(crudRequest, order as Order)

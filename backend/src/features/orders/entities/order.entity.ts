@@ -14,6 +14,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
@@ -112,7 +113,7 @@ export class Order {
    * A string representing an address. If null the order will
    * be picked up at the warehouse
    */
-  @Column(() => DeliveryLocation)
+  @OneToOne(() => DeliveryLocation, dl => dl.order)
   @Allow()
   deliveryLocation: DeliveryLocation;
 

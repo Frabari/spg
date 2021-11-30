@@ -1,7 +1,15 @@
 import { Allow } from 'class-validator';
-import { Column } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Order } from './order.entity';
 
+@Entity()
 export class DeliveryLocation {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @OneToOne(() => Order, order => order.deliveryLocation)
+  order: Order;
+
   @Column({ nullable: true })
   @Allow()
   name: string;
