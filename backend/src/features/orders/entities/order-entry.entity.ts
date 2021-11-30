@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { IsInt } from 'class-validator';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
 import { Order } from './order.entity';
@@ -27,8 +27,6 @@ export class OrderEntry {
    */
   @Column({ default: 1 })
   @IsInt()
-  @IsNotEmpty()
-  @Min(1)
   quantity: number;
 
   /**

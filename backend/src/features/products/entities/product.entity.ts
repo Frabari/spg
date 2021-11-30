@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsIn, IsInt, IsString, IsUrl, Min } from 'class-validator';
+import { Allow, IsIn, IsString, IsUrl, Min } from 'class-validator';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
@@ -40,6 +40,7 @@ export class Product {
    * If true this product is visible and saleable
    */
   @Column({ default: false })
+  @Allow()
   @Expose({ groups: STAFF })
   public: boolean;
 
@@ -47,6 +48,7 @@ export class Product {
    * A short name
    */
   @Column()
+  @Allow()
   @Expose()
   name: string;
 
@@ -54,6 +56,7 @@ export class Product {
    * A detailed description
    */
   @Column()
+  @Allow()
   @Expose()
   description: string;
 
@@ -76,8 +79,7 @@ export class Product {
    * to be sold right now
    */
   @Column({ default: 0 })
-  @IsInt()
-  @Min(0)
+  @Allow()
   @Expose()
   available: number;
 
@@ -85,8 +87,7 @@ export class Product {
    * The number of units currently in customer orders
    */
   @Column({ default: 0 })
-  @IsInt()
-  @Min(0)
+  @Allow()
   @Expose({ groups: STAFF })
   reserved: number;
 
@@ -94,8 +95,7 @@ export class Product {
    * The number of sold units
    */
   @Column({ default: 0 })
-  @IsInt()
-  @Min(0)
+  @Allow()
   @Expose({ groups: STAFF })
   sold: number;
 
@@ -103,6 +103,7 @@ export class Product {
    * The category to which this product belongs
    */
   @ManyToOne(() => Category, cat => cat.products)
+  @Allow()
   @Expose()
   category: Category;
 
@@ -110,6 +111,7 @@ export class Product {
    * The farmer who produces this product
    */
   @ManyToOne(() => User, user => user.products)
+  @Allow()
   @Expose()
   farmer: User;
 
