@@ -63,7 +63,7 @@ export class UsersController implements CrudController<User> {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: `Gets the current authenticated user's profile` })
   getMe(@Request() req) {
-    return this.service.findOne(req.user.id);
+    return this.service.findOne(req.user.id, { relations: ['notifications'] });
   }
 
   @Override()

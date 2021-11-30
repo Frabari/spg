@@ -1,9 +1,13 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Person, ShoppingCart } from '@mui/icons-material';
+import DoneIcon from '@mui/icons-material/Done';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   AppBar,
@@ -13,9 +17,14 @@ import {
   Box,
   Button,
   Container,
+  Divider,
   Drawer,
   IconButton,
   InputAdornment,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
   Tab,
@@ -25,12 +34,13 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { logout, Role } from '../api/BasilApi';
+import { logout, NotificationType, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { useBasket } from '../hooks/useBasket';
 import { useCategories } from '../hooks/useCategories';
+import { useNotifications } from '../hooks/useNotifications';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
@@ -53,7 +63,7 @@ function LinkTab({ slug, label, ...rest }: LinkTabProps) {
   );
 }
 
-function NavTabs(props: any) {
+function NavTabs() {
   const [value, setValue] = React.useState(0);
   const [queryParams] = useSearchParams();
   const { categories } = useCategories();
@@ -139,6 +149,8 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorElNotifications, setAnchorElNotifications] =
+    React.useState<null | HTMLElement>(null);
   const [list, setList] = useState([]);
   const { profile, load } = useProfile();
   const { setPending } = usePendingState();
@@ -147,6 +159,7 @@ function NavBar(props: any) {
   const { products } = useProducts();
   const { users } = useUsers();
   const { basket } = useBasket();
+  const { notifications } = useNotifications();
 
   useEffect(() => {
     const u = users
@@ -168,8 +181,16 @@ function NavBar(props: any) {
     setAnchorEl(event.currentTarget);
   };
 
+  const handleMenuNotifications = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElNotifications(event.currentTarget);
+  };
+
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleCloseNotifications = () => {
+    setAnchorElNotifications(null);
   };
 
   const handleLogout = async () => {
@@ -242,6 +263,7 @@ function NavBar(props: any) {
                     }}
                     renderOption={(props, option: any) => (
                       <Box
+                        key={option.id}
                         component="li"
                         sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
                         {...props}
@@ -283,22 +305,45 @@ function NavBar(props: any) {
                   />
                 </Box>
 
-                <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
-                  <IconButton size="large" onClick={handleMenu}>
-                    <Avatar src={profile?.avatar} />
-                  </IconButton>
+                <Box
+                  sx={{
+                    display: { md: 'flex' },
+                    ml: 'auto',
+                    alignItems: 'center',
+                  }}
+                >
                   <Menu
                     id="menu-appbar"
                     anchorEl={anchorEl}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
                     keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
+                    PaperProps={{
+                      elevation: 0,
+                      sx: {
+                        overflow: 'visible',
+                        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                        mt: 1.5,
+                        '& .MuiAvatar-root': {
+                          width: 32,
+                          height: 32,
+                          ml: -0.5,
+                          mr: 1,
+                        },
+                        '&:before': {
+                          content: '""',
+                          display: 'block',
+                          position: 'absolute',
+                          top: 0,
+                          right: 14,
+                          width: 10,
+                          height: 10,
+                          bgcolor: 'background.paper',
+                          transform: 'translateY(-50%) rotate(45deg)',
+                          zIndex: 0,
+                        },
+                      },
                     }}
+                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
@@ -313,12 +358,94 @@ function NavBar(props: any) {
                   </Menu>
                   <IconButton
                     size="large"
+                    aria-label="show notifications"
+                    onClick={handleMenuNotifications}
+                  >
+                    <Badge badgeContent={notifications?.length}>
+                      <NotificationsIcon />
+                    </Badge>
+                  </IconButton>
+                  <Menu
+                    id="menu-appbar-notifications"
+                    anchorEl={anchorElNotifications}
+                    keepMounted
+                    PaperProps={{
+                      elevation: 0,
+                      sx: {
+                        overflow: 'visible',
+                        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                        mt: 3,
+                        '&:before': {
+                          content: '""',
+                          display: 'block',
+                          position: 'absolute',
+                          top: 0,
+                          right: 14,
+                          width: 10,
+                          height: 10,
+                          color: 'background.paper',
+                          transform: 'translateY(-50%) rotate(45deg)',
+                          zIndex: 0,
+                        },
+                      },
+                    }}
+                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    open={Boolean(anchorElNotifications)}
+                    onClose={handleCloseNotifications}
+                  >
+                    <List
+                      sx={{
+                        width: 300,
+                        maxWidth: 360,
+                        bgcolor: 'background.paper',
+                        position: 'relative',
+                        overflow: 'auto',
+                        maxHeight: 200,
+                        '& ul': { padding: 0 },
+                      }}
+                    >
+                      {!notifications.length
+                        ? 'empty'
+                        : notifications.map(n => (
+                            <Fragment key={n.id}>
+                              <ListItem alignItems="flex-start">
+                                <ListItemIcon>
+                                  {n.type === NotificationType.INFO && (
+                                    <InfoOutlinedIcon
+                                      sx={{ color: 'cornflowerblue' }}
+                                    />
+                                  )}
+                                  {n.type === NotificationType.ERROR && (
+                                    <ErrorOutlineIcon color="error" />
+                                  )}
+                                  {n.type === NotificationType.SUCCESS && (
+                                    <DoneIcon color="primary" />
+                                  )}
+                                </ListItemIcon>
+                                <ListItemText
+                                  primary={n.title}
+                                  secondary={
+                                    <React.Fragment>{n.message}</React.Fragment>
+                                  }
+                                />
+                              </ListItem>
+                              <Divider variant="inset" component="li" />
+                            </Fragment>
+                          ))}
+                    </List>
+                  </Menu>
+                  <IconButton
+                    size="large"
                     aria-label="show cart"
                     onClick={() => setShowBasket(true)}
                   >
                     <Badge badgeContent={basket?.entries?.length}>
                       <ShoppingCart />
                     </Badge>
+                  </IconButton>
+                  <IconButton size="large" onClick={handleMenu}>
+                    <Avatar src={profile?.avatar} />
                   </IconButton>
                 </Box>
               </>

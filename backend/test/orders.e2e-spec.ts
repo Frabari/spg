@@ -6,6 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
+import { NotificationsModule } from '../src/features/notifications/notifications.module';
 import {
   Order,
   OrderStatus,
@@ -36,6 +37,7 @@ describe('OrdersController (e2e)', () => {
         CategoriesModule,
         TransactionsModule,
         OrdersModule,
+        NotificationsModule,
       ],
     }).compile();
     app = moduleFixture.createNestApplication();
