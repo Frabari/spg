@@ -26,7 +26,7 @@ import NavigationBox from './Navigation';
 export default function Checkout() {
   const { basket } = useBasket();
   const { user } = useUser();
-  const [delivery, setDelivery] = React.useState<string | null>('left');
+  const [delivery, setDelivery] = React.useState<string | null>('at_store');
   const [date, setDate] = React.useState<Date | null>(new Date());
   const [time, setTime] = React.useState<Date | null>(new Date());
 
@@ -39,7 +39,7 @@ export default function Checkout() {
   return (
     <>
       <NavigationBox.NavBar />
-      <Grid container direction="row" sx={{ px: 15, py: 8 }}>
+      <Grid container direction="row" sx={{ ml: 1, mr: 'auto', py: 7, px: 3 }}>
         <Grid container item xs={12} spacing={2} sx={{ py: 5 }}>
           <Typography
             variant="h6"
@@ -51,20 +51,28 @@ export default function Checkout() {
           >
             {'Checkout'}
           </Typography>
-          <Button
-            sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-            variant="contained"
-          >
-            <CreditCardIcon />
-            <Typography
+          {delivery === 'at_store' ? (
+            <Button
               sx={{
-                textTransform: 'none',
-                marginLeft: 1,
+                minWidth: 0,
+                px: { xs: 1, sm: 2 },
+                float: 'right',
               }}
+              variant="contained"
             >
-              {'Pay'}
-            </Typography>
-          </Button>
+              <CreditCardIcon />
+              <Typography
+                sx={{
+                  textTransform: 'none',
+                  marginLeft: 1,
+                }}
+              >
+                {'Pay'}
+              </Typography>
+            </Button>
+          ) : (
+            ''
+          )}
         </Grid>
         <Grid container item xs={12} spacing={2} sx={{ pb: 5 }}>
           <Card sx={{ width: '100%', p: 3 }}>
@@ -107,7 +115,7 @@ export default function Checkout() {
                     display="inline"
                     color="#757575"
                   >
-                    {user?.balance}
+                    {user?.balance == null ? '0' : user?.balance}
                   </Typography>
                 </Typography>
                 <Typography
@@ -152,9 +160,9 @@ export default function Checkout() {
               exclusive
               onChange={handleDelivery}
               aria-label="delivery"
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, borderRadius: '16px' }}
             >
-              <ToggleButton value="at_store">{'I ll pick it up'}</ToggleButton>
+              <ToggleButton value="at_store">{"I'll pick it up"}</ToggleButton>
               <ToggleButton value="at_home">{'Deliver it'}</ToggleButton>
             </ToggleButtonGroup>
             {delivery === 'at_home' ? (
@@ -265,7 +273,9 @@ export default function Checkout() {
                 onChange={(newDate: Date) => {
                   setDate(newDate);
                 }}
-                renderInput={(params: any) => <TextField {...params} />}
+                renderInput={(params: any) => (
+                  <TextField sx={{ mr: 8 }} {...params} />
+                )}
               />
               <TimePicker
                 label="Choose a time"
@@ -273,10 +283,35 @@ export default function Checkout() {
                 onChange={(newTime: any) => {
                   setTime(newTime);
                 }}
-                renderInput={params => <TextField {...params} />}
+                renderInput={params => (
+                  <TextField sx={{ mr: 'auto' }} {...params} />
+                )}
               />
             </LocalizationProvider>
           </Card>
+          {delivery === 'at_home' ? (
+            <Button
+              sx={{
+                minWidth: 0,
+                px: { xs: 1, sm: 2 },
+                mt: 2,
+                float: 'right',
+              }}
+              variant="contained"
+            >
+              <CreditCardIcon />
+              <Typography
+                sx={{
+                  textTransform: 'none',
+                  marginLeft: 1,
+                }}
+              >
+                {'Pay'}
+              </Typography>
+            </Button>
+          ) : (
+            ''
+          )}
         </Grid>
       </Grid>
     </>

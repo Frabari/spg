@@ -1,6 +1,6 @@
 import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { LinearProgress } from '@mui/material';
+import { Container, LinearProgress } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './Theme';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -26,7 +26,14 @@ function App() {
 
             <Route path="/signup" element={<SignUp />} />
 
-            <Route path="/checkout" element={<Checkout />} />
+            <Route
+              path="/checkout"
+              element={
+                <Container>
+                  <Checkout />
+                </Container>
+              }
+            />
 
             <Route
               path="/admin/*"
