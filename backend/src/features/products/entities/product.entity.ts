@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsIn, IsInt, IsNotEmpty, IsString, IsUrl, Min } from 'class-validator';
+import { IsIn, IsInt, IsString, IsUrl, Min } from 'class-validator';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
@@ -40,7 +40,6 @@ export class Product {
    * If true this product is visible and saleable
    */
   @Column({ default: false })
-  @IsNotEmpty()
   @Expose({ groups: STAFF })
   public: boolean;
 
@@ -48,7 +47,6 @@ export class Product {
    * A short name
    */
   @Column()
-  @IsNotEmpty()
   @Expose()
   name: string;
 
@@ -56,7 +54,6 @@ export class Product {
    * A detailed description
    */
   @Column()
-  @IsNotEmpty()
   @Expose()
   description: string;
 
@@ -64,14 +61,12 @@ export class Product {
    * Price in €
    */
   @Column()
-  @IsNotEmpty()
   @Min(0)
   @Expose()
   price: number;
 
   @Column({ default: ProductMeasures.KG, nullable: false })
   @IsString()
-  @IsNotEmpty()
   @IsIn(Object.values(ProductMeasures))
   @Expose()
   unitOfMeasure: ProductMeasures;
@@ -82,7 +77,6 @@ export class Product {
    */
   @Column({ default: 0 })
   @IsInt()
-  @IsNotEmpty()
   @Min(0)
   @Expose()
   available: number;
@@ -92,7 +86,6 @@ export class Product {
    */
   @Column({ default: 0 })
   @IsInt()
-  @IsNotEmpty()
   @Min(0)
   @Expose({ groups: STAFF })
   reserved: number;
@@ -102,7 +95,6 @@ export class Product {
    */
   @Column({ default: 0 })
   @IsInt()
-  @IsNotEmpty()
   @Min(0)
   @Expose({ groups: STAFF })
   sold: number;
