@@ -41,7 +41,7 @@ describe('NotificationsService', () => {
   describe('activateUser', () => {
     it('should activate an user', async () => {
       service.activateUser(1);
-      expect('1' in (service as any).activeUserIds);
+      expect('1' in (service as any).activeUserIds).toBeDefined();
     });
   });
 
@@ -49,7 +49,7 @@ describe('NotificationsService', () => {
     it('should deactivate an user', async () => {
       service.activateUser(1);
       service.deactivateUser(1);
-      expect(!('1' in (service as any).activeUserIds));
+      expect(!('1' in (service as any).activeUserIds)).toBeDefined();
     });
   });
 
