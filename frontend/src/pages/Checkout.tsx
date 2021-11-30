@@ -54,8 +54,11 @@ export default function Checkout() {
   };
 
   const saveBasket = () => {
-    console.log(dto);
-    updateBasket(dto)
+    const deliverAt = date;
+    deliverAt?.setHours(time.getHours());
+    deliverAt?.setMinutes(time.getMinutes());
+
+    updateBasket({ ...dto, deliverAt })
       .then(() => {
         toast.success('Order paid successfully!');
         navigate(`/products`);

@@ -106,6 +106,7 @@ export class Order {
    * or to pick it up at the warehouse
    */
   @Column({ type: 'varchar', default: null })
+  @Allow()
   @Type(() => Date)
   deliverAt: Date;
 
