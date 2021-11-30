@@ -218,37 +218,6 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
         >
           Orders
         </Typography>
-
-        <TextField
-          id="outlined-select-role"
-          select
-          value={weekfilter}
-          label="Filter by week"
-          sx={{ width: '150px', marginLeft: '50px' }}
-          onChange={e => handleFilterByWeek(e.target.value)}
-        >
-          {week.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        <TextField
-          id="outlined-select-role"
-          select
-          value={orderstatus}
-          label="Filter by status"
-          sx={{ width: '150px', marginLeft: '50px' }}
-          onChange={e => handleFilterByStatus(e.target.value)}
-        >
-          {stat.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-
         <Search sx={{ mr: 'auto', maxWidth: '250px', marginRight: '20px' }}>
           <SearchIconWrapper>
             <SearchIcon />
@@ -266,6 +235,39 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
           Create order
         </Typography>
       </AdminAppBar>
+      <TableRow sx={{ pl: 3 }}>
+        <TextField
+          id="outlined-select-role"
+          select
+          value={weekfilter}
+          size="small"
+          label="Filter by week"
+          sx={{ width: '150px' }}
+          onChange={e => handleFilterByWeek(e.target.value)}
+        >
+          {week.map(option => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          id="outlined-select-role"
+          select
+          value={orderstatus}
+          size="small"
+          label="Filter by status"
+          sx={{ width: '150px', marginLeft: '50px' }}
+          onChange={e => handleFilterByStatus(e.target.value)}
+        >
+          {stat.map(option => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+      </TableRow>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
