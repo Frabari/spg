@@ -21,7 +21,7 @@ import { Crud } from '../../core/decorators/crud.decorator';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
-import { ADMINS, ALL, Role, STAFF } from '../users/roles.enum';
+import { ADMINS, Role, STAFF } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -67,7 +67,6 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Get('basket')
-  @Roles(...ALL)
   getBasket(@Request() request) {
     return this.service
       .resolveBasket(request.user)
@@ -76,7 +75,6 @@ export class OrdersController implements CrudController<Order> {
 
   @Patch('basket')
   @UseInterceptors(CrudRequestInterceptor)
-  @Roles(...ALL)
   async updateBasket(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,
@@ -86,7 +84,10 @@ export class OrdersController implements CrudController<Order> {
     crudRequest.parsed.paramsFilter = [
       { field: 'id', operator: '$eq', value: basket.id },
     ];
-    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [
+      { field: 'deliveredBy' },
+      { field: 'deliveryLocation' },
+    ];
     const order = await this.service.checkOrderUpdate(
       basket.id,
       dto,
@@ -101,7 +102,10 @@ export class OrdersController implements CrudController<Order> {
   @Override()
   @Roles(...STAFF)
   getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
-    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [
+      { field: 'deliveredBy' },
+      { field: 'deliveryLocation' },
+    ];
     return this.base
       .getOneBase(crudRequest)
       .then(order => this.service.checkOrderBalance(order, request.user));
@@ -114,7 +118,10 @@ export class OrdersController implements CrudController<Order> {
     @Request() request,
     @ParsedBody() dto: CreateOrderDto,
   ) {
-    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [
+      { field: 'deliveredBy' },
+      { field: 'deliveryLocation' },
+    ];
     const order = await this.service.checkOrder(dto);
     return this.base
       .createOneBase(crudRequest, order as Order)
@@ -129,7 +136,10 @@ export class OrdersController implements CrudController<Order> {
     @ParsedBody() dto: UpdateOrderDto,
     @Param('id') id: number,
   ) {
-    crudRequest.parsed.join = [{ field: 'deliveredBy' }];
+    crudRequest.parsed.join = [
+      { field: 'deliveredBy' },
+      { field: 'deliveryLocation' },
+    ];
     const order = await this.service.checkOrderUpdate(id, dto, request.user);
     return this.base
       .updateOneBase(crudRequest, order as Order)

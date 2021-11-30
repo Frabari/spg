@@ -1,26 +1,35 @@
 import {
   Controller,
   NotFoundException,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Body, Param } from '@nestjs/common';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   CrudController,
   CrudRequest,
   Override,
+  ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
 import { Crud } from '../../core/decorators/crud.decorator';
+import { ParseBoolFlagPipe } from '../../core/pipes/parse-bool-flag.pipe';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
-import { Role } from '../users/roles.enum';
+import { Roles } from '../users/roles.decorator';
+import { ADMINS, Role } from '../users/roles.enum';
+import { CreateProductDto } from './dtos/create-product.dto';
 import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
 
 @Crud(Product, {
   routes: {
-    only: ['getOneBase', 'getManyBase'],
+    only: ['getOneBase', 'getManyBase', 'createOneBase', 'updateOneBase'],
+  },
+  dto: {
+    create: CreateProductDto,
   },
   query: {
     join: {
@@ -41,9 +50,19 @@ export class ProductsController implements CrudController<Product> {
   }
 
   @Override()
-  getMany(@ParsedRequest() crudReq: CrudRequest, @Request() req) {
+  @ApiQuery({
+    name: 'stock',
+    type: Boolean,
+    allowEmptyValue: true,
+    required: false,
+  })
+  getMany(
+    @ParsedRequest() crudReq: CrudRequest,
+    @Request() req,
+    @Query('stock', ParseBoolFlagPipe) stock = false,
+  ) {
     const user = req.user as User;
-    if (user.role === Role.CUSTOMER) {
+    if (!stock || user.role === Role.CUSTOMER) {
       crudReq.parsed.search = {
         $and: crudReq.parsed.search.$and.concat({
           public: true,
@@ -70,5 +89,32 @@ export class ProductsController implements CrudController<Product> {
       }
       return p;
     });
+  }
+
+  @Override()
+  @Roles(...ADMINS)
+  async createOne(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @ParsedBody() dto: CreateProductDto,
+  ) {
+    const product = await this.service.checkProduct(dto, request.user);
+    return this.base.createOneBase(crudRequest, product as Product);
+  }
+
+  @Override()
+  @Roles(...ADMINS)
+  async updateOne(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @Body() dto: Product,
+    @Param('id') id: number,
+  ) {
+    const product = await this.service.checkProductsUpdate(
+      id,
+      dto,
+      request.user,
+    );
+    return this.base.updateOneBase(crudRequest, product as Product);
   }
 }

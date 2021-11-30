@@ -26,7 +26,7 @@ const mockOrders = [
     user: mockUser as User,
   },
 ];
-const mockProduct: Partial<Product> = {
+let mockProduct: Partial<Product> = {
   id: 30,
   name: 'Apple',
 };
@@ -65,10 +65,6 @@ let mockBasket: Partial<Order> = {
     },
   ],
 };
-let mockEmptyBasket: Partial<Order> = {
-  id: 1,
-  user: mockUser as User,
-};
 
 jest.mock('../api/BasilApi', () => {
   const originalModule = jest.requireActual('../api/BasilApi');
@@ -90,6 +86,14 @@ jest.mock('../api/BasilApi', () => {
     createUser: (_user: Partial<User>) => Promise.resolve(_user),
     getUsers: () => Promise.resolve(mockUsers),
     getProduct: (id?: ProductId) => Promise.resolve(mockProduct),
+    createProduct: (_product: Partial<Product>) => {
+      mockProduct = _product;
+      return Promise.resolve(mockProduct);
+    },
+    updateProduct: (_id: number, _product: Partial<Product>) => {
+      mockProduct = _product;
+      return Promise.resolve(mockProduct);
+    },
     getProducts: () => Promise.resolve(mockProducts),
     getCategories: () => Promise.resolve(mockCategories),
     createTransaction: (_transaction: Partial<Transaction>) =>
@@ -100,7 +104,7 @@ jest.mock('../api/BasilApi', () => {
       return Promise.resolve(mockBasket);
     },
     upsertEntry(_product: Product, _quantity: number) {
-      return Promise.resolve(mockEmptyBasket);
+      return Promise.resolve(mockBasket);
     },
     deleteEntry(_product: Product) {
       return Promise.resolve(mockBasket);

@@ -4,7 +4,7 @@ import { getProducts, Product } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { usePendingState } from './usePendingState';
 
-export const useProducts = () => {
+export const useProducts = (loadAllStock = false) => {
   const { setPending } = usePendingState();
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<ApiException>(null);
@@ -22,13 +22,13 @@ export const useProducts = () => {
 
   useEffect(() => {
     setPending(true);
-    getProducts()
+    getProducts(loadAllStock)
       .then(setProducts)
       .catch(e => {
         setError(e);
         toast.error(e.message);
       })
       .finally(() => setPending(false));
-  }, [setPending]);
+  }, [loadAllStock, setPending]);
   return { products, error, loadProducts: loadProducts.current };
 };

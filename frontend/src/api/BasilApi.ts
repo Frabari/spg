@@ -133,10 +133,17 @@ export const getMe = () => client.get<User>('/users/me');
 export const createUser = (user: Partial<User>) =>
   client.post<User>('/users', user);
 
-export const getProducts = () => client.get<Product[]>('/products');
+export const getProducts = (loadAllStock = false) =>
+  client.get<Product[]>(`/products${loadAllStock ? '?stock' : ''}`);
 
 export const getProduct = (id: ProductId) =>
   client.get<Product>(`/products/${id}`);
+
+export const createProduct = (product: Partial<Product>) =>
+  client.post<Product>('/products', product);
+
+export const updateProduct = (id: ProductId, product: Partial<Product>) =>
+  client.patch<Product>(`/products/${id}`, product);
 
 export const getCategories = () => client.get<Category[]>('/categories');
 

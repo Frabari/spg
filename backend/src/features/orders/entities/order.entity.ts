@@ -14,10 +14,12 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { DeliveredBy } from '../validators/delivered-by.validator';
+import { DeliveryLocation } from './delivery-location.entity';
 import { OrderEntry } from './order-entry.entity';
 
 export type OrderId = number;
@@ -103,7 +105,7 @@ export class Order {
    * The date when the user wants the order to be delivered
    * or to pick it up at the warehouse
    */
-  @Column({ default: null })
+  @Column({ type: 'varchar', default: null })
   @Type(() => Date)
   deliverAt: Date;
 
@@ -111,8 +113,9 @@ export class Order {
    * A string representing an address. If null the order will
    * be picked up at the warehouse
    */
-  @Column({ default: null })
-  deliveryLocation: string;
+  @OneToOne(() => DeliveryLocation, dl => dl.order)
+  @Allow()
+  deliveryLocation: DeliveryLocation;
 
   /**
    * The rider who will deliver this order. If null the order
