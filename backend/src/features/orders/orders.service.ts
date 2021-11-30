@@ -107,6 +107,19 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         );
       }
       (dto as Order).user = user;
+      if (dto.deliverAt) {
+        const deliveryDate = DateTime.fromJSDate(dto.deliverAt);
+        const from = DateTime.now()
+          .plus({ week: 1 })
+          .set({ weekday: 3, hour: 8, minute: 0, second: 0, millisecond: 0 });
+        const to = from.set({ weekday: 7, hour: 18 });
+        if (deliveryDate < from || deliveryDate > to) {
+          throw new BadRequestException(
+            'Order.InvalidDeliveryDate',
+            'The delivery date is not in the permitted range (Wed 08:00 - Fri 18:00)',
+          );
+        }
+      }
     }
     if (dto.status) {
       const oldStatusOrder = statuses.indexOf(order.status);
@@ -123,6 +136,9 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         delete dto.entries;
       }
       delete dto.status;
+      if (![OrderStatus.DRAFT, OrderStatus.LOCKED].includes(order.status)) {
+        delete dto.deliverAt;
+      }
     }
 
     if (dto.entries?.length) {
