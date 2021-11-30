@@ -93,8 +93,8 @@ const columns: {
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: '#f7f7f7',
+  borderRadius: '16px',
+  backgroundColor: '#ffffff',
   '&:hover': {
     backgroundColor: '#f7f7f7',
   },
@@ -218,7 +218,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
         >
           Orders
         </Typography>
-        <Search sx={{ mr: 'auto', maxWidth: '250px', marginRight: '20px' }}>
+        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
