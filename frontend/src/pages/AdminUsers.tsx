@@ -181,12 +181,13 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
           Create user
         </Typography>
       </AdminAppBar>
-      <Grid item xs={12} sm={1} sx={{ pt: 2, pl: 4 }}>
+      <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
         <TextField
           id="outlined-select-role"
           select
           value={sortOption}
           label="Filter by role"
+          size="small"
           sx={{ width: '150px' }}
           onChange={e => handleFilterByRole(e.target.value)}
         >
@@ -197,7 +198,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
           ))}
         </TextField>
       </Grid>
-      <Box sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1 }}>
+      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}

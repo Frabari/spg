@@ -184,12 +184,13 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
           Create product
         </Typography>
       </AdminAppBar>
-      <Grid item xs={12} sm={1} sx={{ pt: 2, pl: 4 }}>
+      <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
         <TextField
           id="outlined-select-category"
           select
           value={sortOption}
           label="Filter by category"
+          size="small"
           sx={{ width: '150px' }}
           onChange={e => handleFilterByCategory(e.target.value)}
         >
@@ -202,7 +203,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
       </Grid>
 
       <Box
-        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+        sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
         <TableContainer
           component={Paper}
