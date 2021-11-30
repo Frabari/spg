@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as DbConfig from '../ormconfig.json';
-import { UsersModule } from './features/users/users.module';
-import { ProductsModule } from './features/products/products.module';
 import { CategoriesModule } from './features/categories/categories.module';
+import { NotificationsModule } from './features/notifications/notifications.module';
 import { OrdersModule } from './features/orders/orders.module';
+import { ProductsModule } from './features/products/products.module';
+import { SchedulingModule } from './features/scheduling/scheduling.module';
 import { TransactionsModule } from './features/transactions/transactions.module';
-import { ScheduleModule } from '@nestjs/schedule';
+import { UsersModule } from './features/users/users.module';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars,unused-imports/no-unused-vars
 const { entities, ...dbConfig } = DbConfig;
 
 @Module({
@@ -23,6 +25,8 @@ const { entities, ...dbConfig } = DbConfig;
     OrdersModule,
     TransactionsModule,
     ScheduleModule.forRoot(),
+    SchedulingModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

@@ -1,3 +1,4 @@
+import SocketIo from 'socket.io-client';
 import { createHttpClient } from './createHttpClient';
 
 export type CategoryId = number;
@@ -30,15 +31,27 @@ export enum OrderStatus {
   CANCELED = 'canceled',
 }
 
+export interface DeliveryLocation {
+  name?: string;
+  surname?: string;
+  address?: string;
+  zipCode?: string;
+  city?: string;
+  province?: string;
+  region?: string;
+}
+
 export interface Order {
   id: OrderId;
   user: User;
   status: OrderStatus;
   entries: OrderEntry[];
   deliverAt: Date;
-  deliveryLocation: string;
+  deliveryLocation: DeliveryLocation;
   deliveredBy: User;
   createdAt: Date;
+  total: number;
+  insufficientBalance: boolean;
 }
 
 export type ProductId = number;
@@ -55,6 +68,7 @@ export interface Product {
   category: Category;
   farmer: User;
   image: string;
+  unitOfMeasure: string;
 }
 
 export type TransactionId = number;
@@ -78,6 +92,12 @@ export enum Role {
   MANAGER = 'manager',
 }
 
+export enum NotificationType {
+  INFO = 'info',
+  SUCCESS = 'success',
+  ERROR = 'error',
+}
+
 export interface User {
   id: UserId;
   name: string;
@@ -91,7 +111,21 @@ export interface User {
   transactions: Transaction[];
   deliveries: Order[];
   products: Product[];
+  notifications: Notification[];
 }
+
+export interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  type: NotificationType;
+  createdAt: Date;
+}
+
+export const socket = SocketIo('http://localhost:3001', {
+  transports: ['websocket'],
+  query: { token: localStorage.getItem('API_TOKEN') },
+});
 
 const client = createHttpClient('');
 
@@ -111,6 +145,8 @@ export const login = (username: string, password: string) =>
       password,
     })
     .then(tokens => {
+      socket.io.opts.query.token = tokens.token;
+      socket.disconnect().connect();
       client.setBearerAuth(tokens.token);
       localStorage.setItem('API_TOKEN', tokens.token);
       return tokens;
@@ -118,6 +154,7 @@ export const login = (username: string, password: string) =>
 
 export const logout = () => {
   client.removeAuth();
+  socket.disconnect();
   localStorage.removeItem('API_TOKEN');
 };
 
@@ -130,10 +167,17 @@ export const getMe = () => client.get<User>('/users/me');
 export const createUser = (user: Partial<User>) =>
   client.post<User>('/users', user);
 
-export const getProducts = () => client.get<Product[]>('/products');
+export const getProducts = (loadAllStock = false) =>
+  client.get<Product[]>(`/products${loadAllStock ? '?stock' : ''}`);
 
 export const getProduct = (id: ProductId) =>
   client.get<Product>(`/products/${id}`);
+
+export const createProduct = (product: Partial<Product>) =>
+  client.post<Product>('/products', product);
+
+export const updateProduct = (id: ProductId, product: Partial<Product>) =>
+  client.patch<Product>(`/products/${id}`, product);
 
 export const getCategories = () => client.get<Category[]>('/categories');
 
@@ -149,3 +193,8 @@ export const updateOrder = (id: OrderId, order: Partial<Order>) =>
 
 export const createTransaction = (transaction: Partial<Transaction>) =>
   client.post<Transaction>('/transactions', transaction);
+
+export const getBasket = () => client.get<Order>('/orders/basket');
+
+export const updateBasket = (basket: Partial<Order>) =>
+  client.patch<Order>('/orders/basket', basket);

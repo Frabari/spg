@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import {
   Body,
   Controller,
@@ -14,17 +15,16 @@ import {
   ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
-import * as bcrypt from 'bcrypt';
-import { User } from './entities/user.entity';
-import { UsersService } from './users.service';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { Roles } from './roles.decorator';
-import { LoginDto } from './dtos/login.dto';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { RolesGuard } from './guards/roles.guard';
-import { ADMINS } from './roles.enum';
 import { Crud } from '../../core/decorators/crud.decorator';
+import { CreateUserDto } from './dtos/create-user.dto';
+import { LoginDto } from './dtos/login.dto';
+import { User } from './entities/user.entity';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './roles.decorator';
+import { ADMINS, Role } from './roles.enum';
+import { UsersService } from './users.service';
 
 @Crud(User, {
   routes: {
@@ -46,9 +46,16 @@ export class UsersController implements CrudController<User> {
   @Override()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(...ADMINS)
-  getMany(@ParsedRequest() req: CrudRequest) {
-    return this.base.getManyBase(req) as Promise<User[]>;
+  getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() req) {
+    const user = req.user as User;
+    if (user.role === Role.CUSTOMER) {
+      crudRequest.parsed.search = {
+        $and: crudRequest.parsed.search.$and.concat({
+          role: Role.FARMER,
+        }),
+      };
+    }
+    return this.base.getManyBase(crudRequest) as Promise<User[]>;
   }
 
   @Get('me')
@@ -56,7 +63,7 @@ export class UsersController implements CrudController<User> {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: `Gets the current authenticated user's profile` })
   getMe(@Request() req) {
-    return this.service.findOne(req.user.id);
+    return this.service.findOne(req.user.id, { relations: ['notifications'] });
   }
 
   @Override()
@@ -79,7 +86,7 @@ export class UsersController implements CrudController<User> {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Logs in a user with local credentials' })
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,unused-imports/no-unused-vars
   login(@Request() req, @Body() dto: LoginDto) {
     return this.service.login(req.user);
   }

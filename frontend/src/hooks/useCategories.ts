@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from 'react';
-import { Category, getCategories } from '../api/BasilApi';
-import { PendingStateContext } from '../contexts/pending';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { Category, getCategories } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
+import { usePendingState } from './usePendingState';
 
 export const useCategories = () => {
-  const { setPending } = useContext(PendingStateContext);
+  const { setPending } = usePendingState();
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<ApiException>(null);
   useEffect(() => {

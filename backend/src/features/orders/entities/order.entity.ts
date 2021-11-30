@@ -1,22 +1,26 @@
+import { Type } from 'class-transformer';
 import {
+  Allow,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Validate,
+} from 'class-validator';
+import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import {
-  ArrayMinSize,
-  IsIn,
-  IsNotEmpty,
-  IsString,
-  Validate,
-} from 'class-validator';
 import { User } from '../../users/entities/user.entity';
-import { OrderEntry } from './order-entry.entity';
-import { Type } from 'class-transformer';
 import { DeliveredBy } from '../validators/delivered-by.validator';
+import { DeliveryLocation } from './delivery-location.entity';
+import { OrderEntry } from './order-entry.entity';
 
 export type OrderId = number;
 
@@ -25,6 +29,12 @@ export enum OrderStatus {
    * A basket order
    */
   DRAFT = 'draft',
+
+  /**
+   * The entries cannot be changed anymore while waiting
+   * for confirmation from farmers and payment
+   */
+  LOCKED = 'locked',
 
   /**
    * The products were confirmed and the
@@ -80,7 +90,7 @@ export class Order {
    */
   @Column({ default: OrderStatus.DRAFT, nullable: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsIn(Object.values(OrderStatus))
   status: OrderStatus;
 
@@ -88,15 +98,15 @@ export class Order {
    * An array of products with their respective quantities
    */
   @OneToMany(() => OrderEntry, entry => entry.order, { cascade: true })
-  @IsNotEmpty()
-  @ArrayMinSize(1)
+  @Allow()
   entries: OrderEntry[];
 
   /**
    * The date when the user wants the order to be delivered
    * or to pick it up at the warehouse
    */
-  @Column({ default: null })
+  @Column({ type: 'varchar', default: null })
+  @Allow()
   @Type(() => Date)
   deliverAt: Date;
 
@@ -104,8 +114,9 @@ export class Order {
    * A string representing an address. If null the order will
    * be picked up at the warehouse
    */
-  @Column({ default: null })
-  deliveryLocation: string;
+  @OneToOne(() => DeliveryLocation, dl => dl.order)
+  @Allow()
+  deliveryLocation: DeliveryLocation;
 
   /**
    * The rider who will deliver this order. If null the order
@@ -121,4 +132,23 @@ export class Order {
   @CreateDateColumn()
   @Type(() => Date)
   createdAt: Date;
+
+  /**
+   * The total amount to be paid
+   */
+  total?: number;
+
+  /**
+   * A flag to check if the balance of the user
+   * is enough to purchase the products selected
+   */
+  insufficientBalance?: boolean;
+
+  @AfterLoad()
+  calculateTotal() {
+    this.total = this.entries?.reduce(
+      (acc, val) => acc + val.quantity * val.product?.price,
+      0,
+    );
+  }
 }

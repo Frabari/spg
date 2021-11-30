@@ -1,6 +1,6 @@
-import { AppBar, IconButton, Toolbar } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import { PropsWithChildren } from 'react';
+import MenuIcon from '@mui/icons-material/Menu';
+import { AppBar, IconButton, Toolbar } from '@mui/material';
 
 export const AdminAppBar = (
   props: PropsWithChildren<{ handleDrawerToggle: () => void }>,

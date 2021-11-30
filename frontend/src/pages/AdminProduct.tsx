@@ -1,4 +1,6 @@
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Save } from '@mui/icons-material';
 import {
   Box,
@@ -9,15 +11,40 @@ import {
   ThemeProvider,
   Typography,
 } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
-import { AdminAppBar } from '../components/AdminAppBar';
 import Avatar from '@mui/material/Avatar';
+import { createTheme } from '@mui/material/styles';
+import { Product } from '../api/BasilApi';
+import { AdminAppBar } from '../components/AdminAppBar';
 import { useProduct } from '../hooks/useProduct';
 
 export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { product } = useProduct(id);
+  const { product, upsertProduct } = useProduct(id);
+  const [dto, setDto] = useState<Partial<Product>>({});
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setDto(product);
+  }, [product]);
+
+  const handleChange = (key: string, value: any) => {
+    setDto(_dto => ({
+      ..._dto,
+      [key]: value,
+    }));
+  };
+
+  const saveChanges = () => {
+    upsertProduct(dto)
+      .then(product => {
+        toast.success('Product updated');
+        navigate(`/admin/products/`);
+      })
+      .catch(() => {
+        // noop
+      });
+  };
 
   return (
     <>
@@ -35,7 +62,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
         <Button
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           variant="contained"
-          disabled
+          onClick={saveChanges}
         >
           <Save />
           <Typography
@@ -85,41 +112,40 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                 gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
               >
                 <Grid item>
-                  <TextField label="Name" value={product?.name ?? ''} />
+                  <TextField label="Name" value={dto?.name ?? ''} />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="Description"
-                    value={product?.description ?? ''}
+                    value={dto?.description ?? ''}
                   />
                 </Grid>
                 <Grid item>
-                  <TextField label="Price" value={product?.price ?? ''} />
+                  <TextField label="Price" value={dto?.price ?? ''} />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="Available"
-                    value={product?.available ?? ''}
+                    value={dto?.available ?? ''}
+                    onChange={e => handleChange('available', e.target.value)}
                   />
                 </Grid>
                 <Grid item>
-                  <TextField label="Reserved" value={product?.reserved ?? ''} />
+                  <TextField label="Reserved" value={dto?.reserved ?? ''} />
                 </Grid>
                 <Grid item>
-                  <TextField label="Sold" value={product?.sold ?? ''} />
+                  <TextField label="Sold" value={dto?.sold ?? ''} />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="Category"
-                    value={product?.category.name ?? ''}
+                    value={dto?.category?.name ?? ''}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="Farmer"
-                    value={
-                      product?.farmer.name + ' ' + product?.farmer.surname ?? ''
-                    }
+                    value={dto?.farmer?.name + ' ' + dto?.farmer?.surname ?? ''}
                   />
                 </Grid>
               </Grid>

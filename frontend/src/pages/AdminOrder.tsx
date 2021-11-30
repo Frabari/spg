@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Add, Save } from '@mui/icons-material';
 import {
@@ -21,12 +22,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { toast } from 'react-hot-toast';
-import { AdminAppBar } from '../components/AdminAppBar';
 import { Order, OrderStatus, Product, User } from '../api/BasilApi';
+import { AdminAppBar } from '../components/AdminAppBar';
+import ProductsGrid from '../components/ProductsGrid';
 import { useOrder } from '../hooks/useOrder';
 import { useUsers } from '../hooks/useUsers';
-import ProductsGrid from '../components/ProductsGrid';
 
 export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
@@ -248,11 +248,12 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
       </Box>
 
       <Drawer
+        sx={{ width: '300px' }}
         anchor="right"
         open={selectingProduct}
         onClose={() => setSelectingProduct(false)}
       >
-        <Box sx={{ width: { xs: '100%', sm: '60vw' } }}>
+        <Box sx={{ width: { xs: '60vw' } }}>
           <Typography
             variant="h5"
             color="primary.main"
