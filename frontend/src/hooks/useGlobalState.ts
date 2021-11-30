@@ -9,6 +9,7 @@ const { useGlobalState, setGlobalState, getGlobalState } = createGlobalState({
   basketPending: false,
   pending: false,
   notifications: [] as Notification[],
+  newNotification: null as Notification,
 });
 
 export { useGlobalState, setGlobalState, getGlobalState };

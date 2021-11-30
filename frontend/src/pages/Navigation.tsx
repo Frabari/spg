@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Person, ShoppingCart } from '@mui/icons-material';
@@ -63,7 +63,7 @@ function LinkTab({ slug, label, ...rest }: LinkTabProps) {
   );
 }
 
-function NavTabs(props: any) {
+function NavTabs() {
   const [value, setValue] = React.useState(0);
   const [queryParams] = useSearchParams();
   const { categories } = useCategories();
@@ -159,7 +159,8 @@ function NavBar(props: any) {
   const { products } = useProducts();
   const { users } = useUsers();
   const { basket } = useBasket();
-  const { notifications } = useNotifications(() => {});
+  const { notifications } = useNotifications();
+
   useEffect(() => {
     const u = users
       .filter(u => u.role === Role.FARMER)
@@ -262,6 +263,7 @@ function NavBar(props: any) {
                     }}
                     renderOption={(props, option: any) => (
                       <Box
+                        key={option.id}
                         component="li"
                         sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
                         {...props}
@@ -303,10 +305,13 @@ function NavBar(props: any) {
                   />
                 </Box>
 
-                <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
-                  <IconButton size="large" onClick={handleMenu}>
-                    <Avatar src={profile?.avatar} />
-                  </IconButton>
+                <Box
+                  sx={{
+                    display: { md: 'flex' },
+                    ml: 'auto',
+                    alignItems: 'center',
+                  }}
+                >
                   <Menu
                     id="menu-appbar"
                     anchorEl={anchorEl}
@@ -354,12 +359,9 @@ function NavBar(props: any) {
                   <IconButton
                     size="large"
                     aria-label="show notifications"
-                    color="inherit"
+                    onClick={handleMenuNotifications}
                   >
-                    <Badge
-                      badgeContent={notifications?.length}
-                      onClick={handleMenuNotifications}
-                    >
+                    <Badge badgeContent={notifications?.length}>
                       <NotificationsIcon />
                     </Badge>
                   </IconButton>
@@ -406,7 +408,7 @@ function NavBar(props: any) {
                       {!notifications.length
                         ? 'empty'
                         : notifications.map(n => (
-                            <>
+                            <Fragment key={n.id}>
                               <ListItem alignItems="flex-start">
                                 <ListItemIcon>
                                   {n.type === NotificationType.INFO && (
@@ -429,7 +431,7 @@ function NavBar(props: any) {
                                 />
                               </ListItem>
                               <Divider variant="inset" component="li" />
-                            </>
+                            </Fragment>
                           ))}
                     </List>
                   </Menu>
@@ -441,6 +443,9 @@ function NavBar(props: any) {
                     <Badge badgeContent={basket?.entries?.length}>
                       <ShoppingCart />
                     </Badge>
+                  </IconButton>
+                  <IconButton size="large" onClick={handleMenu}>
+                    <Avatar src={profile?.avatar} />
                   </IconButton>
                 </Box>
               </>

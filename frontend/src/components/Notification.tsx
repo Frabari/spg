@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Snackbar } from '@mui/material';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { useNotifications } from '../hooks/useNotifications';
@@ -6,11 +6,14 @@ import { useNotifications } from '../hooks/useNotifications';
 export default function Notifications() {
   const [notification, setNotification] = useState(null);
   const [open, setOpen] = useState(false);
-  const { notifications } = useNotifications(notification => {
-    console.log(notification);
-    setNotification(notification);
-    setOpen(true);
-  });
+  const { newNotification } = useNotifications();
+
+  useEffect(() => {
+    if (newNotification) {
+      setNotification(newNotification);
+      setOpen(true);
+    }
+  }, [newNotification]);
 
   const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
     props,
