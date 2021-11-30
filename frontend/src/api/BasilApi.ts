@@ -30,13 +30,23 @@ export enum OrderStatus {
   CANCELED = 'canceled',
 }
 
+export interface DeliveryLocation {
+  name?: string;
+  surname?: string;
+  address?: string;
+  zipCode?: string;
+  city?: string;
+  province?: string;
+  region?: string;
+}
+
 export interface Order {
   id: OrderId;
   user: User;
   status: OrderStatus;
   entries: OrderEntry[];
   deliverAt: Date;
-  deliveryLocation: string;
+  deliveryLocation: DeliveryLocation;
   deliveredBy: User;
   createdAt: Date;
   total: number;

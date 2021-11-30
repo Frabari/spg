@@ -1,4 +1,7 @@
 import * as React from 'react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
@@ -19,22 +22,47 @@ import {
   TextField,
 } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
+import { Order } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useUser } from '../hooks/useUser';
 import NavigationBox from './Navigation';
 
 export default function Checkout() {
-  const { basket } = useBasket();
+  const navigate = useNavigate();
+  const { basket, updateBasket } = useBasket();
   const { user } = useUser();
-  const [delivery, setDelivery] = React.useState<string | null>('at_store');
-  const [date, setDate] = React.useState<Date | null>(new Date());
-  const [time, setTime] = React.useState<Date | null>(new Date());
+  const [delivery, setDelivery] = useState<string | null>('at_store');
+  const [date, setDate] = useState<Date | null>(new Date());
+  const [time, setTime] = useState<Date | null>(new Date());
+  const [dto, setDto] = useState<Partial<Order>>({});
 
   const handleDelivery = (
     event: React.MouseEvent<HTMLElement>,
     newDelivery: string | null,
   ) => {
     setDelivery(newDelivery);
+  };
+
+  const handleAddressChange = (key: string, value: any) => {
+    setDto(_dto => ({
+      ..._dto,
+      deliveryLocation: {
+        ...(_dto?.deliveryLocation ?? {}),
+        [key]: value,
+      },
+    }));
+  };
+
+  const saveBasket = () => {
+    console.log(dto);
+    updateBasket(dto)
+      .then(() => {
+        toast.success('Order paid successfully!');
+        navigate(`/products`);
+      })
+      .catch(() => {
+        // noop
+      });
   };
   return (
     <>
@@ -59,6 +87,7 @@ export default function Checkout() {
                 float: 'right',
               }}
               variant="contained"
+              onClick={saveBasket}
             >
               <CreditCardIcon />
               <Typography
@@ -67,7 +96,7 @@ export default function Checkout() {
                   marginLeft: 1,
                 }}
               >
-                {'Pay'}
+                {'Save basket'}
               </Typography>
             </Button>
           ) : (
@@ -180,7 +209,9 @@ export default function Checkout() {
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-name"
-                      //onChange={e => handleChange()}
+                      onChange={e =>
+                        handleAddressChange('name', e.target.value)
+                      }
                       label="Name"
                     />
                   </FormControl>
@@ -192,7 +223,9 @@ export default function Checkout() {
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-surname"
-                      //onChange={e => handleChange()}
+                      onChange={e =>
+                        handleAddressChange('surname', e.target.value)
+                      }
                       label="Surname"
                     />
                   </FormControl>
@@ -204,7 +237,9 @@ export default function Checkout() {
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-address"
-                      //onChange={e => handleChange()}
+                      onChange={e =>
+                        handleAddressChange('address', e.target.value)
+                      }
                       label="Address"
                     />
                   </FormControl>
@@ -216,7 +251,9 @@ export default function Checkout() {
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-zipcode"
-                      //onChange={e => handleChange('name', e.target.value)}
+                      onChange={e =>
+                        handleAddressChange('zipCode', e.target.value)
+                      }
                       label="Zip code"
                     />
                   </FormControl>
@@ -228,7 +265,9 @@ export default function Checkout() {
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-city"
-                      //onChange={e => handleChange('name', e.target.value)}
+                      onChange={e =>
+                        handleAddressChange('city', e.target.value)
+                      }
                       label="City"
                     />
                   </FormControl>
@@ -240,7 +279,9 @@ export default function Checkout() {
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-province"
-                      //onChange={e => handleChange('name', e.target.value)}
+                      onChange={e =>
+                        handleAddressChange('privince', e.target.value)
+                      }
                       label="Province"
                     />
                   </FormControl>
@@ -252,7 +293,9 @@ export default function Checkout() {
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-region"
-                      //onChange={e => handleChange('name', e.target.value)}
+                      onChange={e =>
+                        handleAddressChange('region', e.target.value)
+                      }
                       label="Region"
                     />
                   </FormControl>
@@ -298,6 +341,7 @@ export default function Checkout() {
                 float: 'right',
               }}
               variant="contained"
+              onClick={saveBasket}
             >
               <CreditCardIcon />
               <Typography
@@ -306,7 +350,7 @@ export default function Checkout() {
                   marginLeft: 1,
                 }}
               >
-                {'Pay'}
+                {'Save basket'}
               </Typography>
             </Button>
           ) : (
