@@ -58,6 +58,7 @@ export interface Product {
   category: Category;
   farmer: User;
   image: string;
+  unitOfMeasure: string;
 }
 
 export type TransactionId = number;

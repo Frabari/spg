@@ -3,6 +3,9 @@ import { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Person, ShoppingCart } from '@mui/icons-material';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DoneIcon from '@mui/icons-material/Done';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -19,6 +22,7 @@ import {
   Container,
   Divider,
   Drawer,
+  Grid,
   IconButton,
   InputAdornment,
   List,
@@ -89,40 +93,15 @@ function NavTabs() {
   );
 }
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: '#f7f7f7',
-  '&:hover': {
-    backgroundColor: '#f7f7f7',
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   color: 'inherit',
   '& .MuiFormControl-root': {
     border: 'none !important',
-    borderRadius: theme.shape.borderRadius,
+    borderRadius: '16px',
     backgroundColor: '#f7f7f7',
     '&:hover': {
-      backgroundColor: '#f7f7f7',
+      backgroundColor: '#eaeaea',
+      alpha: '0.75',
     },
     marginRight: theme.spacing(2),
     marginLeft: 0,
@@ -235,7 +214,7 @@ function NavBar(props: any) {
               </Box>
             ) : (
               <>
-                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                <Box display={props.onProducts ? 'block' : 'none'}>
                   <StyledAutocomplete
                     id="free-solo-2-demo"
                     disableClearable
@@ -349,11 +328,18 @@ function NavBar(props: any) {
                   >
                     {profile.role !== Role.CUSTOMER && (
                       <MenuItem onClick={() => navigate('/admin')}>
-                        <Person /> Admin
+                        <AdminPanelSettingsIcon sx={{ mr: 2 }} /> Admin
                       </MenuItem>
                     )}
+                    <MenuItem onClick={() => navigate('/profile')}>
+                      <Person sx={{ mr: 2 }} /> Profile
+                    </MenuItem>
+                    <MenuItem>
+                      <AccountBalanceWalletIcon sx={{ mr: 2 }} />{' '}
+                      {profile.balance} €
+                    </MenuItem>
                     <MenuItem onClick={handleLogout}>
-                      <LogoutIcon /> Logout
+                      <LogoutIcon sx={{ mr: 2 }} /> Logout
                     </MenuItem>
                   </Menu>
                   <IconButton
@@ -456,18 +442,38 @@ function NavBar(props: any) {
       </AppBar>
 
       <Drawer
+        sx={{ width: '400px' }}
         anchor="right"
         open={showBasket}
-        onClose={() => setShowBasket(false)}
+        onClose={() => {
+          setShowBasket(false);
+          if (props.setBasketListener) props.setBasketListener(true);
+        }}
       >
-        <Box sx={{ width: { xs: '100%', sm: '40vw' } }}>
-          <Typography
-            variant="h5"
-            color="primary.main"
-            sx={{ p: 3, fontWeight: 'bold' }}
-          >
-            Basket
-          </Typography>
+        <Box>
+          <Grid container direction="row" spacing={1}>
+            <Grid item xs={1}>
+              <IconButton
+                sx={{ margin: 1.5 }}
+                onClick={() => {
+                  setShowBasket(false);
+                  if (props.setBasketListener) props.setBasketListener(true);
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </Grid>
+            <Grid item xs={11}>
+              <Typography
+                variant="h5"
+                color="primary.main"
+                fontWeight="bold"
+                m={2}
+              >
+                Basket
+              </Typography>
+            </Grid>
+          </Grid>
           <Basket balanceWarning={props.balanceWarning} />
         </Box>
       </Drawer>

@@ -1,15 +1,17 @@
 import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { LinearProgress } from '@mui/material';
+import { Container, LinearProgress } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './Theme';
 import Notifications from './components/Notification';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { usePendingState } from './hooks/usePendingState';
 import { Admin } from './pages/Admin';
+import Checkout from './pages/Checkout';
 import Homepage from './pages/Homepage';
 import Login from './pages/Login';
 import Products from './pages/Products';
+import Profile from './pages/Profile';
 import SignUp from './pages/SignUp';
 
 function App() {
@@ -28,6 +30,17 @@ function App() {
             <Route path="/signup" element={<SignUp />} />
 
             <Route
+              path="/checkout"
+              element={
+                <Container>
+                  <Checkout />
+                </Container>
+              }
+            />
+
+            <Route path="/profile" element={<Profile />} />
+
+            <Route
               path="/admin/*"
               element={
                 <ProtectedRoute>
@@ -37,7 +50,7 @@ function App() {
             />
 
             <Route
-              path="/products"
+              path="/products/*"
               element={
                 <ProtectedRoute>
                   <Products />

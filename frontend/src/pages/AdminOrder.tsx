@@ -248,11 +248,12 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
       </Box>
 
       <Drawer
+        sx={{ width: '300px' }}
         anchor="right"
         open={selectingProduct}
         onClose={() => setSelectingProduct(false)}
       >
-        <Box sx={{ width: { xs: '100%', sm: '60vw' } }}>
+        <Box sx={{ width: { xs: '60vw' } }}>
           <Typography
             variant="h5"
             color="primary.main"

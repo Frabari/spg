@@ -9,11 +9,13 @@ import DraftsIcon from '@mui/icons-material/Drafts';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  Button,
   Chip,
+  IconButton,
   InputBase,
+  MenuItem,
   styled,
   TableSortLabel,
+  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -45,6 +47,19 @@ const status: Record<OrderStatus, { color: string; icon: any }> = {
   canceled: { color: 'red', icon: DeleteIcon },
   prepared: { color: 'gold', icon: Build },
 };
+
+const stat = [
+  'all',
+  'draft',
+  'paid',
+  'delivering',
+  'completed',
+  'pending_cancellation',
+  'canceled',
+  'prepared',
+];
+
+const week = ['all', 'thisWeek', 'pastWeek'];
 
 const columns: {
   key: keyof Order;
@@ -78,8 +93,8 @@ const columns: {
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: '#f7f7f7',
+  borderRadius: '16px',
+  backgroundColor: '#ffffff',
   '&:hover': {
     backgroundColor: '#f7f7f7',
   },
@@ -119,12 +134,15 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { orders } = useOrders();
+  const [orderstatus, setOrderStatus] = useState('all');
+  const [weekfilter, setWeekFilter] = useState('all');
   const [sortedOrders, setSortedOrders] = useState<Order[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Order;
     dir: 'asc' | 'desc';
     value?: (o: Order) => any;
   }>({ by: null, dir: 'asc' });
+  var data = new Date();
 
   useEffect(() => {
     if (orders?.length) {
@@ -142,6 +160,25 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
       }
     }
   }, [orders, sorting]);
+
+  const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+  // a and b are javascript Date objects
+  function dateDiffInDays(a: Date, b: Date) {
+    // Discard the time and time-zone information.
+    const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+    return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+  }
+
+  const handleFilterByStatus = (s: string) => {
+    setOrderStatus(s);
+  };
+
+  const handleFilterByWeek = (s: string) => {
+    setWeekFilter(s);
+  };
 
   const toggleSorting = (byKey: keyof Order) => () => {
     const { by, dir } = sorting;
@@ -181,7 +218,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
         >
           Orders
         </Typography>
-        <Search>
+        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -191,22 +228,46 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <Button
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
-          href="/admin/orders/new"
-        >
+        <IconButton className="add-icon-button" href="/admin/orders/new">
           <Add />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Create order
-          </Typography>
-        </Button>
+        </IconButton>
+        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
+          Create order
+        </Typography>
       </AdminAppBar>
+      <TableRow sx={{ pl: 3 }}>
+        <TextField
+          id="outlined-select-role"
+          select
+          value={weekfilter}
+          size="small"
+          label="Filter by week"
+          sx={{ width: '150px' }}
+          onChange={e => handleFilterByWeek(e.target.value)}
+        >
+          {week.map(option => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          id="outlined-select-role"
+          select
+          value={orderstatus}
+          size="small"
+          label="Filter by status"
+          sx={{ width: '150px', marginLeft: '50px' }}
+          onChange={e => handleFilterByStatus(e.target.value)}
+        >
+          {stat.map(option => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+      </TableRow>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
@@ -238,49 +299,65 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedOrders?.map(order => {
-                const { icon: Icon, color } = status[order.status];
-                return (
-                  <TableRow
-                    hover
-                    key={order.id}
-                    sx={{
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => navigate(`/admin/orders/${order.id}`)}
-                  >
-                    <TableCell component="th" scope="row">
-                      {order.user.email}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        icon={
-                          <Icon
-                            sx={{
-                              color: color + '!important',
-                              width: 16,
-                              height: 16,
-                            }}
-                          />
-                        }
-                        variant="outlined"
-                        label={order.status}
-                        sx={{
-                          borderColor: color,
-                          color: color,
-                          py: '4px',
-                          height: 'unset',
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>{order.entries.length}</TableCell>
-                    <TableCell>
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {sortedOrders
+                ?.filter(
+                  order =>
+                    weekfilter === 'all' ||
+                    (weekfilter === 'thisWeek' &&
+                      new Date(order.createdAt).getDay() <= data.getDay() &&
+                      dateDiffInDays(data, new Date(order.createdAt)) < 7) ||
+                    (weekfilter === 'pastWeek' &&
+                      new Date(order.createdAt).getDay() <= data.getDay() &&
+                      dateDiffInDays(data, new Date(order.createdAt)) >= 7 &&
+                      dateDiffInDays(data, new Date(order.createdAt)) < 14),
+                )
+                ?.filter(
+                  order =>
+                    orderstatus === 'all' || order.status === orderstatus,
+                )
+                .map(order => {
+                  const { icon: Icon, color } = status[order.status];
+                  return (
+                    <TableRow
+                      hover
+                      key={order.id}
+                      sx={{
+                        '&:last-child td, &:last-child th': { border: 0 },
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => navigate(`/admin/orders/${order.id}`)}
+                    >
+                      <TableCell component="th" scope="row">
+                        {order.user.email}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          icon={
+                            <Icon
+                              sx={{
+                                color: color + '!important',
+                                width: 16,
+                                height: 16,
+                              }}
+                            />
+                          }
+                          variant="outlined"
+                          label={order.status}
+                          sx={{
+                            borderColor: color,
+                            color: color,
+                            py: '4px',
+                            height: 'unset',
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>{order.entries.length}</TableCell>
+                      <TableCell>
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
             </TableBody>
           </Table>
         </TableContainer>
