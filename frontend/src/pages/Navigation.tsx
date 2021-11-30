@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Person, ShoppingCart } from '@mui/icons-material';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SearchIcon from '@mui/icons-material/Search';
@@ -306,11 +307,15 @@ function NavBar(props: any) {
                   >
                     {profile.role !== Role.CUSTOMER && (
                       <MenuItem onClick={() => navigate('/admin')}>
-                        <Person /> Admin
+                        <Person sx={{ mr: 2 }} /> Admin
                       </MenuItem>
                     )}
+                    <MenuItem>
+                      <AccountBalanceWalletIcon sx={{ mr: 2 }} />{' '}
+                      {profile.balance} €
+                    </MenuItem>
                     <MenuItem onClick={handleLogout}>
-                      <LogoutIcon /> Logout
+                      <LogoutIcon sx={{ mr: 2 }} /> Logout
                     </MenuItem>
                   </Menu>
                   <IconButton
