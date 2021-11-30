@@ -38,8 +38,8 @@ export default function Checkout() {
   };
   return (
     <>
-      <NavigationBox.NavBar />
-      <Grid container direction="row" sx={{ ml: 1, mr: 'auto', py: 7, px: 3 }}>
+      <NavigationBox.NavBar onProducts={false} setBasketListener={null} />
+      <Grid container direction="row" sx={{ px: 15, py: 8 }}>
         <Grid container item xs={12} spacing={2} sx={{ py: 5 }}>
           <Typography
             variant="h6"

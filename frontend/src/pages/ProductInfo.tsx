@@ -38,7 +38,6 @@ export default function ProductInfo(props: any) {
   }
 
   const style = {
-    width: { xs: '75%', sm: '90%' },
     bgcolor: 'background.paper',
     boxShadow: 1,
     borderRadius: '16px',
@@ -193,7 +192,7 @@ export default function ProductInfo(props: any) {
                       justifyItems="center"
                       alignItems="center"
                     >
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={12} sm={4}>
                         <TextField
                           id="outlined-select-quantity"
                           select
@@ -209,7 +208,7 @@ export default function ProductInfo(props: any) {
                           ))}
                         </TextField>
                       </Grid>
-                      <Grid item xs={6} sm={8} mb={5}>
+                      <Grid item xs={12} sm={8} mb={5}>
                         <Button onClick={() => handleClick()}>
                           Add to basket
                         </Button>

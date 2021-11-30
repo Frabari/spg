@@ -36,6 +36,7 @@ export default function Products() {
         balanceWarning={balanceWarning}
         basketListener={basketListener}
         setBasketListener={setBasketListener}
+        onProducts={true}
       />
       <Routes>
         <Route

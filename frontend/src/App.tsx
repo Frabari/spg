@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout';
 import Homepage from './pages/Homepage';
 import Login from './pages/Login';
 import Products from './pages/Products';
+import Profile from './pages/Profile';
 import SignUp from './pages/SignUp';
 
 function App() {
@@ -34,6 +35,8 @@ function App() {
                 </Container>
               }
             />
+
+            <Route path="/profile" element={<Profile />} />
 
             <Route
               path="/admin/*"

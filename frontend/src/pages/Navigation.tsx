@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Person, ShoppingCart } from '@mui/icons-material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SearchIcon from '@mui/icons-material/Search';
@@ -82,40 +83,15 @@ function NavTabs(props: any) {
   );
 }
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: '#f7f7f7',
-  '&:hover': {
-    backgroundColor: '#f7f7f7',
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   color: 'inherit',
   '& .MuiFormControl-root': {
     border: 'none !important',
-    borderRadius: theme.shape.borderRadius,
+    borderRadius: '16px',
     backgroundColor: '#f7f7f7',
     '&:hover': {
-      backgroundColor: '#f7f7f7',
+      backgroundColor: '#eaeaea',
+      alpha: '0.75',
     },
     marginRight: theme.spacing(2),
     marginLeft: 0,
@@ -217,7 +193,7 @@ function NavBar(props: any) {
               </Box>
             ) : (
               <>
-                <Box>
+                <Box display={props.onProducts ? 'block' : 'none'}>
                   <StyledAutocomplete
                     id="free-solo-2-demo"
                     disableClearable
@@ -307,9 +283,12 @@ function NavBar(props: any) {
                   >
                     {profile.role !== Role.CUSTOMER && (
                       <MenuItem onClick={() => navigate('/admin')}>
-                        <Person sx={{ mr: 2 }} /> Admin
+                        <AdminPanelSettingsIcon sx={{ mr: 2 }} /> Admin
                       </MenuItem>
                     )}
+                    <MenuItem onClick={() => navigate('/profile')}>
+                      <Person sx={{ mr: 2 }} /> Profile
+                    </MenuItem>
                     <MenuItem>
                       <AccountBalanceWalletIcon sx={{ mr: 2 }} />{' '}
                       {profile.balance} €
@@ -336,12 +315,12 @@ function NavBar(props: any) {
       </AppBar>
 
       <Drawer
-        sx={{ width: '300px' }}
+        sx={{ width: '400px' }}
         anchor="right"
         open={showBasket}
         onClose={() => {
           setShowBasket(false);
-          props.setBasketListener(true);
+          if (props.setBasketListener) props.setBasketListener(true);
         }}
       >
         <Box>
@@ -351,7 +330,7 @@ function NavBar(props: any) {
                 sx={{ margin: 1.5 }}
                 onClick={() => {
                   setShowBasket(false);
-                  props.setBasketListener(true);
+                  if (props.setBasketListener) props.setBasketListener(true);
                 }}
               >
                 <ArrowBackIcon />
