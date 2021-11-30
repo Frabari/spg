@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Add, Build, Pending } from '@mui/icons-material';
+import { Add, Build, Lock, Pending } from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
@@ -33,6 +33,10 @@ const status: Record<OrderStatus, { color: string; icon: any }> = {
   draft: {
     color: 'burlywood',
     icon: DraftsIcon,
+  },
+  locked: {
+    color: 'grey',
+    icon: Lock,
   },
   paid: {
     color: 'darkorange',

@@ -23,6 +23,7 @@ export type OrderId = number;
 
 export enum OrderStatus {
   DRAFT = 'draft',
+  LOCKED = 'locked',
   PAID = 'paid',
   PREPARED = 'prepared',
   DELIVERING = 'delivering',
