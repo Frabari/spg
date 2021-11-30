@@ -468,7 +468,7 @@ function NavBar(props: any) {
           >
             Basket
           </Typography>
-          <Basket />
+          <Basket balanceWarning={props.balanceWarning} />
         </Box>
       </Drawer>
     </>
