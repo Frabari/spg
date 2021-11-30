@@ -18,6 +18,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { DeliveredBy } from '../validators/delivered-by.validator';
+import { DeliveryLocation } from './delivery-location.entity';
 import { OrderEntry } from './order-entry.entity';
 
 export type OrderId = number;
@@ -111,8 +112,9 @@ export class Order {
    * A string representing an address. If null the order will
    * be picked up at the warehouse
    */
-  @Column({ default: null })
-  deliveryLocation: string;
+  @Column(() => DeliveryLocation)
+  @Allow()
+  deliveryLocation: DeliveryLocation;
 
   /**
    * The rider who will deliver this order. If null the order
