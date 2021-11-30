@@ -1,10 +1,5 @@
 FROM node:16
 
-WORKDIR /
-RUN git clone https://github.com/wolfcw/libfaketime.git
-WORKDIR /libfaketime/src
-RUN make install
-
 WORKDIR /app
 
 COPY . .
