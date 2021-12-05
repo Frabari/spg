@@ -97,6 +97,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
   farmer: boolean;
+  category: string;
 }) => {
   const navigate = useNavigate();
   const { products } = useProducts(true);
@@ -144,15 +145,14 @@ export const AdminProducts = (props: {
     );
   };
 
-  const [sortOption, setSortOption] = useState('');
+  const [sortOption, setSortOption] = useState(props.category);
   const sort = useCategories();
 
   const handleFilterByCategory = (s: string) => {
     setSortOption(s);
     if (s === 'all') {
-      navigate(`/admin/products`);
+      navigate(`/admin/products?category=${s}`);
       setSortedProducts(products);
-      setSortOption('');
     } else {
       navigate(`/admin/products?category=${s}`);
       setSortedProducts(products.filter(p => p.category.slug === s));
@@ -247,7 +247,12 @@ export const AdminProducts = (props: {
             </TableHead>
             <TableBody>
               {sortedProducts
-                ?.filter(p => !sortOption || p.category.slug === sortOption)
+                ?.filter(
+                  p =>
+                    !sortOption ||
+                    sortOption === 'all' ||
+                    p.category.slug === sortOption,
+                )
                 ?.map(product => (
                   <TableRow
                     hover

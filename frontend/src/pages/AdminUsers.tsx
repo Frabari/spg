@@ -92,7 +92,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
+export const AdminUsers = (props: {
+  handleDrawerToggle: () => void;
+  role: string;
+}) => {
   const navigate = useNavigate();
   const { users } = useUsers();
   const [sortedUsers, setSortedUsers] = useState<User[]>([]);
@@ -134,7 +137,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
-  const [sortOption, setSortOption] = useState('');
+  const [sortOption, setSortOption] = useState(props.role);
   const sort = [
     'all',
     'customer',
@@ -149,9 +152,8 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
   const handleFilterByRole = (s: string) => {
     setSortOption(s);
     if (s === 'all') {
-      navigate(`/admin/users`);
+      navigate(`/admin/users?role=${s}`);
       setSortedUsers(users);
-      setSortOption('');
     } else {
       setSortedUsers(users.filter(u => u.role === s));
       navigate(`/admin/users?role=${s}`);
@@ -235,7 +237,12 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
             </TableHead>
             <TableBody>
               {sortedUsers
-                ?.filter(u => !sortOption || u.role === sortOption)
+                ?.filter(
+                  u =>
+                    !sortOption ||
+                    sortOption === 'all' ||
+                    u.role === sortOption,
+                )
                 ?.map(user => (
                   <TableRow
                     hover

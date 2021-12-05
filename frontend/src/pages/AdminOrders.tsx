@@ -131,11 +131,15 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
+export const AdminOrders = (props: {
+  handleDrawerToggle: () => void;
+  status: string;
+  week: string;
+}) => {
   const navigate = useNavigate();
   const { orders } = useOrders();
-  const [orderstatus, setOrderStatus] = useState('all');
-  const [weekfilter, setWeekFilter] = useState('all');
+  const [orderstatus, setOrderStatus] = useState(props.status);
+  const [weekfilter, setWeekFilter] = useState(props.week);
   const [sortedOrders, setSortedOrders] = useState<Order[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Order;
@@ -173,10 +177,12 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   }
 
   const handleFilterByStatus = (s: string) => {
+    navigate(`/admin/orders?status=${s}&week=${weekfilter}`);
     setOrderStatus(s);
   };
 
   const handleFilterByWeek = (s: string) => {
+    navigate(`/admin/orders?week=${s}&status=${orderstatus}`);
     setWeekFilter(s);
   };
 
@@ -251,7 +257,6 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
             </MenuItem>
           ))}
         </TextField>
-
         <TextField
           id="outlined-select-role"
           select
@@ -303,6 +308,8 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                 ?.filter(
                   order =>
                     weekfilter === 'all' ||
+                    weekfilter === null ||
+                    weekfilter === 'null' ||
                     (weekfilter === 'thisWeek' &&
                       new Date(order.createdAt).getDay() <= data.getDay() &&
                       dateDiffInDays(data, new Date(order.createdAt)) < 7) ||
@@ -313,7 +320,10 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                 )
                 ?.filter(
                   order =>
-                    orderstatus === 'all' || order.status === orderstatus,
+                    orderstatus === 'all' ||
+                    orderstatus === null ||
+                    orderstatus === 'null' ||
+                    order.status === orderstatus,
                 )
                 .map(order => {
                   const { icon: Icon, color } = status[order.status];

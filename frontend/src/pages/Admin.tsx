@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useSearchParams,
+} from 'react-router-dom';
 import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
@@ -54,7 +60,7 @@ export const Admin = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { profile, load } = useProfile();
   const { pending, setPending } = usePendingState();
-
+  const [queryParams] = useSearchParams();
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -177,7 +183,10 @@ export const Admin = () => {
             path="/users"
             element={
               <ProtectedRoute>
-                <AdminUsers handleDrawerToggle={handleDrawerToggle} />
+                <AdminUsers
+                  handleDrawerToggle={handleDrawerToggle}
+                  role={queryParams.get('role')}
+                />
               </ProtectedRoute>
             }
           />
@@ -198,6 +207,7 @@ export const Admin = () => {
                   farmer={
                     typeof profile === 'object' && profile.role === Role.FARMER
                   }
+                  category={queryParams.get('category')}
                 />
               </ProtectedRoute>
             }
@@ -214,7 +224,11 @@ export const Admin = () => {
             path="/orders"
             element={
               <ProtectedRoute>
-                <AdminOrders handleDrawerToggle={handleDrawerToggle} />
+                <AdminOrders
+                  handleDrawerToggle={handleDrawerToggle}
+                  status={queryParams.get('status')}
+                  week={queryParams.get('week')}
+                />
               </ProtectedRoute>
             }
           />
