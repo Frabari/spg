@@ -134,8 +134,9 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
-  const [sortOption, setSortOption] = useState('No sort');
+  const [sortOption, setSortOption] = useState('');
   const sort = [
+    'all',
     'customer',
     'farmer',
     'rider',
@@ -147,8 +148,14 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
 
   const handleFilterByRole = (s: string) => {
     setSortOption(s);
-    setSortedUsers(users.filter(u => u.role === s));
-    navigate(`/admin/users?role=${s}`);
+    if (s === 'all') {
+      navigate(`/admin/users`);
+      setSortedUsers(users);
+      setSortOption('');
+    } else {
+      setSortedUsers(users.filter(u => u.role === s));
+      navigate(`/admin/users?role=${s}`);
+    }
   };
 
   return (
@@ -227,25 +234,27 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedUsers?.map(user => (
-                <TableRow
-                  hover
-                  key={user.id}
-                  sx={{
-                    '&:last-child td, &:last-child th': { border: 0 },
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => navigate(`/admin/users/${user.id}`)}
-                >
-                  <TableCell component="th" scope="row">
-                    {user.name}
-                  </TableCell>
-                  <TableCell>{user.surname}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>€ {user.balance}</TableCell>
-                </TableRow>
-              ))}
+              {sortedUsers
+                ?.filter(u => !sortOption || u.role === sortOption)
+                ?.map(user => (
+                  <TableRow
+                    hover
+                    key={user.id}
+                    sx={{
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/admin/users/${user.id}`)}
+                  >
+                    <TableCell component="th" scope="row">
+                      {user.name}
+                    </TableCell>
+                    <TableCell>{user.surname}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell>€ {user.balance}</TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

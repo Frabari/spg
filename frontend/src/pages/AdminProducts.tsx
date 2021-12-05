@@ -141,13 +141,19 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
-  const [sortOption, setSortOption] = useState('No sort');
+  const [sortOption, setSortOption] = useState('');
   const sort = useCategories();
 
   const handleFilterByCategory = (s: string) => {
     setSortOption(s);
-    setSortedProducts(products.filter(p => p.category.slug === s));
-    navigate(`/admin/products?category=${s}`);
+    if (s === 'all') {
+      navigate(`/admin/products`);
+      setSortedProducts(products);
+      setSortOption('');
+    } else {
+      navigate(`/admin/products?category=${s}`);
+      setSortedProducts(products.filter(p => p.category.slug === s));
+    }
   };
 
   return (
@@ -194,6 +200,9 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
           sx={{ width: '150px' }}
           onChange={e => handleFilterByCategory(e.target.value)}
         >
+          <MenuItem key="all" value="all">
+            All
+          </MenuItem>
           {sort.categories.map(option => (
             <MenuItem key={option.id} value={option.slug}>
               {option.name}
@@ -234,43 +243,45 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedProducts?.map(product => (
-                <TableRow
-                  hover
-                  key={product.id}
-                  sx={{
-                    '&:last-child td, &:last-child th': { border: 0 },
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => navigate(`/admin/products/${product.id}`)}
-                >
-                  <TableCell sx={{ py: 0 }}>
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell component="th" scope="row">
-                    {product.name}
-                  </TableCell>
-                  <TableCell>{product.description}</TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.category.name}</TableCell>
-                  <TableCell>
-                    {product.available === 0 && product.public === true && (
-                      <Alert severity="warning">
-                        {'Remember to update the availability field'}
-                      </Alert>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {sortedProducts
+                ?.filter(p => !sortOption || p.category.slug === sortOption)
+                ?.map(product => (
+                  <TableRow
+                    hover
+                    key={product.id}
+                    sx={{
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/admin/products/${product.id}`)}
+                  >
+                    <TableCell sx={{ py: 0 }}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell component="th" scope="row">
+                      {product.name}
+                    </TableCell>
+                    <TableCell>{product.description}</TableCell>
+                    <TableCell>{product.price}</TableCell>
+                    <TableCell>{product.category.name}</TableCell>
+                    <TableCell>
+                      {product.available === 0 && product.public === true && (
+                        <Alert severity="warning">
+                          {'Remember to update the availability field'}
+                        </Alert>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
