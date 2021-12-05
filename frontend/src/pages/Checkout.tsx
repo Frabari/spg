@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -54,10 +53,8 @@ export default function Checkout() {
   };
 
   const saveBasket = () => {
-    console.log(dto);
     updateBasket(dto)
       .then(() => {
-        toast.success('Order paid successfully!');
         navigate(`/products`);
       })
       .catch(() => {
@@ -67,12 +64,22 @@ export default function Checkout() {
   return (
     <>
       <NavigationBox.NavBar onProducts={false} setBasketListener={null} />
-      <Grid container direction="row" sx={{ px: 15, py: 8 }}>
-        <Grid container item xs={12} spacing={2} sx={{ py: 5 }}>
+      <Grid
+        container
+        direction="row"
+        spacing="1rem"
+        paddingY="5rem"
+        alignItems="center"
+        justifyItems="center"
+        width="auto"
+        xs={12}
+        sx={{ ml: '0' }}
+      >
+        {' '}
+        <Grid container item xs={12} sx={{ pb: 2 }}>
           <Typography
             variant="h6"
             noWrap
-            component="h1"
             color="primary.main"
             fontWeight="bold"
             sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
@@ -83,13 +90,12 @@ export default function Checkout() {
             <Button
               sx={{
                 minWidth: 0,
-                px: { xs: 1, sm: 2 },
                 float: 'right',
               }}
               variant="contained"
               onClick={saveBasket}
             >
-              <CreditCardIcon />
+              <AddShoppingCartIcon />
               <Typography
                 sx={{
                   textTransform: 'none',
@@ -336,14 +342,13 @@ export default function Checkout() {
             <Button
               sx={{
                 minWidth: 0,
-                px: { xs: 1, sm: 2 },
                 mt: 2,
                 float: 'right',
               }}
               variant="contained"
               onClick={saveBasket}
             >
-              <CreditCardIcon />
+              <AddShoppingCartIcon />
               <Typography
                 sx={{
                   textTransform: 'none',

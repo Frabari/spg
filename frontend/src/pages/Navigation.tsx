@@ -474,7 +474,10 @@ function NavBar(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <Basket balanceWarning={props.balanceWarning} />
+          <Basket
+            balanceWarning={props.balanceWarning}
+            setShowBasket={setShowBasket}
+          />
         </Box>
       </Drawer>
     </>
