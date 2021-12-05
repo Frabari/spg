@@ -94,7 +94,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
+export const AdminProducts = (props: {
+  handleDrawerToggle: () => void;
+  farmer: boolean;
+}) => {
   const navigate = useNavigate();
   const { products } = useProducts(true);
   const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
@@ -274,11 +277,13 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                     <TableCell>{product.price}</TableCell>
                     <TableCell>{product.category.name}</TableCell>
                     <TableCell>
-                      {product.available === 0 && product.public === true && (
-                        <Alert severity="warning">
-                          {'Remember to update the availability field'}
-                        </Alert>
-                      )}
+                      {props.farmer &&
+                        product.available === 0 &&
+                        product.public === true && (
+                          <Alert severity="warning">
+                            {'Remember to update the availability field'}
+                          </Alert>
+                        )}
                     </TableCell>
                   </TableRow>
                 ))}

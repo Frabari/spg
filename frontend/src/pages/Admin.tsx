@@ -193,7 +193,12 @@ export const Admin = () => {
             path="/products"
             element={
               <ProtectedRoute>
-                <AdminProducts handleDrawerToggle={handleDrawerToggle} />
+                <AdminProducts
+                  handleDrawerToggle={handleDrawerToggle}
+                  farmer={
+                    typeof profile === 'object' && profile.role === Role.FARMER
+                  }
+                />
               </ProtectedRoute>
             }
           />
