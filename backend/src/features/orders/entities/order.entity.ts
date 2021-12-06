@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   Validate,
+  ValidateNested,
 } from 'class-validator';
 import {
   AfterLoad,
@@ -35,6 +36,11 @@ export enum OrderStatus {
    * for confirmation from farmers and payment
    */
   LOCKED = 'locked',
+
+  /**
+   * The user balance is not enough to pay the order
+   */
+  PENDING_PAYMENT = 'pending_payment',
 
   /**
    * The products were confirmed and the
@@ -98,6 +104,8 @@ export class Order {
    * An array of products with their respective quantities
    */
   @OneToMany(() => OrderEntry, entry => entry.order, { cascade: true })
+  @ValidateNested()
+  @Type(() => OrderEntry)
   @Allow()
   entries: OrderEntry[];
 
