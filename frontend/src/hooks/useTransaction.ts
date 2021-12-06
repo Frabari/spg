@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { createTransaction, Transaction, TransactionId } from '../api/BasilApi';
+import {
+  Constraints,
+  createTransaction,
+  Transaction,
+  TransactionId,
+} from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { usePendingState } from './usePendingState';
 
 export const useTransaction = (id?: TransactionId) => {
-  const { setPending } = usePendingState();
+  const { setPending: setGlobalPending } = usePendingState();
+  const [pending, setPending] = useState(false);
   const [transaction, setTransaction] = useState<Transaction>(null);
-  const [error, setError] = useState<ApiException>(null);
+  const [error, setError] =
+    useState<ApiException<Constraints<Transaction>>>(null);
+
+  useEffect(() => {
+    setGlobalPending(pending);
+  }, [pending, setGlobalPending]);
 
   const upsertTransaction = (transaction: Partial<Transaction>) => {
     if (!transaction.id) {
@@ -37,5 +48,5 @@ export const useTransaction = (id?: TransactionId) => {
   //       .finally(() => setPending(false));
   //   }
   // }, [id, setPending]);
-  return { transaction, upsertTransaction, error };
+  return { transaction, upsertTransaction, pending, error };
 };

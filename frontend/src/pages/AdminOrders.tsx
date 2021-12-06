@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Add, Build, Lock, Pending } from '@mui/icons-material';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import DeleteIcon from '@mui/icons-material/Delete';
-import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
-import DoneIcon from '@mui/icons-material/Done';
-import DraftsIcon from '@mui/icons-material/Drafts';
+import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
@@ -25,37 +20,16 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Order, OrderStatus } from '../api/BasilApi';
+import { Order } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { orderStatuses } from '../constants';
 import { useOrders } from '../hooks/useOrders';
 
-const status: Record<OrderStatus, { color: string; icon: any }> = {
-  draft: {
-    color: 'burlywood',
-    icon: DraftsIcon,
-  },
-  locked: {
-    color: 'grey',
-    icon: Lock,
-  },
-  paid: {
-    color: 'darkorange',
-    icon: AttachMoneyIcon,
-  },
-  delivering: {
-    color: 'indigo',
-    icon: DeliveryDiningIcon,
-  },
-  completed: { color: 'springgreen', icon: DoneIcon },
-  pending_cancellation: { color: 'orangered', icon: Pending },
-  canceled: { color: 'red', icon: DeleteIcon },
-  prepared: { color: 'gold', icon: Build },
-};
-
-const stat = [
+const statusFilters = [
   'all',
   'draft',
   'paid',
+  'pending_payment',
   'delivering',
   'completed',
   'pending_cancellation',
@@ -135,6 +109,14 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+const dateDiffInDays = (a: Date, b: Date) => {
+  const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+  const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+  return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+};
+
 export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { orders } = useOrders();
@@ -164,17 +146,6 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
       }
     }
   }, [orders, sorting]);
-
-  const _MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-  // a and b are javascript Date objects
-  function dateDiffInDays(a: Date, b: Date) {
-    // Discard the time and time-zone information.
-    const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
-    const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
-
-    return Math.floor((utc2 - utc1) / _MS_PER_DAY);
-  }
 
   const handleFilterByStatus = (s: string) => {
     setOrderStatus(s);
@@ -265,7 +236,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
           sx={{ width: '150px', marginLeft: '50px' }}
           onChange={e => handleFilterByStatus(e.target.value)}
         >
-          {stat.map(option => (
+          {statusFilters.map(option => (
             <MenuItem key={option} value={option}>
               {option}
             </MenuItem>
@@ -320,7 +291,11 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                     orderstatus === 'all' || order.status === orderstatus,
                 )
                 .map(order => {
-                  const { icon: Icon, color } = status[order.status];
+                  const {
+                    icon: Icon,
+                    color,
+                    name,
+                  } = orderStatuses[order.status];
                   return (
                     <TableRow
                       hover
@@ -346,7 +321,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                             />
                           }
                           variant="outlined"
-                          label={order.status}
+                          label={name}
                           sx={{
                             borderColor: color,
                             color: color,

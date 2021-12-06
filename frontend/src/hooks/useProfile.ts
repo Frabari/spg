@@ -10,6 +10,10 @@ export const useProfile = () => {
   const [profile, setProfile] = useGlobalState('profile');
   const [error, setError] = useState<ApiException>(null);
 
+  useEffect(() => {
+    setGlobalPending(pending);
+  }, [pending, setGlobalPending]);
+
   const load = useRef<() => void>();
   load.current = () => {
     setPending(true);
@@ -21,10 +25,6 @@ export const useProfile = () => {
       })
       .finally(() => setPending(false));
   };
-
-  useEffect(() => {
-    setGlobalPending(pending);
-  }, [pending, setGlobalPending]);
 
   useEffect(() => {
     if (!pending && profile === null) {

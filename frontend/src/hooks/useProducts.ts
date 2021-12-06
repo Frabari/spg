@@ -5,14 +5,19 @@ import { ApiException } from '../api/createHttpClient';
 import { usePendingState } from './usePendingState';
 
 export const useProducts = (loadAllStock = false) => {
-  const { setPending } = usePendingState();
+  const { setPending: setGlobalPending } = usePendingState();
+  const [pending, setPending] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<ApiException>(null);
+
+  useEffect(() => {
+    setGlobalPending(pending);
+  }, [pending, setGlobalPending]);
 
   const loadProducts = useRef<() => void>();
   loadProducts.current = () => {
     setPending(true);
-    getProducts()
+    getProducts(loadAllStock)
       .then(setProducts)
       .catch(e => {
         setError(e);
@@ -30,5 +35,5 @@ export const useProducts = (loadAllStock = false) => {
       })
       .finally(() => setPending(false));
   }, [loadAllStock, setPending]);
-  return { products, error, loadProducts: loadProducts.current };
+  return { products, loadProducts: loadProducts.current, pending, error };
 };

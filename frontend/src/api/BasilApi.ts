@@ -16,7 +16,6 @@ export interface OrderEntry {
   id?: OrderEntryId;
   product: Product;
   quantity: number;
-  confirmed?: boolean;
 }
 
 export type OrderId = number;
@@ -25,6 +24,7 @@ export enum OrderStatus {
   DRAFT = 'draft',
   LOCKED = 'locked',
   PAID = 'paid',
+  PENDING_PAYMENT = 'pending_payment',
   PREPARED = 'prepared',
   DELIVERING = 'delivering',
   COMPLETED = 'completed',
@@ -63,13 +63,13 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  unitOfMeasure: string;
   available: number;
   reserved: number;
   sold: number;
   category: Category;
   farmer: User;
   image: string;
-  unitOfMeasure: string;
 }
 
 export type TransactionId = number;
@@ -117,11 +117,13 @@ export interface User {
 
 export interface Notification {
   id: number;
+  type: NotificationType;
   title: string;
   message: string;
-  type: NotificationType;
   createdAt: Date;
 }
+
+export type Constraints<T> = Record<keyof T, string>;
 
 export const socket = SocketIo('http://localhost:3001', {
   transports: ['websocket'],
