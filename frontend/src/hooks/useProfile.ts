@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Constraints, getMe, User } from '../api/BasilApi';
+import { getMe, updateMe, User, Constraints } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { useGlobalState } from './useGlobalState';
 import { usePendingState } from './usePendingState';
@@ -14,12 +14,6 @@ export const useProfile = () => {
     setGlobalPending(pending);
   }, [pending, setGlobalPending]);
 
-  const upsertProfile = (user: Partial<User>) => {
-    if (user?.id) {
-      // TODO: update profile
-    }
-  };
-
   const load = useRef<() => void>();
   load.current = () => {
     setPending(true);
@@ -28,6 +22,21 @@ export const useProfile = () => {
       .catch(e => {
         setError(e);
         setProfile(false);
+        throw e;
+      })
+      .finally(() => setPending(false));
+  };
+
+  const _updateProfile = (dto: Partial<User>) => {
+    setPending(true);
+    return updateMe(dto)
+      .then(u => {
+        setProfile(u);
+        return u;
+      })
+      .catch(e => {
+        setError(e);
+        throw e;
       })
       .finally(() => setPending(false));
   };
@@ -38,5 +47,11 @@ export const useProfile = () => {
     }
   }, [pending, profile]);
 
-  return { load: load.current, profile, upsertProfile, pending, error };
+  return {
+    profile,
+    load: load.current,
+    updateProfile: _updateProfile,
+    pending,
+    error,
+  };
 };

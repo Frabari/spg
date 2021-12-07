@@ -1,8 +1,8 @@
 import { Exclude } from 'class-transformer';
 import {
+  Allow,
   IsEmail,
   IsIn,
-  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
@@ -12,9 +12,11 @@ import {
   Entity,
   ManyToMany,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Notification } from '../../notifications/entities/notification.entity';
+import { DeliveryLocation } from '../../orders/entities/delivery-location.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Product } from '../../products/entities/product.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
@@ -31,21 +33,21 @@ export class User {
    * First name
    */
   @Column()
-  @IsNotEmpty()
+  @IsString()
   name: string;
 
   /**
    * Last name
    */
   @Column()
-  @IsNotEmpty()
+  @IsString()
   surname: string;
 
   /**
    * The email (username)
    */
   @Column({ unique: true })
-  @IsNotEmpty()
+  @IsString()
   @IsEmail()
   email: string;
 
@@ -62,7 +64,6 @@ export class User {
    */
   @Column({ default: Role.CUSTOMER })
   @IsString()
-  @IsNotEmpty()
   @IsIn(Object.values(Role))
   role: Role;
 
@@ -120,4 +121,8 @@ export class User {
    */
   @ManyToMany(() => Notification, notification => notification.deliveredTo)
   notifications: Notification[];
+
+  @OneToOne(() => DeliveryLocation, dl => dl.user)
+  @Allow()
+  address: DeliveryLocation;
 }

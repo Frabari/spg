@@ -4,6 +4,7 @@ import {
   Constraints,
   createUser,
   getUser,
+  updateUser,
   User,
   UserId,
 } from '../api/BasilApi';
@@ -21,8 +22,8 @@ export const useUser = (id?: UserId) => {
   }, [pending, setGlobalPending]);
 
   const upsertUser = (user: Partial<User>) => {
+    setPending(true);
     if (!user?.id) {
-      setPending(true);
       return createUser(user)
         .then(u => {
           setUser(u);
@@ -33,6 +34,16 @@ export const useUser = (id?: UserId) => {
           throw e;
         })
         .finally(() => setPending(false));
+    } else {
+      return updateUser(user.id, user)
+        .then(u => {
+          setUser(u);
+          return u;
+        })
+        .catch(e => {
+          setError(e);
+          throw e;
+        });
     }
   };
 
