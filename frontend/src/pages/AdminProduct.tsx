@@ -89,13 +89,15 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                 </Grid>
                 <Grid item>
                   <TextField
-                    label="Description"
-                    value={product?.description ?? ''}
+                    label="Category"
+                    value={product?.category.name ?? ''}
                   />
                 </Grid>
+
                 <Grid item>
                   <TextField label="Price" value={product?.price ?? ''} />
                 </Grid>
+
                 <Grid item>
                   <TextField
                     label="Available"
@@ -110,16 +112,20 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                 </Grid>
                 <Grid item>
                   <TextField
-                    label="Category"
-                    value={product?.category.name ?? ''}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField
+                    disabled
                     label="Farmer"
                     value={
                       product?.farmer.name + ' ' + product?.farmer.surname ?? ''
                     }
+                  />
+                </Grid>
+              </Grid>
+              <Grid container display="grid" marginTop="32px">
+                <Grid item>
+                  <TextField
+                    multiline
+                    label="Description"
+                    value={product?.description ?? ''}
                   />
                 </Grid>
               </Grid>
