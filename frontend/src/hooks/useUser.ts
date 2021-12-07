@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { createUser, getUser, User, UserId } from '../api/BasilApi';
+import { createUser, getUser, updateUser, User, UserId } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { usePendingState } from './usePendingState';
 
@@ -10,8 +10,8 @@ export const useUser = (id?: UserId) => {
   const [error, setError] = useState<ApiException>(null);
 
   const upsertUser = (user: Partial<User>) => {
+    setPending(true);
     if (!user?.id) {
-      setPending(true);
       return createUser(user)
         .then(u => {
           setUser(u);
@@ -23,6 +23,16 @@ export const useUser = (id?: UserId) => {
           throw e;
         })
         .finally(() => setPending(false));
+    } else {
+      return updateUser(user.id, user)
+        .then(u => {
+          setUser(u);
+          return u;
+        })
+        .catch(e => {
+          setError(e);
+          throw e;
+        });
     }
   };
 

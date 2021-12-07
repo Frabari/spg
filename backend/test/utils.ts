@@ -5,17 +5,7 @@ export const checkKeys = <T>(
 ) => {
   const resultedKeys = Object.keys(obj);
   expect(
-    include.every(key => {
-      const ris = resultedKeys.includes(key as string);
-      if (!ris) console.log(key, ris);
-      return ris;
-    }),
+    include.every(key => resultedKeys.includes(key as string)),
   ).toBeTruthy();
-  expect(
-    exclude.some(key => {
-      const ris = resultedKeys.includes(key as string);
-      if (ris) console.log(key, ris);
-      return ris;
-    }),
-  ).toBeFalsy();
+  expect(exclude.some(key => resultedKeys.includes(key as string))).toBeFalsy();
 };
