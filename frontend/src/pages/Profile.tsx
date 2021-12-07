@@ -24,8 +24,8 @@ import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
 
 export default function Profile() {
-  const { profile, upsertProfile } = useProfile();
-  const { pending, setPending } = usePendingState();
+  const { profile } = useProfile();
+  const { pending } = usePendingState();
   const [show, setShow] = useState(false);
   const form = useFormik({
     initialValues: {
