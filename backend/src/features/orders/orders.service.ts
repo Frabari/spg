@@ -34,7 +34,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         user,
       },
       {
-        relations: ['entries', 'entries.product', 'user'],
+        relations: ['entries', 'entries.product', 'user', 'deliveryLocation'],
       },
     );
     if (basket) {
@@ -58,7 +58,8 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       }
     }
     if (dto.entries?.length) {
-      for (const entry of dto.entries) {
+      for (let ei = 0; ei < dto.entries.length; ei++) {
+        const entry = dto.entries[ei];
         if (entry.quantity < 1) {
           throw new BadRequestException(
             'Order.QuantityZero',
@@ -73,10 +74,15 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           );
         }
         if (product.available < entry.quantity) {
-          throw new BadRequestException(
-            'Order.InsufficientEntry',
-            `There is not enough ${product.name} to satisfy your request`,
-          );
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  quantity: `There is not enough ${product.name} to satisfy your request`,
+                },
+              },
+            },
+          });
         }
         await this.productsService.reserveProductAmount(
           product,

@@ -37,7 +37,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { order, upsertOrder, pending, error } = useOrder(id);
+  const { order, upsertOrder, pending } = useOrder(id);
   const { users } = useUsers();
   const [selectingProduct, setSelectingProduct] = useState(false);
   const form = useFormik({
@@ -46,9 +46,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
       status: OrderStatus.DRAFT,
       entries: [],
     } as Partial<Order>,
-    validate: () => error?.data?.constraints ?? {},
-    onSubmit: (values: Partial<Order>, { setSubmitting, validateForm }) => {
-      setSubmitting(true);
+    onSubmit: (values: Partial<Order>, { setErrors }) =>
       upsertOrder(values)
         .then(newOrder => {
           const creating = id == null;
@@ -58,13 +56,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
           }
         })
         .catch(e => {
-          // noop
-        })
-        .finally(async () => {
-          setSubmitting(false);
-          validateForm();
-        });
-    },
+          setErrors(e.data?.constraints);
+        }),
   });
 
   useEffect(() => {

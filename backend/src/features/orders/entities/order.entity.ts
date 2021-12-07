@@ -8,6 +8,7 @@ import {
   Validate,
   ValidateNested,
 } from 'class-validator';
+import { JoinColumn } from 'typeorm';
 import {
   AfterLoad,
   Column,
@@ -19,7 +20,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { DeliveredBy } from '../validators/delivered-by.validator';
+import { DeliveredByValidator } from '../validators/delivered-by.validator';
+import { DeliveryDateValidator } from '../validators/delivery-date.validator';
 import { DeliveryLocation } from './delivery-location.entity';
 import { OrderEntry } from './order-entry.entity';
 
@@ -113,17 +115,21 @@ export class Order {
    * The date when the user wants the order to be delivered
    * or to pick it up at the warehouse
    */
-  @Column({ type: 'varchar', default: null })
+  @Column({ default: null })
   @Allow()
   @Type(() => Date)
+  @Validate(DeliveryDateValidator)
   deliverAt: Date;
 
   /**
    * A string representing an address. If null the order will
    * be picked up at the warehouse
    */
-  @OneToOne(() => DeliveryLocation, dl => dl.order)
-  @Allow()
+  @OneToOne(() => DeliveryLocation, dl => dl.order, { cascade: true })
+  @JoinColumn()
+  @Type(() => DeliveryLocation)
+  @IsOptional()
+  @ValidateNested()
   deliveryLocation: DeliveryLocation;
 
   /**
@@ -131,7 +137,7 @@ export class Order {
    * will be picked up by the customer at the warehouse
    */
   @ManyToOne(() => User)
-  @Validate(DeliveredBy)
+  @Validate(DeliveredByValidator)
   deliveredBy: User;
 
   /**

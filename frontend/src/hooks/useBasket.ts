@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'react-hot-toast';
 import { getBasket, Order, Product, updateBasket } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { useGlobalState } from './useGlobalState';
@@ -25,7 +24,7 @@ export const useBasket = () => {
       })
       .catch(e => {
         setError(e);
-        toast.error(e.message);
+        throw e;
       })
       .finally(() => setPending(false));
   };
@@ -50,7 +49,9 @@ export const useBasket = () => {
         quantity,
       });
     }
-    return _updateBasket.current(dto);
+    return _updateBasket.current(dto).catch(() => {
+      // noop
+    });
   };
 
   const deleteEntry = useRef<(product: Product) => Promise<void | Order>>();

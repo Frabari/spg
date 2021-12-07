@@ -1,4 +1,4 @@
-import { Allow } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsString } from 'class-validator';
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Order } from './order.entity';
 
@@ -11,30 +11,40 @@ export class DeliveryLocation {
   order: Order;
 
   @Column({ nullable: true })
-  @Allow()
+  @IsString()
   name: string;
 
   @Column({ nullable: true })
-  @Allow()
+  @IsString()
   surname: string;
 
   @Column({ nullable: true })
-  @Allow()
+  @IsString()
+  @IsDefined()
+  @IsNotEmpty()
   address: string;
 
   @Column({ nullable: true })
-  @Allow()
+  @IsString()
+  @IsDefined()
+  @IsNotEmpty()
   zipCode: string;
 
   @Column({ nullable: true })
-  @Allow()
+  @IsString()
+  @IsDefined()
+  @IsNotEmpty()
   city: string;
 
   @Column({ nullable: true })
-  @Allow()
+  @IsString()
+  @IsDefined()
+  @IsNotEmpty()
   province: string;
 
   @Column({ nullable: true })
-  @Allow()
+  @IsString()
+  @IsDefined()
+  @IsNotEmpty()
   region: string;
 }

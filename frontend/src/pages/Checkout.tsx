@@ -1,12 +1,10 @@
 import * as React from 'react';
-import { useState } from 'react';
-import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useFormik } from 'formik';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
-import TimePicker from '@mui/lab/TimePicker';
 import {
   Avatar,
   Box,
@@ -20,6 +18,7 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   TextField,
+  FormHelperText,
 } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import { Order } from '../api/BasilApi';
@@ -27,46 +26,42 @@ import { useBasket } from '../hooks/useBasket';
 import { useUser } from '../hooks/useUser';
 import NavigationBox from './Navigation';
 
+export enum DeliveryOption {
+  PICKUP = 'pickup',
+  DELIVERY = 'delivery',
+}
+
 export default function Checkout() {
-  const navigate = useNavigate();
-  const { basket, updateBasket } = useBasket();
+  const { basket, updateBasket, pending } = useBasket();
   const { user } = useUser();
-  const [delivery, setDelivery] = useState<string | null>('at_store');
-  const [date, setDate] = useState<Date | null>(new Date());
-  const [time, setTime] = useState<Date | null>(new Date());
-  const [dto, setDto] = useState<Partial<Order>>({});
+  const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
+    DeliveryOption.PICKUP,
+  );
+  const form = useFormik({
+    initialValues: {
+      entries: [],
+      deliverAt: null,
+      deliveryLocation: null,
+      total: 0,
+      insufficientBalance: false,
+    } as Partial<Order>,
+    onSubmit: (values, { setErrors }) =>
+      updateBasket(values).catch(e => {
+        setErrors(e.data?.constraints);
+      }),
+  });
 
-  const handleDelivery = (
-    event: React.MouseEvent<HTMLElement>,
-    newDelivery: string | null,
-  ) => {
-    setDelivery(newDelivery);
-  };
+  useEffect(() => {
+    if (basket) {
+      if (basket.deliveryLocation) {
+        setDeliveryOption(DeliveryOption.DELIVERY);
+      } else {
+        setDeliveryOption(DeliveryOption.PICKUP);
+      }
+      form.setValues(basket);
+    }
+  }, [basket]);
 
-  const handleAddressChange = (key: string, value: any) => {
-    setDto(_dto => ({
-      ..._dto,
-      deliveryLocation: {
-        ...(_dto?.deliveryLocation ?? {}),
-        [key]: value,
-      },
-    }));
-  };
-
-  const saveBasket = () => {
-    const deliverAt = date;
-    deliverAt?.setHours(time.getHours());
-    deliverAt?.setMinutes(time.getMinutes());
-
-    updateBasket({ ...dto, deliverAt })
-      .then(() => {
-        toast.success('Order paid successfully!');
-        navigate(`/products`);
-      })
-      .catch(() => {
-        // noop
-      });
-  };
   return (
     <>
       <NavigationBox.NavBar onProducts={false} setBasketListener={null} />
@@ -82,29 +77,6 @@ export default function Checkout() {
           >
             {'Checkout'}
           </Typography>
-          {delivery === 'at_store' ? (
-            <Button
-              sx={{
-                minWidth: 0,
-                px: { xs: 1, sm: 2 },
-                float: 'right',
-              }}
-              variant="contained"
-              onClick={saveBasket}
-            >
-              <CreditCardIcon />
-              <Typography
-                sx={{
-                  textTransform: 'none',
-                  marginLeft: 1,
-                }}
-              >
-                {'Save basket'}
-              </Typography>
-            </Button>
-          ) : (
-            ''
-          )}
         </Grid>
         <Grid container item xs={12} spacing={2} sx={{ pb: 5 }}>
           <Card sx={{ width: '100%', p: 3 }}>
@@ -114,7 +86,7 @@ export default function Checkout() {
                 component="h2"
                 sx={{ fontWeight: 'bold' }}
               >
-                {'Your basket'}
+                Your basket
               </Typography>
             </Box>
             <Grid
@@ -138,7 +110,7 @@ export default function Checkout() {
                   component="div"
                   color="#757575"
                 >
-                  {'Your balance €'}
+                  Your balance €
                   <Typography
                     fontWeight="bold"
                     align="right"
@@ -156,7 +128,7 @@ export default function Checkout() {
                   variant="h5"
                   component="div"
                 >
-                  {'Total €'}
+                  Total €
                   <Typography
                     fontWeight="bold"
                     align="right"
@@ -180,24 +152,45 @@ export default function Checkout() {
                 component="h2"
                 sx={{ fontWeight: 'bold' }}
               >
-                {'Delivery options'}
+                Delivery options
               </Typography>
             </Box>
             <Typography component="div" sx={{ fontSize: '15px' }}>
-              {'Choose an option: '}
+              Choose an option:
             </Typography>
 
             <ToggleButtonGroup
-              value={delivery}
+              value={deliveryOption}
               exclusive
-              onChange={handleDelivery}
+              onChange={e => {
+                const value = (e.target as any).value as DeliveryOption;
+                setDeliveryOption(value);
+                form.setFieldValue(
+                  'deliveryLocation',
+                  value === DeliveryOption.PICKUP
+                    ? null
+                    : basket.deliveryLocation ?? {
+                        name: '',
+                        surname: '',
+                        address: '',
+                        zipCode: '',
+                        city: '',
+                        province: '',
+                        region: '',
+                      },
+                );
+              }}
               aria-label="delivery"
               sx={{ mt: 2, borderRadius: '16px' }}
             >
-              <ToggleButton value="at_store">{"I'll pick it up"}</ToggleButton>
-              <ToggleButton value="at_home">{'Deliver it'}</ToggleButton>
+              <ToggleButton value={DeliveryOption.PICKUP}>
+                I'll pick it up
+              </ToggleButton>
+              <ToggleButton value={DeliveryOption.DELIVERY}>
+                Deliver it
+              </ToggleButton>
             </ToggleButtonGroup>
-            {delivery === 'at_home' ? (
+            {form.values?.deliveryLocation != null && (
               <Grid
                 container
                 display="grid"
@@ -206,159 +199,202 @@ export default function Checkout() {
                 sx={{ pt: 3 }}
               >
                 <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.name}
+                  >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Name'}
+                      Name
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-name"
-                      onChange={e =>
-                        handleAddressChange('name', e.target.value)
-                      }
+                      name="deliveryLocation.name"
+                      value={form.values?.deliveryLocation?.name ?? ''}
                       label="Name"
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.name}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.surname}
+                  >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Surname'}
+                      Surname
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-surname"
-                      onChange={e =>
-                        handleAddressChange('surname', e.target.value)
-                      }
+                      name="deliveryLocation.surname"
+                      value={form.values?.deliveryLocation?.surname ?? ''}
                       label="Surname"
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.surname}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.address}
+                  >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Address'}
+                      Address
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-address"
-                      onChange={e =>
-                        handleAddressChange('address', e.target.value)
-                      }
+                      name="deliveryLocation.address"
+                      value={form.values?.deliveryLocation?.address ?? ''}
                       label="Address"
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.address}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.zipCode}
+                  >
                     <InputLabel htmlFor="outlined-adornment-zipcode">
-                      {'Zip code'}
+                      Zip code
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-zipcode"
-                      onChange={e =>
-                        handleAddressChange('zipCode', e.target.value)
-                      }
                       label="Zip code"
+                      name="deliveryLocation.zipCode"
+                      value={form.values?.deliveryLocation?.zipCode ?? ''}
+                      onChange={form.handleChange}
                     />
                   </FormControl>
+                  <FormHelperText>
+                    {form.errors?.deliveryLocation?.zipCode}
+                  </FormHelperText>
                 </Grid>
                 <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.city}
+                  >
                     <InputLabel htmlFor="outlined-adornment-city">
-                      {'City'}
+                      City
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-city"
-                      onChange={e =>
-                        handleAddressChange('city', e.target.value)
-                      }
                       label="City"
+                      name="deliveryLocation.city"
+                      value={form.values?.deliveryLocation?.city ?? ''}
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.city}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.province}
+                  >
                     <InputLabel htmlFor="outlined-adornment-province">
-                      {'Province'}
+                      Province
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-province"
-                      onChange={e =>
-                        handleAddressChange('privince', e.target.value)
-                      }
                       label="Province"
+                      name="deliveryLocation.province"
+                      value={form.values?.deliveryLocation?.province ?? ''}
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.province}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.region}
+                  >
                     <InputLabel htmlFor="outlined-adornment-region">
-                      {'Region'}
+                      Region
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-region"
-                      onChange={e =>
-                        handleAddressChange('region', e.target.value)
-                      }
                       label="Region"
+                      name="deliveryLocation.region"
+                      value={form.values?.deliveryLocation?.region ?? ''}
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.region}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
               </Grid>
-            ) : (
-              ''
             )}
             <Typography component="div" sx={{ py: 3, fontSize: '15px' }}>
-              {'Delivery date: '}
+              Delivery date:
             </Typography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
-                label="Choose a date"
-                value={date}
-                minDate={new Date('2021-01-01')}
-                maxDate={new Date('2025-12-31')}
-                onChange={(newDate: Date) => {
-                  setDate(newDate);
-                }}
+              <DateTimePicker
+                label="Delivery date and time"
+                value={form.values?.deliverAt}
+                onChange={date => form.setFieldValue('deliverAt', date)}
                 renderInput={(params: any) => (
-                  <TextField sx={{ mr: 8 }} {...params} />
-                )}
-              />
-              <TimePicker
-                label="Choose a time"
-                value={time}
-                onChange={(newTime: any) => {
-                  setTime(newTime);
-                }}
-                renderInput={params => (
-                  <TextField sx={{ mr: 'auto' }} {...params} />
+                  <TextField
+                    sx={{ mr: 8 }}
+                    {...params}
+                    name="deliverAt"
+                    disabled={pending}
+                    error={form.errors?.deliverAt}
+                    helperText={form.errors?.deliverAt}
+                  />
                 )}
               />
             </LocalizationProvider>
           </Card>
-          {delivery === 'at_home' ? (
-            <Button
+          <Button
+            sx={{
+              minWidth: 0,
+              px: { xs: 1, sm: 2 },
+              mt: 2,
+              float: 'right',
+            }}
+            variant="contained"
+            onClick={() => form.submitForm()}
+            startIcon={<CreditCardIcon />}
+          >
+            <Typography
               sx={{
-                minWidth: 0,
-                px: { xs: 1, sm: 2 },
-                mt: 2,
-                float: 'right',
+                textTransform: 'none',
+                marginLeft: 1,
               }}
-              variant="contained"
-              onClick={saveBasket}
             >
-              <CreditCardIcon />
-              <Typography
-                sx={{
-                  textTransform: 'none',
-                  marginLeft: 1,
-                }}
-              >
-                {'Save basket'}
-              </Typography>
-            </Button>
-          ) : (
-            ''
-          )}
+              Save basket
+            </Typography>
+          </Button>
         </Grid>
       </Grid>
     </>
