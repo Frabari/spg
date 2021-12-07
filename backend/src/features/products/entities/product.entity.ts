@@ -1,33 +1,11 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsIn, IsInt, IsNotEmpty, IsString, IsUrl, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsUrl, Min } from 'class-validator';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
 import { STAFF } from '../../users/roles.enum';
 
 export type ProductId = number;
-
-export enum ProductMeasures {
-  /**
-   * Kg of product selected
-   */
-  KG = 'Kg',
-
-  /**
-   * hg of product selected
-   */
-  HG = 'hg',
-
-  /**
-   *  g of product selected
-   */
-  G = 'g',
-
-  /**
-   * unit of product selected
-   */
-  UNIT = 'unit',
-}
 
 @Entity()
 @Exclude()
@@ -69,12 +47,13 @@ export class Product {
   @Expose()
   price: number;
 
-  @Column({ default: ProductMeasures.KG, nullable: false })
-  @IsString()
+  /**
+   * The unit of the products
+   */
+  @Column()
   @IsNotEmpty()
-  @IsIn(Object.values(ProductMeasures))
   @Expose()
-  unitOfMeasure: ProductMeasures;
+  BaseUnit: string;
 
   /**
    * The number of available units of this product
