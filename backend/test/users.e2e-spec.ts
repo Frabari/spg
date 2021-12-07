@@ -13,6 +13,7 @@ import { TransactionsModule } from '../src/features/transactions/transactions.mo
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
+import { checkKeys } from './utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -65,8 +66,13 @@ describe('UsersController (e2e)', () => {
         .get('/users')
         .auth(authToken, { type: 'bearer' })
         .expect(200)
-        .expect(r => {
-          expect(r.body.length).toEqual(1);
+        .expect(response => {
+          checkKeys<User>(
+            response.body[0],
+            ['id', 'name', 'surname', 'email', 'role', 'balance', 'avatar'],
+            ['password'],
+          );
+          expect(response.body.length).toEqual(1);
         });
     });
   });
@@ -92,6 +98,63 @@ describe('UsersController (e2e)', () => {
         .auth(authToken, { type: 'bearer' })
         .expect(200)
         .expect(response => {
+          checkKeys<User>(
+            response.body,
+            [
+              'id',
+              'name',
+              'surname',
+              'email',
+              'role',
+              'balance',
+              'avatar',
+              'notifications',
+              'address',
+            ],
+            ['password'],
+          );
+          expect(response.body.email).toEqual(email);
+        });
+    });
+  });
+
+  describe('PATCH /users/userId', () => {
+    it('should return the user specified if the requester is authenticated', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      const user = await entityManager.save(User, {
+        name: 'John',
+        surname: 'Doe',
+        email,
+        password: await hash(password, 10),
+        role: Role.MANAGER,
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      return request(server)
+        .patch('/users/' + user.id)
+        .auth(authToken, { type: 'bearer' })
+        .send({ name: 'test' })
+        .expect(response => {
+          checkKeys<User>(
+            response.body,
+            [
+              'id',
+              'name',
+              'surname',
+              'email',
+              'role',
+              'balance',
+              'avatar',
+              'notifications',
+              'address',
+            ],
+            ['password'],
+          );
           expect(response.body.email).toEqual(email);
         });
     });
@@ -107,7 +170,24 @@ describe('UsersController (e2e)', () => {
           email: 'test@example.com',
           password: 'testpwd',
         })
-        .expect(201);
+        .expect(201)
+        .expect(response => {
+          checkKeys<User>(
+            response.body,
+            [
+              'id',
+              'name',
+              'surname',
+              'email',
+              'role',
+              'balance',
+              'avatar',
+              'notifications',
+              'address',
+            ],
+            ['password'],
+          );
+        });
       const entityManager = app.get(EntityManager);
       expect((await entityManager.find(User)).length).toEqual(1);
     });

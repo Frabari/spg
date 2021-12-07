@@ -165,8 +165,14 @@ export const getUser = (id: UserId) => client.get<User>(`/users/${id}`);
 
 export const getMe = () => client.get<User>('/users/me');
 
+export const updateMe = (profile: Partial<User>) =>
+  client.patch<User>('/users/me', profile);
+
 export const createUser = (user: Partial<User>) =>
   client.post<User>('/users', user);
+
+export const updateUser = (id: UserId, user: Partial<User>) =>
+  client.patch<User>(`/users/${id}`, user);
 
 export const getProducts = (loadAllStock = false) =>
   client.get<Product[]>(`/products${loadAllStock ? '?stock' : ''}`);

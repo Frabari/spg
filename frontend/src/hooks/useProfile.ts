@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { getMe } from '../api/BasilApi';
+import { getMe, updateMe, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { useGlobalState } from './useGlobalState';
 import { usePendingState } from './usePendingState';
@@ -18,6 +18,21 @@ export const useProfile = () => {
       .catch(e => {
         setError(e);
         setProfile(false);
+        throw e;
+      })
+      .finally(() => setPending(false));
+  };
+
+  const updateProfile = (dto: Partial<User>) => {
+    setPending(true);
+    return updateMe(dto)
+      .then(u => {
+        setProfile(u);
+        return u;
+      })
+      .catch(e => {
+        setError(e);
+        throw e;
       })
       .finally(() => setPending(false));
   };
@@ -32,5 +47,11 @@ export const useProfile = () => {
     }
   }, [pending, profile]);
 
-  return { load: load.current, profile, pending, error };
+  return {
+    profile,
+    load: load.current,
+    updateProfile,
+    pending,
+    error,
+  };
 };
