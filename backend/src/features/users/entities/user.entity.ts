@@ -11,6 +11,7 @@ import {
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToMany,
   OneToMany,
   OneToOne,
@@ -124,7 +125,10 @@ export class User {
   @ManyToMany(() => Notification, notification => notification.deliveredTo)
   notifications: Notification[];
 
-  @OneToOne(() => DeliveryLocation, dl => dl.user)
+  @OneToOne(() => DeliveryLocation, dl => dl.user, {
+    cascade: true,
+  })
+  @JoinColumn()
   @Allow()
   address: DeliveryLocation;
 }
