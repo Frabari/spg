@@ -141,7 +141,6 @@ describe('UsersController (e2e)', () => {
         .auth(authToken, { type: 'bearer' })
         .send({ name: 'test' })
         .expect(response => {
-          console.log(response);
           //add address
           checkKeys<User>(
             response.body,

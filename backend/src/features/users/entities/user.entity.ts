@@ -3,7 +3,6 @@ import {
   Allow,
   IsEmail,
   IsIn,
-  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
@@ -35,21 +34,21 @@ export class User {
    * First name
    */
   @Column()
-  @IsNotEmpty()
+  @IsString()
   name: string;
 
   /**
    * Last name
    */
   @Column()
-  @IsNotEmpty()
+  @IsString()
   surname: string;
 
   /**
    * The email (username)
    */
   @Column({ unique: true })
-  @IsNotEmpty()
+  @IsString()
   @IsEmail()
   email: string;
 
@@ -66,7 +65,6 @@ export class User {
    */
   @Column({ default: Role.CUSTOMER })
   @IsString()
-  @IsNotEmpty()
   @IsIn(Object.values(Role))
   role: Role;
 
