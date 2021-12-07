@@ -26,31 +26,41 @@ import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 
-const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
+const columns: {
+  key: keyof Product;
+  title: string;
+  sortable: boolean;
+  width: number;
+}[] = [
   {
     key: 'image',
     title: 'Image',
     sortable: false,
+    width: 50,
   },
   {
     key: 'name',
     title: 'Name',
     sortable: true,
+    width: 300,
   },
   {
     key: 'description',
     title: 'Description',
     sortable: true,
+    width: 400,
   },
   {
     key: 'price',
     title: 'Price',
     sortable: true,
+    width: 100,
   },
   {
     key: 'category',
     title: 'Category',
     sortable: true,
+    width: 100,
   },
 ];
 
@@ -98,7 +108,7 @@ const Description = styled(Box)({
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
   overflow: 'hidden',
-  maxWidth: 100,
+  maxWidth: 300,
 });
 
 export const AdminProducts = (props: {
@@ -235,6 +245,7 @@ export const AdminProducts = (props: {
                   <TableCell
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
+                    sx={{ width: c.width }}
                   >
                     {c.sortable ? (
                       <TableSortLabel
