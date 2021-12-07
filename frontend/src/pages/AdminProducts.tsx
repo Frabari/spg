@@ -94,6 +94,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+const Description = styled(Box)({
+  whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
+  maxWidth: 100,
+});
+
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
   farmer: boolean;
@@ -275,10 +282,17 @@ export const AdminProducts = (props: {
                         }}
                       />
                     </TableCell>
-                    <TableCell component="th" scope="row">
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      align="left"
+                      sx={{ pr: 0 }}
+                    >
                       {product.name}
                     </TableCell>
-                    <TableCell>{product.description}</TableCell>
+                    <TableCell sx={{ pr: 0 }}>
+                      <Description>{product.description}</Description>
+                    </TableCell>
                     <TableCell>{product.price}</TableCell>
                     <TableCell>{product.category.name}</TableCell>
                     <TableCell>

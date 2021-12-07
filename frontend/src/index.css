@@ -17,7 +17,11 @@ code {
     max-width: 1200px;
     margin: 0 auto;
 }
-
+.textarea{
+    resize:none !important;
+    font-family: system-ui;
+    padding: 8px;
+}
 .relative {
     position: relative;
 }

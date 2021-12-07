@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import * as React from 'react';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import {
   Container,
@@ -18,11 +19,11 @@ import NavigationBox from './Navigation';
 
 export default function Profile() {
   const { profile } = useProfile();
-  const [dto, setDto] = useState<Partial<User>>({});
+  const [dto, setDto] = useState<Partial<User>>(profile as User);
 
   useEffect(() => {
     setDto(profile as User);
-  }, []);
+  }, [profile]);
 
   const handleChange = (key: string, value: any) => {
     setDto(_dto => ({
@@ -73,7 +74,6 @@ export default function Profile() {
                 >
                   <Grid item>
                     <TextField
-                      disabled
                       label="Name"
                       value={dto?.name ?? ''}
                       onChange={e => handleChange('name', e.target.value)}
@@ -81,7 +81,6 @@ export default function Profile() {
                   </Grid>
                   <Grid item>
                     <TextField
-                      disabled
                       label="Surname"
                       value={dto?.surname ?? ''}
                       onChange={e => handleChange('surname', e.target.value)}
@@ -89,7 +88,6 @@ export default function Profile() {
                   </Grid>
                   <Grid item>
                     <TextField
-                      disabled
                       label="Email"
                       value={dto?.email ?? ''}
                       onChange={e => handleChange('email', e.target.value)}
@@ -97,7 +95,6 @@ export default function Profile() {
                   </Grid>
                   <Grid item>
                     <TextField
-                      disabled
                       label="Avatar"
                       value={dto?.avatar ?? ''}
                       onChange={e => handleChange('avatar', e.target.value)}
@@ -107,7 +104,7 @@ export default function Profile() {
                     <TextField
                       disabled
                       label="Balance"
-                      value={(profile as User)?.balance ?? ''}
+                      value={dto?.balance ?? ''}
                       InputProps={{
                         readOnly: true,
                         startAdornment: (
@@ -116,7 +113,6 @@ export default function Profile() {
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                              disabled
                               aria-label="manage profile wallet"
                               color="success"
                               edge="end"
@@ -126,6 +122,41 @@ export default function Profile() {
                           </InputAdornment>
                         ),
                       }}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="Address"
+                      value={''}
+                      onChange={e => handleChange('surname', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="Zip code"
+                      value={''}
+                      onChange={e => handleChange('surname', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="City"
+                      value={''}
+                      onChange={e => handleChange('surname', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="Province"
+                      value={''}
+                      onChange={e => handleChange('surname', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="Region"
+                      value={''}
+                      onChange={e => handleChange('surname', e.target.value)}
                     />
                   </Grid>
                 </Grid>
