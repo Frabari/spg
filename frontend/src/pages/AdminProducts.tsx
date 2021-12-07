@@ -5,6 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import {
   Alert,
   Box,
+  Button,
   Grid,
   IconButton,
   InputBase,
@@ -200,15 +201,24 @@ export const AdminProducts = (props: {
           />
         </Search>
         <IconButton
-          disabled
+          sx={{ display: { xs: 'flex', md: 'none' } }}
           className="add-icon-button"
           href="/admin/products/new"
         >
           <Add />
         </IconButton>
-        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
-          Create product
-        </Typography>
+        <Button
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          href="/admin/products/new"
+          startIcon={<Add />}
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Create product
+          </Typography>
+        </Button>
       </AdminAppBar>
       <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
         <TextField

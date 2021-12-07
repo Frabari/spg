@@ -4,6 +4,7 @@ import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
+  Button,
   Grid,
   IconButton,
   InputBase,
@@ -183,12 +184,25 @@ export const AdminUsers = (props: {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <IconButton className="add-icon-button" href="/admin/users/new">
+        <IconButton
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+          className="add-icon-button"
+          href="/admin/users/new"
+        >
           <Add />
         </IconButton>
-        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
-          Create user
-        </Typography>
+        <Button
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          href="/admin/users/new"
+          startIcon={<Add />}
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Create user
+          </Typography>
+        </Button>
       </AdminAppBar>
       <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
         <TextField

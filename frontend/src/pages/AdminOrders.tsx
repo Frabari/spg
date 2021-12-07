@@ -9,6 +9,7 @@ import DraftsIcon from '@mui/icons-material/Drafts';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
+  Button,
   Chip,
   IconButton,
   InputBase,
@@ -234,12 +235,25 @@ export const AdminOrders = (props: {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <IconButton className="add-icon-button" href="/admin/orders/new">
+        <IconButton
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+          className="add-icon-button"
+          href="/admin/orders/new"
+        >
           <Add />
         </IconButton>
-        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
-          Create order
-        </Typography>
+        <Button
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          href="/admin/orders/new"
+          startIcon={<Add />}
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Create order
+          </Typography>
+        </Button>
       </AdminAppBar>
       <TableRow sx={{ pl: 3 }}>
         <TextField
