@@ -1,6 +1,7 @@
 import { MouseEvent, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useFormik } from 'formik';
 import {
   Alert,
   Box,
@@ -10,6 +11,7 @@ import {
   CardContent,
   Collapse,
   FormControl,
+  FormHelperText,
   Grid,
   InputLabel,
   OutlinedInput,
@@ -17,33 +19,38 @@ import {
 } from '@mui/material';
 import { User } from '../api/BasilApi';
 import { Logo } from '../components/Logo';
+import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 import { useUser } from '../hooks/useUser';
 
 function OutlinedCard() {
   const [passwordCheck, setPasswordCheck] = useState('');
-  const [dto, setDto] = useState<Partial<User>>({});
-  const { upsertUser } = useUser(null);
+  const { pending, setPending } = usePendingState();
+  const { upsertUser, error } = useUser(null);
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
-
-  const handleChange = (key: string, value: any) => {
-    setDto(_dto => ({ ..._dto, [key]: value }));
-  };
+  const form = useFormik({
+    initialValues: {
+      name: '',
+      surname: '',
+      email: '',
+      password: '',
+    } as Partial<User>,
+    onSubmit: (values: Partial<User>, { setErrors }) => {
+      return upsertUser(values)
+        .then(u => {
+          setPending(true);
+          toast.success(`Welcome ${values.name}!`);
+          navigate('/login');
+        })
+        .catch(e => {
+          setErrors(e.data.constraints);
+        });
+    },
+  });
 
   const handlePasswordCheck = (value: string) => {
     setPasswordCheck(value);
-  };
-
-  const handleRegistration = () => {
-    upsertUser(dto)
-      .then(newUser => {
-        toast.success(`Welcome ${newUser.name}!`);
-        navigate('/login');
-      })
-      .catch(() => {
-        // noop
-      });
   };
 
   const handleClickShowPassword = () => {
@@ -75,53 +82,91 @@ function OutlinedCard() {
             </Typography>
             <Grid container rowSpacing={2} direction="column">
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.name}
+                  disabled={pending}
+                >
                   <InputLabel htmlFor="outlined-adornment-name">
                     Name
                   </InputLabel>
                   <OutlinedInput
-                    id="outlined-adornment-name"
-                    onChange={e => handleChange('name', e.target.value)}
+                    id="name"
+                    type="text"
+                    onChange={form.handleChange}
+                    value={form.values.name}
                     label="Name"
+                    name="name"
                   />
+                  <FormHelperText>{form.errors?.name}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.surname}
+                  disabled={pending}
+                >
                   <InputLabel htmlFor="outlined-adornment-surname">
                     Surname
                   </InputLabel>
                   <OutlinedInput
-                    id="outlined-adornment-surname"
-                    onChange={e => handleChange('surname', e.target.value)}
+                    id="surname"
+                    type="text"
+                    onChange={form.handleChange}
+                    value={form.values.surname}
                     label="Surname"
+                    name="surname"
                   />
+                  <FormHelperText>{form.errors?.surname}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.email}
+                  disabled={pending}
+                >
                   <InputLabel htmlFor="outlined-adornment-email">
                     Email
                   </InputLabel>
                   <OutlinedInput
-                    id="outlined-adornment-email"
-                    onChange={e => handleChange('email', e.target.value)}
+                    id="email"
+                    type="email"
+                    onChange={form.handleChange}
+                    value={form.values.email}
                     label="Email"
+                    name="email"
                   />
+                  <FormHelperText>{form.errors?.email}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.password}
+                  disabled={pending}
+                >
                   <InputLabel htmlFor="outlined-adornment-password">
                     Password
                   </InputLabel>
                   <OutlinedInput
-                    id="outlined-adornment-password"
+                    id="password"
                     type={show ? 'text' : 'password'}
-                    value={dto?.password ?? ''}
-                    onChange={e => handleChange('password', e.target.value)}
+                    value={form.values?.password ?? ''}
+                    onChange={form.handleChange}
                     label="Password"
+                    name="password"
                   />
+                  <FormHelperText>{form.errors?.password}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
@@ -152,15 +197,15 @@ function OutlinedCard() {
                 </Typography>
               </Grid>
               <Grid item>
-                <Collapse in={dto?.password?.length < 8}>
+                <Collapse in={form.values?.password?.length < 8}>
                   <Alert severity="error">
                     Password must be of at least 8 characters
                   </Alert>
                 </Collapse>
                 <Collapse
                   in={
-                    dto?.password?.length >= 8 &&
-                    dto?.password !== passwordCheck
+                    form.values?.password?.length >= 8 &&
+                    form.values?.password !== passwordCheck
                   }
                 >
                   <Alert severity="error">Passwords are not matching</Alert>
@@ -180,12 +225,15 @@ function OutlinedCard() {
         >
           <Grid item sx={{ p: 2, pt: 0 }}>
             <Button
+              type="submit"
               disabled={
-                dto?.password?.length < 8 ||
-                (dto?.password?.length >= 8 && dto?.password !== passwordCheck)
+                form.values?.password?.length < 8 ||
+                (form.values?.password?.length >= 8 &&
+                  form.values?.password !== passwordCheck) ||
+                pending
               }
+              onClick={form.submitForm}
               variant="contained"
-              onClick={handleRegistration}
               sx={{ px: 3 }}
             >
               Register

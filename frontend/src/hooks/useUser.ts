@@ -30,7 +30,6 @@ export const useUser = (id?: UserId) => {
         })
         .catch(e => {
           setError(e);
-          toast.error(e.message);
           throw e;
         })
         .finally(() => setPending(false));

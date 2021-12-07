@@ -113,6 +113,7 @@ export interface User {
   deliveries: Order[];
   products: Product[];
   notifications: Notification[];
+  location: DeliveryLocation;
 }
 
 export interface Notification {
