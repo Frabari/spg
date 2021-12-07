@@ -255,7 +255,7 @@ export const AdminOrders = (props: {
           </Typography>
         </Button>
       </AdminAppBar>
-      <TableRow sx={{ pl: 3 }}>
+      <TableRow sx={{ pl: 3, pt: 2 }}>
         <TextField
           id="outlined-select-role"
           select
