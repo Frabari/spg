@@ -1,13 +1,16 @@
+import type { Request as ExpressRequest } from 'express';
 import {
+  Body,
   Controller,
   NotFoundException,
+  Param,
   Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { Body, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
+  CrudAuth,
   CrudController,
   CrudRequest,
   Override,
@@ -18,6 +21,7 @@ import { Crud } from '../../core/decorators/crud.decorator';
 import { ParseBoolFlagPipe } from '../../core/pipes/parse-bool-flag.pipe';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
+import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
 import { ADMINS, Role } from '../users/roles.enum';
 import { CreateProductDto } from './dtos/create-product.dto';
@@ -33,15 +37,40 @@ import { ProductsService } from './products.service';
   },
   query: {
     join: {
-      farmer: {},
+      farmer: {
+        eager: true,
+      },
       category: {},
     },
+  },
+})
+@CrudAuth({
+  filter: (req: ExpressRequest & { user: User }) => {
+    const filters: any = {};
+    if (
+      'stock' in req.query &&
+      req.query.stock != 'false' &&
+      req.user.role === Role.FARMER
+    ) {
+      filters['farmer.id'] = { $eq: req.user.id };
+    }
+    if (
+      'stock' in req.query &&
+      req.query.stock == 'false' &&
+      req.user.role === Role.CUSTOMER
+    ) {
+      filters.public = true;
+      filters.available = {
+        $gt: 0,
+      };
+    }
+    return filters;
   },
 })
 @ApiTags(Product.name)
 @ApiBearerAuth()
 @Controller('products')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductsController implements CrudController<Product> {
   constructor(public readonly service: ProductsService) {}
 
@@ -61,17 +90,6 @@ export class ProductsController implements CrudController<Product> {
     @Request() req,
     @Query('stock', ParseBoolFlagPipe) stock = false,
   ) {
-    const user = req.user as User;
-    if (!stock || user.role === Role.CUSTOMER) {
-      crudReq.parsed.search = {
-        $and: crudReq.parsed.search.$and.concat({
-          public: true,
-          available: {
-            $gt: 0,
-          },
-        }),
-      };
-    }
     crudReq.parsed.join = [{ field: 'farmer' }, { field: 'category' }];
     return this.base.getManyBase(crudReq) as Promise<Product[]>;
   }
@@ -103,7 +121,7 @@ export class ProductsController implements CrudController<Product> {
   }
 
   @Override()
-  @Roles(...ADMINS)
+  @Roles(...ADMINS, Role.FARMER)
   async updateOne(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,
