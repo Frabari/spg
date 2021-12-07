@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Request,
   UseGuards,
@@ -18,6 +19,7 @@ import {
 import { Crud } from '../../core/decorators/crud.decorator';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { LoginDto } from './dtos/login.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -28,10 +30,16 @@ import { UsersService } from './users.service';
 
 @Crud(User, {
   routes: {
-    only: ['getOneBase', 'getManyBase', 'createOneBase'],
+    only: ['getOneBase', 'getManyBase', 'createOneBase', 'updateOneBase'],
+  },
+  query: {
+    join: {
+      notifications: {},
+    },
   },
   dto: {
     create: CreateUserDto,
+    update: UpdateUserDto,
   },
 })
 @ApiTags(User.name)
@@ -63,6 +71,7 @@ export class UsersController implements CrudController<User> {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: `Gets the current authenticated user's profile` })
   getMe(@Request() req) {
+    //add relation  with address
     return this.service.findOne(req.user.id, { relations: ['notifications'] });
   }
 
@@ -72,6 +81,19 @@ export class UsersController implements CrudController<User> {
   @Roles(...ADMINS)
   getOne(@ParsedRequest() req: CrudRequest) {
     return this.base.getOneBase(req);
+  }
+
+  @Override()
+  async updateOne(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @ParsedBody() dto: UpdateUserDto,
+    @Param('id') id: number,
+  ) {
+    console.log(crudRequest.parsed);
+    crudRequest.parsed.join = [{ field: 'notifications' }];
+    if (dto.password) dto.password = await bcrypt.hash(dto.password, 10);
+    return this.base.updateOneBase(crudRequest, dto as User);
   }
 
   @Override()

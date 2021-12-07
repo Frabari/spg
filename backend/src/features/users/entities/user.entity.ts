@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import {
+  Allow,
   IsEmail,
   IsIn,
   IsNotEmpty,
@@ -12,9 +13,11 @@ import {
   Entity,
   ManyToMany,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Notification } from '../../notifications/entities/notification.entity';
+import { DeliveryLocation } from '../../orders/entities/delivery-location.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Product } from '../../products/entities/product.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
@@ -120,4 +123,8 @@ export class User {
    */
   @ManyToMany(() => Notification, notification => notification.deliveredTo)
   notifications: Notification[];
+
+  @OneToOne(() => DeliveryLocation, dl => dl.user)
+  @Allow()
+  address: DeliveryLocation;
 }
