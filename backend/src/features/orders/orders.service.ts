@@ -12,6 +12,7 @@ import { User } from '../users/entities/user.entity';
 import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
+import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
 
 const statuses = Object.values(OrderStatus);
@@ -21,6 +22,8 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   constructor(
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
+    @InjectRepository(OrderEntry)
+    private readonly ordersEntryRepository: Repository<OrderEntry>,
     private readonly productsService: ProductsService,
   ) {
     super(ordersRepository);
@@ -206,6 +209,12 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         status: OrderStatus.LOCKED,
       },
     );
+  }
+
+  deleteDraftOrderEntry() {
+    return this.ordersEntryRepository.delete({
+      status: OrderEntryStatus.DRAFT,
+    });
   }
 
   checkOrderBalance(order: Order, user: User) {

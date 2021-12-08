@@ -1,9 +1,22 @@
-import { IsInt, IsNotEmpty, IsNumber, Min } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Min,
+} from 'class-validator';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
 import { Order } from './order.entity';
 
 export type OrderEntryId = number;
+
+export enum OrderEntryStatus {
+  DRAFT = 'draft',
+  CONFIRMED = 'confirmed',
+  DELIVERED = 'delivered',
+}
 
 @Entity()
 export class OrderEntry {
@@ -34,9 +47,10 @@ export class OrderEntry {
   quantity: number;
 
   /**
-   * Whether the farmer that produces this
-   * product confirmed the availability
+   * The status of this order-entry
    */
-  @Column({ default: false })
-  confirmed: boolean;
+  @Column({ default: OrderEntryStatus.DRAFT })
+  @IsString()
+  @IsIn(Object.values(OrderEntryStatus))
+  status: OrderEntryStatus;
 }
