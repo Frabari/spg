@@ -21,9 +21,9 @@ import {
   FormHelperText,
 } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
-import { Order } from '../api/BasilApi';
+import { Order, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
-import { useUser } from '../hooks/useUser';
+import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
 
 export enum DeliveryOption {
@@ -33,7 +33,7 @@ export enum DeliveryOption {
 
 export default function Checkout() {
   const { basket, updateBasket, pending } = useBasket();
-  const { user } = useUser();
+  const { profile } = useProfile();
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
   );
@@ -119,7 +119,9 @@ export default function Checkout() {
                     display="inline"
                     color="#757575"
                   >
-                    {user?.balance == null ? '0' : user?.balance}
+                    {(profile as User)?.balance == null
+                      ? '0'
+                      : (profile as User)?.balance}
                   </Typography>
                 </Typography>
                 <Typography
@@ -170,13 +172,13 @@ export default function Checkout() {
                   value === DeliveryOption.PICKUP
                     ? null
                     : basket.deliveryLocation ?? {
-                        name: '',
-                        surname: '',
-                        address: '',
-                        zipCode: '',
-                        city: '',
-                        province: '',
-                        region: '',
+                        name: (profile as User).name,
+                        surname: (profile as User).surname,
+                        address: (profile as User)?.address.address,
+                        zipCode: (profile as User)?.address.zipCode,
+                        city: (profile as User)?.address.city,
+                        province: (profile as User)?.address.province,
+                        region: (profile as User)?.address.region,
                       },
                 );
               }}
