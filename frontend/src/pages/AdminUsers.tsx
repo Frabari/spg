@@ -134,7 +134,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
-  const [sortOption, setSortOption] = useState('No sort');
+  const [sortOption, setSortOption] = useState('');
   const sort = [
     'customer',
     'farmer',

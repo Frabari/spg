@@ -94,13 +94,14 @@ export class UsersController implements CrudController<User> {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: `Updates the current authenticated user's profile` })
-  updateMe(
+  async updateMe(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,
     @Body() body: UpdateUserDto,
   ) {
     const { id } = request.user;
     crudRequest.parsed.search.$and = [{ id }];
+    if (body.password) body.password = await bcrypt.hash(body.password, 10);
     return this.base.updateOneBase(crudRequest, body as User);
   }
 
@@ -109,6 +110,11 @@ export class UsersController implements CrudController<User> {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...ADMINS)
   getOne(@ParsedRequest() crudRequest: CrudRequest) {
+    crudRequest.parsed.join = [
+      {
+        field: 'address',
+      },
+    ];
     return this.base.getOneBase(crudRequest);
   }
 

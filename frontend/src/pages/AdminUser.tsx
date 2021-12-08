@@ -35,7 +35,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
   const { upsertTransaction } = useTransaction();
-  const { pending, setPending } = usePendingState();
+  const { pending } = usePendingState();
   const form = useFormik({
     initialValues: {
       name: '',
@@ -43,10 +43,25 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
       email: '',
       password: '',
       avatar: '',
-      location: null,
+      address: null,
     } as Partial<User>,
     onSubmit: (values: Partial<User>, { setErrors }) => {
-      // TODO return upsertUser update or create
+      if (!values.password?.length) {
+        delete values.password;
+      }
+      upsertUser(values)
+        .then(newUser => {
+          const creating = id == null;
+          toast.success(`User ${creating ? 'created' : 'updated'}`);
+          if (creating) {
+            navigate(`/admin/users/${(newUser as User).id}`);
+          } else {
+            navigate('/admin/users');
+          }
+        })
+        .catch(e => {
+          setErrors(e.data?.constraints);
+        });
     },
   });
 
@@ -105,7 +120,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           variant="contained"
           onClick={form.submitForm}
-          disabled={user != null}
+          disabled={pending}
         >
           <Save />
           <Typography
@@ -213,7 +228,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                     id="password"
                     type={show ? 'text' : 'password'}
                     onChange={form.handleChange}
-                    value={form.values.password}
+                    value={form.values.password ?? ''}
                     label="Password"
                     name="password"
                     endAdornment={
@@ -246,7 +261,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                     onChange={form.handleChange}
                     value={form.values.avatar}
                     label="Avatar"
-                    name="avatr"
+                    name="avatar"
                   />
                   <FormHelperText>{form.errors?.avatar}</FormHelperText>
                 </FormControl>
@@ -305,7 +320,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                     <FormControl
                       variant="outlined"
                       fullWidth
-                      // error={!!form.errors?.location?.address}
+                      error={!!form.errors?.address?.address}
                       disabled={pending}
                     >
                       <InputLabel htmlFor="address">Address</InputLabel>
@@ -313,12 +328,12 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                         id="address"
                         type="text"
                         onChange={form.handleChange}
-                        value={form.values.location?.address}
+                        value={form.values.address?.address ?? ''}
                         label="Address"
-                        name="address"
+                        name="address.address"
                       />
                       <FormHelperText>
-                        {/*{form.errors?.location?.address}*/}
+                        {form.errors?.address?.address}
                       </FormHelperText>
                     </FormControl>
                   </Grid>
@@ -326,20 +341,20 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                     <FormControl
                       variant="outlined"
                       fullWidth
-                      // error={!!form.errors?.location?.zipCode}
+                      error={!!form.errors?.address?.zipCode}
                       disabled={pending}
                     >
                       <InputLabel htmlFor="address">Zip Code</InputLabel>
                       <OutlinedInput
                         id="zipCode"
-                        type="number"
+                        type="text"
                         onChange={form.handleChange}
-                        value={form.values.location?.zipCode}
+                        value={form.values.address?.zipCode ?? ''}
                         label="Zip Code"
-                        name="zipCode"
+                        name="address.zipCode"
                       />
                       <FormHelperText>
-                        {/*{form.errors?.location?.zipCode}*/}
+                        {form.errors?.address?.zipCode}
                       </FormHelperText>
                     </FormControl>
                   </Grid>
@@ -347,7 +362,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                     <FormControl
                       variant="outlined"
                       fullWidth
-                      // error={!!form.errors?.location?.city}
+                      error={!!form.errors?.address?.city}
                       disabled={pending}
                     >
                       <InputLabel htmlFor="address">City</InputLabel>
@@ -355,12 +370,12 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                         id="city"
                         type="text"
                         onChange={form.handleChange}
-                        value={form.values.location?.city}
+                        value={form.values.address?.city ?? ''}
                         label="City"
-                        name="city"
+                        name="address.city"
                       />
                       <FormHelperText>
-                        {/*{form.errors?.location?.city}*/}
+                        {form.errors?.address?.city}
                       </FormHelperText>
                     </FormControl>
                   </Grid>
@@ -368,7 +383,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                     <FormControl
                       variant="outlined"
                       fullWidth
-                      // error={!!form.errors?.location?.province}
+                      error={!!form.errors?.address?.province}
                       disabled={pending}
                     >
                       <InputLabel htmlFor="address">Province</InputLabel>
@@ -376,12 +391,12 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                         id="province"
                         type="text"
                         onChange={form.handleChange}
-                        value={form.values.location?.province}
+                        value={form.values.address?.province ?? ''}
                         label="Province"
-                        name="province"
+                        name="address.province"
                       />
                       <FormHelperText>
-                        {/*{form.errors?.location?.province}*/}
+                        {form.errors?.address?.province}
                       </FormHelperText>
                     </FormControl>
                   </Grid>
@@ -389,7 +404,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                     <FormControl
                       variant="outlined"
                       fullWidth
-                      // error={!!form.errors?.location?.region}
+                      error={!!form.errors?.address?.region}
                       disabled={pending}
                     >
                       <InputLabel htmlFor="address">Region</InputLabel>
@@ -397,12 +412,12 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                         id="region"
                         type="text"
                         onChange={form.handleChange}
-                        value={form.values.location?.region}
+                        value={form.values.address?.region ?? ''}
                         label="Region"
-                        name="region"
+                        name="address.region"
                       />
                       <FormHelperText>
-                        {/*{form.errors?.location?.region}*/}
+                        {form.errors?.address?.region}
                       </FormHelperText>
                     </FormControl>
                   </Grid>

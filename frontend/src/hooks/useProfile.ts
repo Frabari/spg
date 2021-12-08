@@ -22,7 +22,6 @@ export const useProfile = () => {
       .catch(e => {
         setError(e);
         setProfile(false);
-        throw e;
       })
       .finally(() => setPending(false));
   };

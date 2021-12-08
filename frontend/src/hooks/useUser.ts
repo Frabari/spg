@@ -43,7 +43,8 @@ export const useUser = (id?: UserId) => {
         .catch(e => {
           setError(e);
           throw e;
-        });
+        })
+        .finally(() => setPending(false));
     }
   };
 

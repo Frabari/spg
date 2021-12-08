@@ -24,7 +24,7 @@ import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 
 function OutlinedCard(props: any) {
-  const { load, error } = useProfile();
+  const { load } = useProfile();
   const [show, setShow] = useState(false);
   const { pending, setPending } = usePendingState();
   const form = useFormik({
@@ -32,7 +32,6 @@ function OutlinedCard(props: any) {
       email: null,
       password: null,
     } as Partial<User>,
-    validate: () => error?.data?.constraints ?? {},
     onSubmit: (values: Partial<User>, { setErrors }) => {
       login(values.email, values.password)
         .then(p => {
@@ -40,7 +39,7 @@ function OutlinedCard(props: any) {
           load();
         })
         .catch(e => {
-          setErrors(e.data.constraints);
+          setErrors(e.data?.constraints);
         });
     },
   });
