@@ -38,6 +38,7 @@ import { UsersService } from './users.service';
   query: {
     join: {
       notifications: {},
+      address: {},
     },
   },
   dto: {
@@ -75,12 +76,14 @@ export class UsersController implements CrudController<User> {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: `Gets the current authenticated user's profile` })
   getMe(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
-    // TODO Add relation with address
     const { id } = request.user;
     crudRequest.parsed.search.$and = [{ id }];
     crudRequest.parsed.join = [
       {
         field: 'notifications',
+      },
+      {
+        field: 'address',
       },
     ];
     return this.base.getOneBase(crudRequest);
@@ -119,7 +122,10 @@ export class UsersController implements CrudController<User> {
     @ParsedBody() dto: UpdateUserDto,
     @Param('id') id: number,
   ) {
-    crudRequest.parsed.join = [{ field: 'notifications' }];
+    crudRequest.parsed.join = [
+      { field: 'notifications' },
+      { field: 'address' },
+    ];
     if (dto.password) dto.password = await bcrypt.hash(dto.password, 10);
     return this.base.updateOneBase(crudRequest, dto as User);
   }
@@ -129,6 +135,7 @@ export class UsersController implements CrudController<User> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateUserDto,
   ) {
+    req.parsed.join = [{ field: 'notifications' }, { field: 'address' }];
     dto.password = await bcrypt.hash(dto.password, 10);
     return this.base.createOneBase(req, dto as User);
   }

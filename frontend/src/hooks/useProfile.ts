@@ -27,7 +27,7 @@ export const useProfile = () => {
       .finally(() => setPending(false));
   };
 
-  const _updateProfile = (dto: Partial<User>) => {
+  const updateProfile = (dto: Partial<User>) => {
     setPending(true);
     return updateMe(dto)
       .then(u => {
@@ -50,7 +50,7 @@ export const useProfile = () => {
   return {
     profile,
     load: load.current,
-    updateProfile: _updateProfile,
+    updateProfile,
     pending,
     error,
   };
