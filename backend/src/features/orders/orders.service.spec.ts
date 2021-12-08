@@ -1,10 +1,10 @@
 import { hash } from 'bcrypt';
-import { DateTime } from 'luxon';
 import { EntityManager } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from '../categories/categories.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { Product } from '../products/entities/product.entity';
 import { ProductsModule } from '../products/products.module';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -37,6 +37,7 @@ describe('OrdersService', () => {
         CategoriesModule,
         TransactionsModule,
         OrdersModule,
+        NotificationsModule,
       ],
     }).compile();
 
@@ -78,36 +79,6 @@ describe('OrdersService', () => {
   });
 
   describe('checkOrder', () => {
-    it('should fail if the date of the order is not between (Wed 08:00 - Fri 18:00)', async () => {
-      const email = 'test@example.com';
-      const password = 'testpwd';
-      const entityManager = module.get(EntityManager);
-      const user = await entityManager.save(User, {
-        email,
-        password: await hash(password, 10),
-        name: 'John',
-        surname: 'Doe',
-      });
-      const product = await entityManager.save(Product, {
-        name: 'onions',
-        description: 'very good onions',
-        price: 10,
-        available: 10,
-      });
-      return expect(
-        service.checkOrder({
-          user: { id: user.id } as User,
-          entries: [{ product, quantity: 5 }] as OrderEntry[],
-          deliverAt: DateTime.fromObject({
-            weekday: 6,
-            hour: 11,
-            minute: 0,
-            second: 0,
-          }).toJSDate(),
-        } as CreateOrderDto),
-      ).rejects.toThrowError(BadRequestException);
-    });
-
     it('should fail if the quantity of the order is higher than its product', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'react-hot-toast';
 import { getBasket, Order, Product, updateBasket } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { useGlobalState } from './useGlobalState';
+import { OrderConstraints } from './useOrder';
 import { usePendingState } from './usePendingState';
 import { useProfile } from './useProfile';
 
@@ -11,7 +11,7 @@ export const useBasket = () => {
   const { profile } = useProfile();
   const [pending, setPending] = useGlobalState('basketPending');
   const [basket, setBasket] = useGlobalState('basket');
-  const [error, setError] = useState<ApiException>(null);
+  const [error, setError] = useState<ApiException<OrderConstraints>>(null);
 
   const _updateBasket =
     useRef<(basket: Partial<Order>) => Promise<void | Order>>();
@@ -24,7 +24,7 @@ export const useBasket = () => {
       })
       .catch(e => {
         setError(e);
-        toast.error(e.message);
+        throw e;
       })
       .finally(() => setPending(false));
   };
@@ -49,7 +49,9 @@ export const useBasket = () => {
         quantity,
       });
     }
-    return _updateBasket.current(dto);
+    return _updateBasket.current(dto).catch(() => {
+      // noop
+    });
   };
 
   const deleteEntry = useRef<(product: Product) => Promise<void | Order>>();
@@ -98,6 +100,7 @@ export const useBasket = () => {
     upsertEntry: upsertEntry.current,
     deleteEntry: deleteEntry.current,
     loadBasket: loadBasket.current,
+    pending,
     error,
   };
 };

@@ -32,3 +32,13 @@ code {
     height: 150px;
     background: #e6faed;
 }
+
+.add-icon-button{
+    background-color: #5dd886 !important;
+    color: #ffffff !important;
+}
+
+.add-icon-button:hover{
+    background-color: rgba(93, 216, 134, 0.75) !important;
+    color: #ffffff !important;
+}

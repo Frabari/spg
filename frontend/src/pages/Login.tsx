@@ -1,6 +1,6 @@
-import { ChangeEvent, MouseEvent, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { MouseEvent, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import { useFormik } from 'formik';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
@@ -10,50 +10,47 @@ import {
   CardActions,
   CardContent,
   FormControl,
+  FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
-  TextField,
   Typography,
 } from '@mui/material';
-import { login } from '../api/BasilApi';
-import { ApiException } from '../api/createHttpClient';
+import { login, User } from '../api/BasilApi';
 import { Logo } from '../components/Logo';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 
-interface State {
-  password: string;
-  showPassword: boolean;
-}
-
 function OutlinedCard(props: any) {
-  const [values, setValues] = useState<State>({
-    password: '',
-    showPassword: false,
+  const { load, error } = useProfile();
+  const [show, setShow] = useState(false);
+  const { pending, setPending } = usePendingState();
+  const form = useFormik({
+    initialValues: {
+      email: null,
+      password: null,
+    } as Partial<User>,
+    validate: () => error?.data?.constraints ?? {},
+    onSubmit: (values: Partial<User>, { setErrors }) => {
+      login(values.email, values.password)
+        .then(p => {
+          setPending(true);
+          load();
+        })
+        .catch(e => {
+          setErrors(e.data.constraints);
+        });
+    },
   });
-  const [email, setEmail] = useState('');
-
-  const handleChange =
-    (prop: keyof State) => (event: ChangeEvent<HTMLInputElement>) => {
-      setValues({ ...values, [prop]: event.target.value });
-    };
 
   const handleClickShowPassword = () => {
-    setValues({
-      ...values,
-      showPassword: !values.showPassword,
-    });
+    setShow(!show);
   };
 
   const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-  };
-
-  const handleEmail = (email: string) => {
-    setEmail(email);
   };
 
   return (
@@ -75,24 +72,45 @@ function OutlinedCard(props: any) {
             >
               Login
             </Typography>
-            <Grid container rowSpacing={1} direction="column">
+            <Grid container spacing={2} direction="column">
               <Grid item>
-                <TextField
-                  label="Email"
-                  fullWidth
-                  onChange={e => handleEmail(e.target.value)}
-                />
+                <FormControl
+                  sx={{ width: 250 }}
+                  error={!!form.errors?.email}
+                  disabled={pending}
+                  required
+                >
+                  <InputLabel htmlFor="outlined-adornment-email">
+                    Email
+                  </InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-email"
+                    onChange={form.handleChange}
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={form.values.email}
+                  />
+                  <FormHelperText>{form.errors?.email}</FormHelperText>
+                </FormControl>
               </Grid>
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.password}
+                  disabled={pending}
+                  required
+                >
                   <InputLabel htmlFor="outlined-adornment-password">
                     Password
                   </InputLabel>
                   <OutlinedInput
                     id="outlined-adornment-password"
-                    type={values.showPassword ? 'text' : 'password'}
-                    value={values.password}
-                    onChange={handleChange('password')}
+                    type={show ? 'text' : 'password'}
+                    value={form.values.password}
+                    name="password"
+                    onChange={form.handleChange}
                     endAdornment={
                       <InputAdornment position="end">
                         <IconButton
@@ -101,16 +119,13 @@ function OutlinedCard(props: any) {
                           onMouseDown={handleMouseDownPassword}
                           edge="end"
                         >
-                          {values.showPassword ? (
-                            <VisibilityOff />
-                          ) : (
-                            <Visibility />
-                          )}
+                          {show ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     }
                     label="Password"
                   />
+                  <FormHelperText>{form.errors?.password}</FormHelperText>
                 </FormControl>
               </Grid>
             </Grid>
@@ -127,8 +142,10 @@ function OutlinedCard(props: any) {
         >
           <Grid item sx={{ p: 2, pt: 0 }}>
             <Button
+              type="submit"
               variant="contained"
-              onClick={() => props.handleLogin(email, values.password)}
+              disabled={pending}
+              onClick={form.submitForm}
               sx={{ px: 3 }}
             >
               Login
@@ -156,19 +173,7 @@ function OutlinedCard(props: any) {
 }
 
 export default function Login(props: any) {
-  // const [logged, setLogged] = useState(false);
-  const { profile, load } = useProfile();
-  const { setPending } = usePendingState();
-
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setPending(true);
-      load();
-    } catch (e) {
-      toast.error((e as ApiException).message);
-    }
-  };
+  const { profile } = useProfile();
 
   if (profile) {
     return <Navigate to="/products" />;
@@ -200,7 +205,7 @@ export default function Login(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <OutlinedCard handleLogin={handleLogin} />
+          <OutlinedCard />
         </Box>
       </Grid>
     </Grid>

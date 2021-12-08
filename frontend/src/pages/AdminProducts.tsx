@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
+  Alert,
   Box,
-  Button,
+  Grid,
+  IconButton,
   InputBase,
+  MenuItem,
   TableSortLabel,
+  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -19,6 +23,7 @@ import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
 import { Product } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 
 const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
@@ -51,8 +56,8 @@ const columns: { key: keyof Product; title: string; sortable: boolean }[] = [
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: '#f7f7f7',
+  borderRadius: '16px',
+  backgroundColor: '#ffffff',
   '&:hover': {
     backgroundColor: '#f7f7f7',
   },
@@ -91,7 +96,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { products } = useProducts();
+  const { products } = useProducts(true);
   const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Product;
@@ -136,6 +141,15 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
+  const [sortOption, setSortOption] = useState('No sort');
+  const sort = useCategories();
+
+  const handleFilterByCategory = (s: string) => {
+    setSortOption(s);
+    setSortedProducts(products.filter(p => p.category.slug === s));
+    navigate(`/admin/products?category=${s}`);
+  };
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -149,7 +163,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
         >
           Products
         </Typography>
-        <Search sx={{ display: { xs: 'none', sm: 'block' } }}>
+        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -159,25 +173,37 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <Button
+        <IconButton
           disabled
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
+          className="add-icon-button"
           href="/admin/products/new"
         >
           <Add />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Create product
-          </Typography>
-        </Button>
+        </IconButton>
+        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
+          Create product
+        </Typography>
       </AdminAppBar>
+      <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
+        <TextField
+          id="outlined-select-category"
+          select
+          value={sortOption}
+          label="Filter by category"
+          size="small"
+          sx={{ width: '150px' }}
+          onChange={e => handleFilterByCategory(e.target.value)}
+        >
+          {sort.categories.map(option => (
+            <MenuItem key={option.id} value={option.slug}>
+              {option.name}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+
       <Box
-        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+        sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
         <TableContainer
           component={Paper}
@@ -204,6 +230,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                     )}
                   </TableCell>
                 ))}
+                <TableCell>Notes</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -235,6 +262,13 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                   <TableCell>{product.description}</TableCell>
                   <TableCell>{product.price}</TableCell>
                   <TableCell>{product.category.name}</TableCell>
+                  <TableCell>
+                    {product.available === 0 && product.public === true && (
+                      <Alert severity="warning">
+                        {'Remember to update the availability field'}
+                      </Alert>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

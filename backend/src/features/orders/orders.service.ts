@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon';
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
@@ -34,7 +33,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         user,
       },
       {
-        relations: ['entries', 'entries.product', 'user'],
+        relations: ['entries', 'entries.product', 'user', 'deliveryLocation'],
       },
     );
     if (basket) {
@@ -44,21 +43,9 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   async checkOrder(dto: CreateOrderDto) {
-    if (dto.deliverAt) {
-      const deliveryDate = DateTime.fromJSDate(dto.deliverAt);
-      const from = DateTime.now()
-        .plus({ week: 1 })
-        .set({ weekday: 3, hour: 8, minute: 0, second: 0, millisecond: 0 });
-      const to = from.set({ weekday: 7, hour: 18 });
-      if (deliveryDate < from || deliveryDate > to) {
-        throw new BadRequestException(
-          'Order.InvalidDeliveryDate',
-          'The delivery date is not in the permitted range (Wed 08:00 - Fri 18:00)',
-        );
-      }
-    }
     if (dto.entries?.length) {
-      for (const entry of dto.entries) {
+      for (let ei = 0; ei < dto.entries.length; ei++) {
+        const entry = dto.entries[ei];
         if (entry.quantity < 1) {
           throw new BadRequestException(
             'Order.QuantityZero',
@@ -73,10 +60,15 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           );
         }
         if (product.available < entry.quantity) {
-          throw new BadRequestException(
-            'Order.InsufficientEntry',
-            `There is not enough ${product.name} to satisfy your request`,
-          );
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  quantity: `There is not enough ${product.name} to satisfy your request`,
+                },
+              },
+            },
+          });
         }
         await this.productsService.reserveProductAmount(
           product,
@@ -123,10 +115,14 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         delete dto.entries;
       }
       delete dto.status;
+      if (![OrderStatus.DRAFT, OrderStatus.LOCKED].includes(order.status)) {
+        delete dto.deliverAt;
+      }
     }
 
     if (dto.entries?.length) {
-      for (const entry of dto.entries) {
+      for (let ei = 0; ei < dto.entries.length; ei++) {
+        const entry = dto.entries[ei];
         if (entry.quantity < 1) {
           throw new BadRequestException(
             'Order.QuantityZero',
@@ -142,22 +138,34 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         }
         entry.product = product;
 
-        const existingEntry = order.entries.find(e => e.id === entry.id);
+        const existingEntry = order.entries.find(
+          e => e.product.id === entry.product.id,
+        );
         let delta = 0;
         if (existingEntry) {
           delta = entry.quantity - existingEntry.quantity;
           if (product.available - delta < 0) {
-            throw new BadRequestException(
-              'Order.InsufficientEntry',
-              `There is not enough ${product.name} to satisfy your request`,
-            );
+            throw new BadRequestException({
+              constraints: {
+                entries: {
+                  [ei]: {
+                    quantity: `There is not enough ${product.name} to satisfy your request`,
+                  },
+                },
+              },
+            });
           }
         } else {
           if (product.available < entry.quantity) {
-            throw new BadRequestException(
-              'Order.InsufficientEntry',
-              `There is not enough ${product.name} to satisfy your request`,
-            );
+            throw new BadRequestException({
+              constraints: {
+                entries: {
+                  [ei]: {
+                    quantity: `There is not enough ${product.name} to satisfy your request`,
+                  },
+                },
+              },
+            });
           }
           delta = entry.quantity;
         }

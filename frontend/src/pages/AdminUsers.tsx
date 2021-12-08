@@ -4,10 +4,13 @@ import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  Button,
+  Grid,
+  IconButton,
   InputBase,
+  MenuItem,
   styled,
   TableSortLabel,
+  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -51,8 +54,8 @@ const columns: { key: keyof User; title: string; sortable: boolean }[] = [
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: '#f7f7f7',
+  borderRadius: '16px',
+  backgroundColor: '#ffffff',
   '&:hover': {
     backgroundColor: '#f7f7f7',
   },
@@ -131,6 +134,23 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
+  const [sortOption, setSortOption] = useState('No sort');
+  const sort = [
+    'customer',
+    'farmer',
+    'rider',
+    'employee',
+    'warehouse_worker',
+    'warehouse_manager',
+    'manager',
+  ];
+
+  const handleFilterByRole = (s: string) => {
+    setSortOption(s);
+    setSortedUsers(users.filter(u => u.role === s));
+    navigate(`/admin/users?role=${s}`);
+  };
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -144,7 +164,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
         >
           Users
         </Typography>
-        <Search>
+        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -154,25 +174,31 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <Button
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
-          href="/admin/users/new"
-        >
+        <IconButton className="add-icon-button" href="/admin/users/new">
           <Add />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Create user
-          </Typography>
-        </Button>
+        </IconButton>
+        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
+          Create user
+        </Typography>
       </AdminAppBar>
-      <Box
-        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
-      >
+      <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
+        <TextField
+          id="outlined-select-role"
+          select
+          value={sortOption}
+          label="Filter by role"
+          size="small"
+          sx={{ width: '150px' }}
+          onChange={e => handleFilterByRole(e.target.value)}
+        >
+          {sort.map(option => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}
