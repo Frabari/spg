@@ -10,7 +10,7 @@ export default function Products() {
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
   const [farmer, setFarmer] = useState(null);
-
+  const [balanceWarning, setBalanceWarnig] = useState(false);
   if (!profile) {
     return <Navigate to="/" />;
   }
@@ -31,6 +31,7 @@ export default function Products() {
         loggedIn={1}
         products={true}
         handleSearch={handleSearch}
+        balanceWarning={balanceWarning}
       />
       <Container sx={{ mt: 18 }}>
         <ProductsGrid
@@ -39,6 +40,7 @@ export default function Products() {
           search={search}
           onSelect={null}
           handleDelete={handleDelete}
+          setBalanceWarnig={setBalanceWarnig}
         />
       </Container>
     </>

@@ -65,10 +65,6 @@ let mockBasket: Partial<Order> = {
     },
   ],
 };
-let mockEmptyBasket: Partial<Order> = {
-  id: 1,
-  user: mockUser as User,
-};
 
 jest.mock('../api/BasilApi', () => {
   const originalModule = jest.requireActual('../api/BasilApi');
@@ -100,7 +96,7 @@ jest.mock('../api/BasilApi', () => {
       return Promise.resolve(mockBasket);
     },
     upsertEntry(_product: Product, _quantity: number) {
-      return Promise.resolve(mockEmptyBasket);
+      return Promise.resolve(mockBasket);
     },
     deleteEntry(_product: Product) {
       return Promise.resolve(mockBasket);

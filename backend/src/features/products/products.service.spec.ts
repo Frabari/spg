@@ -1,16 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProductsService } from './products.service';
-import { UsersModule } from '../users/users.module';
-import { ProductsModule } from './products.module';
-import { CategoriesModule } from '../categories/categories.module';
-import { TransactionsModule } from '../transactions/transactions.module';
-import { OrdersModule } from '../orders/orders.module';
-import { Product } from './entities/product.entity';
 import { EntityManager } from 'typeorm';
 import { Not } from 'typeorm';
-import { User } from '../users/entities/user.entity';
-import { hash } from 'bcrypt';
+import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CategoriesModule } from '../categories/categories.module';
+import { OrdersModule } from '../orders/orders.module';
+import { TransactionsModule } from '../transactions/transactions.module';
+import { UsersModule } from '../users/users.module';
+import { Product } from './entities/product.entity';
+import { ProductsModule } from './products.module';
+import { ProductsService } from './products.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -40,7 +38,7 @@ describe('ProductsService', () => {
   describe('handleUpdateAvailability', () => {
     it('should validate if the concerned fields in the db have 0 value', async () => {
       const entityManager = module.get(EntityManager);
-      await service.resetProductAvailability();
+      await service.resetProductsAvailability();
       const products = await entityManager.find(Product, {
         available: Not(0),
         reserved: Not(0),

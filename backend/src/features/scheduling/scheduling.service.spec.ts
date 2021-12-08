@@ -1,10 +1,11 @@
+import { Settings } from 'luxon';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CategoriesModule } from '../../features/categories/categories.module';
-import { OrdersModule } from '../../features/orders/orders.module';
-import { ProductsModule } from '../../features/products/products.module';
-import { TransactionsModule } from '../../features/transactions/transactions.module';
-import { UsersModule } from '../../features/users/users.module';
+import { CategoriesModule } from '../categories/categories.module';
+import { OrdersModule } from '../orders/orders.module';
+import { ProductsModule } from '../products/products.module';
+import { TransactionsModule } from '../transactions/transactions.module';
+import { UsersModule } from '../users/users.module';
 import { SchedulingService } from './scheduling.service';
 
 describe('SchedulingService', () => {
@@ -34,7 +35,18 @@ describe('SchedulingService', () => {
 
   describe('closeWeeklySales', () => {
     it('should close the weekly sales', () => {
-      return expect(service.closeWeeklySales()).resolves.toBeDefined();
+      return expect(service.closeWeeklySales()).resolves.toBeUndefined();
+    });
+
+    it('should close the weekly sales and change the date when controlled', () => {
+      return expect(service.closeWeeklySales(true)).resolves.toBeUndefined();
+    });
+
+    it('should close the weekly sales and change the time when controlled on sunday', () => {
+      const date = new Date();
+      date.setDate(date.getDate() - date.getDay());
+      Settings.now = () => date.getTime();
+      return expect(service.closeWeeklySales(true)).resolves.toBeUndefined();
     });
   });
 

@@ -28,7 +28,6 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   async resolveBasket(user: User) {
-    console.log(user);
     const basket = await this.ordersRepository.findOne(
       {
         status: OrderStatus.DRAFT,
@@ -199,5 +198,12 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         status: OrderStatus.LOCKED,
       },
     );
+  }
+
+  checkOrderBalance(order: Order, user: User) {
+    if (user.balance < order.total) {
+      order.insufficientBalance = true;
+    }
+    return order;
   }
 }

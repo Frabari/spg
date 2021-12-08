@@ -23,6 +23,7 @@ async function bootstrap() {
     .addTag(Category.name, 'Products categorization')
     .addTag(Order.name, 'Orders and basket management')
     .addTag(Transaction.name, 'Transactions and payments')
+    .addTag('Scheduling', 'Recurring jobs and time travel utilities')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
