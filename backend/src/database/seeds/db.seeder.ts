@@ -1,5 +1,5 @@
+import * as faker from 'faker/locale/it';
 import { Factory, Seeder } from 'typeorm-seeding';
-import * as faker from 'faker';
 import { Connection } from 'typeorm';
 import { Category } from '../../features/categories/entities/category.entity';
 import { Product } from '../../features/products/entities/product.entity';
@@ -24,6 +24,29 @@ const avatars = [
   'https://images.unsplash.com/photo-1597223557154-721c1cecc4b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258MTR8MzIzMzgzODJ8fHx8fDJ8fDE2MzY2NTExNTM&ixlib=rb-1.2.1&q=80&w=1080',
 ];
 
+const regions = [
+  'Abbruzzo',
+  'Basilicata',
+  'Calabria',
+  'Campania',
+  'Emilia-Romagna',
+  'Friuli Venezia Giulia',
+  'Lazio',
+  'Liguria',
+  'Lombardia',
+  'Marche',
+  'Molise',
+  'Piemonte',
+  'Puglia',
+  'Sardegna',
+  'Sicilia',
+  'Toscana',
+  'Trentino-Alto Adige',
+  'Umbria',
+  `Valle d'Aosta`,
+  'Veneto',
+];
+
 let firstN = -1;
 
 function checkFarmer(role: any, n: number, products: Product[]) {
@@ -38,6 +61,10 @@ function checkFarmer(role: any, n: number, products: Product[]) {
   return prods;
 }
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
 export default class DbSeeder implements Seeder {
   public async run(factory: Factory, connection: Connection) {
     const entityManager = connection.createEntityManager();
@@ -49,18 +76,28 @@ export default class DbSeeder implements Seeder {
 
     for (const role of Object.values(Role)) {
       for (const n of [1, 2]) {
+        const name = faker.name.firstName();
+        const surname = faker.name.lastName();
         await entityManager.save(User, {
           role: role,
           email: `${role}${n}@example.com`,
-          name: faker.name.firstName(),
-          surname: faker.name.lastName(),
+          name: name,
+          surname: surname,
           password: passwordTest,
           products: checkFarmer(role, n, products),
           avatar: avatars[i++ % avatars.length],
+          address: {
+            name: name,
+            surname: surname,
+            address: faker.address.streetAddress(),
+            city: faker.address.state(),
+            zipCode: faker.address.zipCode(),
+            province: faker.address.stateAbbr(),
+            region: regions[getRandomInt(20)],
+          },
         });
       }
     }
-
     await entityManager.save(Category, [
       {
         name: 'Vegetables',

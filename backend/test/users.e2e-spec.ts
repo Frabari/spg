@@ -67,7 +67,6 @@ describe('UsersController (e2e)', () => {
         .auth(authToken, { type: 'bearer' })
         .expect(200)
         .expect(response => {
-          //add address
           checkKeys<User>(
             response.body[0],
             ['id', 'name', 'surname', 'email', 'role', 'balance', 'avatar'],
@@ -99,7 +98,6 @@ describe('UsersController (e2e)', () => {
         .auth(authToken, { type: 'bearer' })
         .expect(200)
         .expect(response => {
-          //add address
           checkKeys<User>(
             response.body,
             [
@@ -111,6 +109,7 @@ describe('UsersController (e2e)', () => {
               'balance',
               'avatar',
               'notifications',
+              'address',
             ],
             ['password'],
           );
@@ -141,7 +140,6 @@ describe('UsersController (e2e)', () => {
         .auth(authToken, { type: 'bearer' })
         .send({ name: 'test' })
         .expect(response => {
-          //add address
           checkKeys<User>(
             response.body,
             [
@@ -153,6 +151,7 @@ describe('UsersController (e2e)', () => {
               'balance',
               'avatar',
               'notifications',
+              'address',
             ],
             ['password'],
           );
@@ -173,10 +172,19 @@ describe('UsersController (e2e)', () => {
         })
         .expect(201)
         .expect(response => {
-          //add address
           checkKeys<User>(
             response.body,
-            ['id', 'name', 'surname', 'email', 'role', 'balance', 'avatar'],
+            [
+              'id',
+              'name',
+              'surname',
+              'email',
+              'role',
+              'balance',
+              'avatar',
+              'notifications',
+              'address',
+            ],
             ['password'],
           );
         });
