@@ -1,7 +1,7 @@
 import { createGlobalState } from 'react-hooks-global-state';
 import { Order, User, Notification } from '../api/BasilApi';
 
-const { useGlobalState, setGlobalState, getGlobalState } = createGlobalState({
+const { useGlobalState } = createGlobalState({
   profile: null as User | false,
   basket: null as Partial<Order>,
   profilePending: false,
@@ -11,4 +11,4 @@ const { useGlobalState, setGlobalState, getGlobalState } = createGlobalState({
   newNotification: null as Notification,
 });
 
-export { useGlobalState, setGlobalState, getGlobalState };
+export { useGlobalState };

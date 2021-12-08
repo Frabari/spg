@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useFormik } from 'formik';
 import { Save } from '@mui/icons-material';
 import {
   Box,
   Button,
+  FormControl,
+  FormHelperText,
   Grid,
+  InputLabel,
+  OutlinedInput,
   Paper,
-  TextField,
   ThemeProvider,
   Typography,
 } from '@mui/material';
@@ -20,31 +24,40 @@ import { useProduct } from '../hooks/useProduct';
 export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { product, upsertProduct } = useProduct(id);
-  const [dto, setDto] = useState<Partial<Product>>({});
+  const { product, upsertProduct, error } = useProduct(id);
   const navigate = useNavigate();
+  const form = useFormik({
+    initialValues: {
+      farmer: { id: null },
+      name: null,
+      description: null,
+      price: null,
+      available: null,
+      reserved: null,
+      sold: null,
+      category: { id: null },
+    } as Partial<Product>,
+    validate: () => error?.data?.constraints ?? {},
+    onSubmit: (values: Partial<Product>, { setErrors }) => {
+      return upsertProduct(values)
+        .then(newProduct => {
+          const creating = id == null;
+          toast.success(`Product ${creating ? 'created' : 'updated'}`);
+          if (creating) {
+            navigate(`/admin/products/${(newProduct as Product).id}`);
+          }
+        })
+        .catch(e => {
+          setErrors(e.data?.constraints);
+        });
+    },
+  });
 
   useEffect(() => {
-    setDto(product);
+    if (product) {
+      form.setValues(product);
+    }
   }, [product]);
-
-  const handleChange = (key: string, value: any) => {
-    setDto(_dto => ({
-      ..._dto,
-      [key]: value,
-    }));
-  };
-
-  const saveChanges = () => {
-    upsertProduct(dto)
-      .then(product => {
-        toast.success('Product updated');
-        navigate(`/admin/products/`);
-      })
-      .catch(() => {
-        // noop
-      });
-  };
 
   return (
     <>
@@ -62,7 +75,8 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
         <Button
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           variant="contained"
-          onClick={saveChanges}
+          onClick={form.submitForm}
+          type="submit"
         >
           <Save />
           <Typography
@@ -112,41 +126,104 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                 gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
               >
                 <Grid item>
-                  <TextField label="Name" value={dto?.name ?? ''} />
+                  <FormControl required error={!!form.errors?.name}>
+                    <InputLabel id="product-name">Name</InputLabel>
+                    <OutlinedInput
+                      name="name"
+                      onChange={form.handleChange}
+                      label="Name"
+                      value={form.values?.name ?? ''}
+                    />
+                    <FormHelperText>{form.errors?.name}</FormHelperText>
+                  </FormControl>
                 </Grid>
                 <Grid item>
-                  <TextField
-                    label="Description"
-                    value={dto?.description ?? ''}
-                  />
+                  <FormControl required error={!!form.errors?.description}>
+                    <InputLabel id="product-description">
+                      Description
+                    </InputLabel>
+                    <OutlinedInput
+                      name="description"
+                      onChange={form.handleChange}
+                      label="Description"
+                      value={form.values?.description ?? ''}
+                    />
+                    <FormHelperText>{form.errors?.description}</FormHelperText>
+                  </FormControl>
                 </Grid>
                 <Grid item>
-                  <TextField label="Price" value={dto?.price ?? ''} />
+                  <FormControl required error={!!form.errors?.price}>
+                    <InputLabel id="product-price">Price</InputLabel>
+                    <OutlinedInput
+                      onChange={form.handleChange}
+                      label="Price"
+                      value={form.values?.price ?? ''}
+                      name="price"
+                    />
+                    <FormHelperText>{form.errors?.price}</FormHelperText>
+                  </FormControl>
                 </Grid>
                 <Grid item>
-                  <TextField
-                    label="Available"
-                    value={dto?.available ?? ''}
-                    onChange={e => handleChange('available', e.target.value)}
-                  />
+                  <FormControl required error={!!form.errors?.available}>
+                    <InputLabel id="product-available">Available</InputLabel>
+                    <OutlinedInput
+                      label="Available"
+                      value={form.values?.available ?? ''}
+                      onChange={form.handleChange}
+                      name="available"
+                    />
+                    <FormHelperText>{form.errors?.price}</FormHelperText>
+                  </FormControl>
                 </Grid>
                 <Grid item>
-                  <TextField label="Reserved" value={dto?.reserved ?? ''} />
+                  <FormControl required error={!!form.errors?.reserved}>
+                    <InputLabel id="product-reserved">Reserved</InputLabel>
+                    <OutlinedInput
+                      name="reserved"
+                      onChange={form.handleChange}
+                      label="Reserved"
+                      value={form.values?.reserved ?? ''}
+                    />
+                    <FormHelperText>{form.errors?.reserved}</FormHelperText>
+                  </FormControl>
                 </Grid>
                 <Grid item>
-                  <TextField label="Sold" value={dto?.sold ?? ''} />
+                  <FormControl required error={!!form.errors?.sold}>
+                    <InputLabel id="product-sold">Sold</InputLabel>
+                    <OutlinedInput
+                      name="sold"
+                      onChange={form.handleChange}
+                      label="Sold"
+                      value={form.values?.sold ?? ''}
+                    />
+                    <FormHelperText>{form.errors?.sold}</FormHelperText>
+                  </FormControl>
                 </Grid>
                 <Grid item>
-                  <TextField
-                    label="Category"
-                    value={dto?.category?.name ?? ''}
-                  />
+                  <FormControl required error={!!form.errors?.category}>
+                    <InputLabel id="product-category">Category</InputLabel>
+                    <OutlinedInput
+                      name="category"
+                      label="Category"
+                      value={form.values?.category?.name ?? ''}
+                    />
+                    <FormHelperText>{form.errors?.sold}</FormHelperText>
+                  </FormControl>
                 </Grid>
                 <Grid item>
-                  <TextField
-                    label="Farmer"
-                    value={dto?.farmer?.name + ' ' + dto?.farmer?.surname ?? ''}
-                  />
+                  <FormControl required error={!!form.errors?.farmer}>
+                    <InputLabel id="product-farmer">Farmer</InputLabel>
+                    <OutlinedInput
+                      name="farmer"
+                      label="Farmer"
+                      value={
+                        form.values?.farmer?.name +
+                          ' ' +
+                          form.values?.farmer?.surname ?? ''
+                      }
+                    />
+                    <FormHelperText>{form.errors?.farmer}</FormHelperText>
+                  </FormControl>
                 </Grid>
               </Grid>
             </div>

@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
+import { FormikErrors, useFormik } from 'formik';
 import { Add, Save } from '@mui/icons-material';
 import {
   Avatar,
@@ -10,6 +11,7 @@ import {
   Divider,
   Drawer,
   FormControl,
+  FormHelperText,
   Grid,
   InputLabel,
   List,
@@ -22,63 +24,69 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Order, OrderStatus, Product, User } from '../api/BasilApi';
+import { Order, OrderEntry, OrderStatus, Product } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
+import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
 import { useUsers } from '../hooks/useUsers';
+
+const statuses = Object.values(orderStatuses);
 
 export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { order, upsertOrder } = useOrder(id);
+  const { order, upsertOrder, pending } = useOrder(id);
   const { users } = useUsers();
-  const [dto, setDto] = useState<Partial<Order>>({});
   const [selectingProduct, setSelectingProduct] = useState(false);
+  const form = useFormik({
+    initialValues: {
+      user: { id: null },
+      status: OrderStatus.DRAFT,
+      entries: [],
+    } as Partial<Order>,
+    onSubmit: (values: Partial<Order>, { setErrors }) =>
+      upsertOrder(values)
+        .then(newOrder => {
+          const creating = id == null;
+          toast.success(`Order ${creating ? 'created' : 'updated'}`);
+          if (creating) {
+            navigate(`/admin/orders/${(newOrder as Order).id}`);
+          }
+        })
+        .catch(e => {
+          setErrors(e.data?.constraints);
+        }),
+  });
 
   useEffect(() => {
-    setDto(order);
+    if (order) {
+      form.setValues(order);
+    }
   }, [order]);
-
-  const saveChanges = () => {
-    upsertOrder(dto)
-      .then(newOrder => {
-        const creating = id == null;
-        toast.success(`Order ${creating ? 'created' : 'updated'}`);
-        if (creating) {
-          navigate(`/admin/orders/${(newOrder as Order).id}`);
-        } else {
-          navigate('/admin/orders');
-        }
-      })
-      .catch(e => {
-        // noop
-      });
-  };
 
   const onProductSelected = (product: Product) => {
     setSelectingProduct(false);
-    setDto(oldDto => {
-      const entry = oldDto?.entries?.find(e => e.product.id === product.id);
-      if (entry?.quantity >= product.available) {
+    const newValues = { ...(form.values ?? {}) };
+    const existingEntry = newValues.entries?.find(
+      e => e.product.id === product.id,
+    );
+    if (existingEntry) {
+      if (existingEntry.quantity >= product.available) {
         toast.error(
-          `You have alredy selected maximum available quantiy for ${product.name}.`,
+          `You have already selected maximum available quantity for ${product.name}.`,
         );
-        return { ...oldDto };
+        return;
       }
-      if (entry) {
-        ++entry.quantity;
-        return { ...oldDto };
-      }
-      return {
-        ...oldDto,
-        entries: oldDto?.entries?.concat({
-          product,
-          quantity: 1,
-        }) ?? [{ product, quantity: 1 }],
-      };
-    });
+      ++existingEntry.quantity;
+    } else {
+      newValues.entries = (newValues.entries ?? []).concat({
+        product,
+        quantity: 1,
+      });
+    }
+    form.setValues(newValues);
   };
 
   return (
@@ -97,9 +105,10 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         <Button
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           variant="contained"
-          onClick={saveChanges}
+          disabled={pending}
+          onClick={form.submitForm}
+          startIcon={<Save />}
         >
-          <Save />
           <Typography
             sx={{
               display: { xs: 'none', sm: 'inline' },
@@ -122,19 +131,23 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
 
             <Grid container spacing={2}>
               <Grid item>
-                <FormControl sx={{ width: 250 }}>
+                <FormControl
+                  sx={{ width: 250 }}
+                  error={!!form.errors?.user}
+                  disabled={pending}
+                >
                   <InputLabel id="order-user">User</InputLabel>
                   <Select
                     labelId="order-user"
                     label="User"
                     required
-                    value={users?.length ? dto?.user?.id : ''}
-                    onChange={e =>
-                      setDto(oldDto => ({
-                        ...oldDto,
-                        user: { id: +e.target.value } as User,
-                      }))
+                    value={
+                      users?.length && form.values?.user
+                        ? form.values?.user?.id
+                        : ''
                     }
+                    name="user.id"
+                    onChange={form.handleChange}
                   >
                     <MenuItem value="">Select a user</MenuItem>
                     {users?.map(u => (
@@ -143,33 +156,30 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       </MenuItem>
                     ))}
                   </Select>
+                  <FormHelperText>{form.errors?.user}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
-                <FormControl sx={{ width: 250 }}>
+                <FormControl
+                  sx={{ width: 250 }}
+                  error={!!form.errors?.status}
+                  disabled={id == null || pending}
+                >
                   <InputLabel id="order-status">Status</InputLabel>
                   <Select
                     labelId="order-status"
                     label="Status"
-                    value={id == null ? 'draft' : dto?.status ?? ''}
-                    disabled={id == null}
-                    onChange={e =>
-                      setDto(oldDto => ({
-                        ...oldDto,
-                        status: e.target.value as OrderStatus,
-                      }))
-                    }
+                    name="status"
+                    value={id == null ? 'draft' : form.values?.status ?? ''}
+                    onChange={form.handleChange}
                   >
-                    <MenuItem value="draft">Draft</MenuItem>
-                    <MenuItem value="paid">Paid</MenuItem>
-                    <MenuItem value="prepared">Prepared</MenuItem>
-                    <MenuItem value="delivering">Delivering</MenuItem>
-                    <MenuItem value="completed">Completed</MenuItem>
-                    <MenuItem value="pending_cancellation">
-                      Pending cancellation
-                    </MenuItem>
-                    <MenuItem value="canceled">Canceled</MenuItem>
+                    {statuses.map(s => (
+                      <MenuItem key={s.key} value={s.key}>
+                        {s.name}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  <FormHelperText>{form.errors?.status}</FormHelperText>
                 </FormControl>
               </Grid>
             </Grid>
@@ -184,51 +194,51 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
             <Divider />
 
             <List>
-              {dto?.entries?.map(e => (
-                <Fragment key={e.product.id}>
-                  <ListItem>
-                    <TextField
-                      sx={{ width: '100px', mr: 2, pb: 0 }}
-                      type="number"
-                      size="small"
-                      label="Quantity"
-                      value={e.quantity ?? ''}
-                      onChange={event => {
-                        const value = +event.target.value;
-                        if (value <= e.product.available) {
-                          setDto(oldDto => {
-                            let entries;
+              {form.values?.entries?.map((e, ei) => {
+                const entryField = `entries[${ei}].quantity`;
+                const quantityError = (
+                  form.errors?.entries?.[ei] as FormikErrors<OrderEntry>
+                )?.quantity;
+                return (
+                  <Fragment key={e.product.id}>
+                    <ListItem>
+                      <FormControl error={!!quantityError} disabled={pending}>
+                        <TextField
+                          sx={{ width: '100px', mr: 2, pb: 0 }}
+                          type="number"
+                          size="small"
+                          label="Quantity"
+                          value={e.quantity ?? ''}
+                          name={entryField}
+                          onChange={event => {
+                            const value = +event.target.value;
                             if (value === 0) {
-                              entries = oldDto.entries.filter(oe => oe !== e);
+                              form.setValues({
+                                ...form.values,
+                                entries:
+                                  form.values?.entries?.filter(
+                                    oe => oe !== e,
+                                  ) ?? [],
+                              });
                             } else {
-                              entries = oldDto.entries.map(oe =>
-                                oe !== e
-                                  ? oe
-                                  : {
-                                      ...oe,
-                                      quantity: +event.target.value,
-                                    },
-                              );
+                              form.setFieldValue(entryField, value);
                             }
-                            return {
-                              ...oldDto,
-                              entries,
-                            };
-                          });
-                        }
-                      }}
-                    />
-                    <ListItemAvatar>
-                      <Avatar src={e.product.image} />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={e.product.name}
-                      secondary={`€ ${e.product.price}/kg`}
-                    />
-                  </ListItem>
-                  <Divider />
-                </Fragment>
-              ))}
+                          }}
+                        />
+                        <FormHelperText>{quantityError}</FormHelperText>
+                      </FormControl>
+                      <ListItemAvatar>
+                        <Avatar src={e.product.image} />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={e.product.name}
+                        secondary={`€ ${e.product.price}/${e.product.unitOfMeasure}`}
+                      />
+                    </ListItem>
+                    <Divider />
+                  </Fragment>
+                );
+              })}
             </List>
             <Button variant="text" onClick={() => setSelectingProduct(true)}>
               <Add />

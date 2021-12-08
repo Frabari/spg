@@ -41,6 +41,7 @@ import { OrdersService } from './orders.service';
       deliveredBy: {},
       entries: { eager: true },
       'entries.product': { eager: true },
+      deliveryLocation: { eager: true },
     },
   },
 })

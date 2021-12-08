@@ -2,7 +2,11 @@ import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { Person, ShoppingCart } from '@mui/icons-material';
+import {
+  Person,
+  ShoppingCart,
+  WarningAmberOutlined,
+} from '@mui/icons-material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -391,34 +395,42 @@ function NavBar(props: any) {
                         '& ul': { padding: 0 },
                       }}
                     >
-                      {!notifications.length
-                        ? 'empty'
-                        : notifications.map(n => (
-                            <Fragment key={n.id}>
-                              <ListItem alignItems="flex-start">
-                                <ListItemIcon>
-                                  {n.type === NotificationType.INFO && (
-                                    <InfoOutlinedIcon
-                                      sx={{ color: 'cornflowerblue' }}
-                                    />
-                                  )}
-                                  {n.type === NotificationType.ERROR && (
-                                    <ErrorOutlineIcon color="error" />
-                                  )}
-                                  {n.type === NotificationType.SUCCESS && (
-                                    <DoneIcon color="primary" />
-                                  )}
-                                </ListItemIcon>
-                                <ListItemText
-                                  primary={n.title}
-                                  secondary={
-                                    <React.Fragment>{n.message}</React.Fragment>
-                                  }
-                                />
-                              </ListItem>
-                              <Divider variant="inset" component="li" />
-                            </Fragment>
-                          ))}
+                      {!notifications.length ? (
+                        <ListItem alignItems="center">
+                          <ListItemIcon>
+                            {' '}
+                            <WarningAmberOutlined sx={{ color: '#ff9800' }} />
+                          </ListItemIcon>
+                          <ListItemText secondary="You have no notifications!" />
+                        </ListItem>
+                      ) : (
+                        notifications.map(n => (
+                          <Fragment key={n.id}>
+                            <ListItem alignItems="flex-start">
+                              <ListItemIcon>
+                                {n.type === NotificationType.INFO && (
+                                  <InfoOutlinedIcon
+                                    sx={{ color: 'cornflowerblue' }}
+                                  />
+                                )}
+                                {n.type === NotificationType.ERROR && (
+                                  <ErrorOutlineIcon color="error" />
+                                )}
+                                {n.type === NotificationType.SUCCESS && (
+                                  <DoneIcon color="primary" />
+                                )}
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={n.title}
+                                secondary={
+                                  <React.Fragment>{n.message}</React.Fragment>
+                                }
+                              />
+                            </ListItem>
+                            <Divider variant="inset" component="li" />
+                          </Fragment>
+                        ))
+                      )}
                     </List>
                   </Menu>
                   <IconButton
