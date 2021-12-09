@@ -365,6 +365,6 @@ define(Product, (faker: typeof Faker) => {
   product.price = +faker.commerce.price(1, 50);
   product.available = faker.random.number(10);
   product.image = products[i % products.length].img;
-  product.BaseUnit = products[i++ % products.length].baseUnit;
+  product.baseUnit = products[i++ % products.length].baseUnit;
   return product;
 });

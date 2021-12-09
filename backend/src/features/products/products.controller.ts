@@ -110,7 +110,7 @@ export class ProductsController implements CrudController<Product> {
   }
 
   @Override()
-  @Roles(...ADMINS)
+  @Roles(...ADMINS, Role.FARMER)
   async createOne(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,
