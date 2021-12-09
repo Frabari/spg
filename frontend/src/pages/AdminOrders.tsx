@@ -236,7 +236,7 @@ export const AdminOrders = (props: {
           />
         </Search>
         <IconButton
-          sx={{ display: { xs: 'flex', md: 'none' } }}
+          sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
           className="add-icon-button"
           href="/admin/orders/new"
         >
@@ -255,14 +255,14 @@ export const AdminOrders = (props: {
           </Typography>
         </Button>
       </AdminAppBar>
-      <TableRow sx={{ pl: 3 }}>
+      <TableRow sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
         <TextField
           id="outlined-select-role"
           select
           value={weekfilter}
           size="small"
           label="Filter by week"
-          sx={{ width: '150px' }}
+          sx={{ width: '175px' }}
           onChange={e => handleFilterByWeek(e.target.value)}
         >
           {week.map(option => (
@@ -277,7 +277,7 @@ export const AdminOrders = (props: {
           value={orderstatus}
           size="small"
           label="Filter by status"
-          sx={{ width: '150px', marginLeft: '50px' }}
+          sx={{ width: '175px', marginLeft: '25px' }}
           onChange={e => handleFilterByStatus(e.target.value)}
         >
           {stat.map(option => (
@@ -287,9 +287,7 @@ export const AdminOrders = (props: {
           ))}
         </TextField>
       </TableRow>
-      <Box
-        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
-      >
+      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}

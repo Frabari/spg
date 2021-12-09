@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Grid,
+  IconButton,
   Paper,
   TextField,
   ThemeProvider,
@@ -32,19 +33,21 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
         >
           Products / {product?.name}
         </Typography>
-        <Button
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
-          disabled
+        <IconButton
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+          className="save-icon-button"
         >
           <Save />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Save changes
+        </IconButton>
+        <Button
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          startIcon={<Save />}
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Save Changes
           </Typography>
         </Button>
       </AdminAppBar>
