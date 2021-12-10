@@ -262,7 +262,7 @@ export const AdminOrders = (props: {
           value={weekfilter}
           size="small"
           label="Filter by week"
-          sx={{ width: '150px' }}
+          sx={{ width: '175px', ml: '25px' }}
           onChange={e => handleFilterByWeek(e.target.value)}
         >
           {week.map(option => (
@@ -277,7 +277,7 @@ export const AdminOrders = (props: {
           value={orderstatus}
           size="small"
           label="Filter by status"
-          sx={{ width: '150px', marginLeft: '50px' }}
+          sx={{ width: '175px', marginLeft: '25px' }}
           onChange={e => handleFilterByStatus(e.target.value)}
         >
           {stat.map(option => (

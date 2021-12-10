@@ -5,7 +5,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
-  Grid,
   IconButton,
   InputBase,
   MenuItem,
@@ -204,14 +203,14 @@ export const AdminUsers = (props: {
           </Typography>
         </Button>
       </AdminAppBar>
-      <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
+      <TableRow sx={{ pl: 3, pt: 2 }}>
         <TextField
           id="outlined-select-role"
           select
           value={sortOption}
           label="Filter by role"
           size="small"
-          sx={{ width: '175px' }}
+          sx={{ width: '175px', ml: '25px' }}
           onChange={e => handleFilterByRole(e.target.value)}
         >
           {sort.map(option => (
@@ -220,8 +219,10 @@ export const AdminUsers = (props: {
             </MenuItem>
           ))}
         </TextField>
-      </Grid>
-      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
+      </TableRow>
+      <Box
+        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+      >
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}

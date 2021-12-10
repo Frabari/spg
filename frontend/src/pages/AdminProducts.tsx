@@ -6,7 +6,6 @@ import {
   Alert,
   Box,
   Button,
-  Grid,
   IconButton,
   InputBase,
   MenuItem,
@@ -22,10 +21,11 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import { Product } from '../api/BasilApi';
+import { Product, Role, User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
+import { useUsers } from '../hooks/useUsers';
 
 const columns: {
   key: keyof Product;
@@ -116,6 +116,7 @@ export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
   farmer: boolean;
   category: string;
+  farmers: string;
 }) => {
   const navigate = useNavigate();
   const { products } = useProducts(true);
@@ -164,7 +165,16 @@ export const AdminProducts = (props: {
   };
 
   const [sortOption, setSortOption] = useState(props.category);
+  const [farmerFilter, setFarmerFilter] = useState(props.farmers);
+  const [farmers, setFarmers] = useState(null);
+  const { users } = useUsers();
   const sort = useCategories();
+
+  useEffect(() => {
+    if (users) {
+      setFarmers(users.filter(u => u.role === Role.FARMER));
+    }
+  }, [users]);
 
   const handleFilterByCategory = (s: string) => {
     setSortOption(s);
@@ -174,6 +184,20 @@ export const AdminProducts = (props: {
     } else {
       navigate(`/admin/products?category=${s}`);
       setSortedProducts(products.filter(p => p.category.slug === s));
+    }
+  };
+
+  const handleFilterByFarmer = (f: string) => {
+    const farmer = farmers.find((fa: User) => fa.email === f);
+    setFarmerFilter(f);
+    if (f === 'all') {
+      navigate(`/admin/products?farmer=${f}`);
+      setSortedProducts(products);
+    } else {
+      navigate(
+        `/admin/products?farmer=${farmer.name.toLowerCase()}_${farmer.surname.toLowerCase()}`,
+      );
+      setSortedProducts(products.filter(p => p.farmer.email === f));
     }
   };
 
@@ -220,14 +244,14 @@ export const AdminProducts = (props: {
           </Typography>
         </Button>
       </AdminAppBar>
-      <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
+      <TableRow sx={{ pl: 3, pt: 2 }}>
         <TextField
           id="outlined-select-category"
           select
           value={sortOption}
           label="Filter by category"
           size="small"
-          sx={{ width: '175px' }}
+          sx={{ width: '175px', ml: '25px' }}
           onChange={e => handleFilterByCategory(e.target.value)}
         >
           <MenuItem key="all" value="all">
@@ -239,9 +263,29 @@ export const AdminProducts = (props: {
             </MenuItem>
           ))}
         </TextField>
-      </Grid>
+        <TextField
+          id="outlined-select-farmer"
+          select
+          value={farmerFilter}
+          label="Filter by farmer"
+          size="small"
+          sx={{ width: '175px', ml: '25px' }}
+          onChange={e => handleFilterByFarmer(e.target.value)}
+        >
+          <MenuItem key="all" value="all">
+            All
+          </MenuItem>
+          {farmers?.map((option: User) => (
+            <MenuItem key={option.id} value={option.email}>
+              {option.name} {option.surname}
+            </MenuItem>
+          ))}
+        </TextField>
+      </TableRow>
 
-      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
+      <Box
+        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+      >
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}

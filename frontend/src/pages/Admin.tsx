@@ -208,6 +208,7 @@ export const Admin = () => {
                     typeof profile === 'object' && profile.role === Role.FARMER
                   }
                   category={queryParams.get('category')}
+                  farmers={queryParams.get('farmer')}
                 />
               </ProtectedRoute>
             }
