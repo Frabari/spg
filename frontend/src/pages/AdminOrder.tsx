@@ -45,12 +45,72 @@ import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
 import { useUsers } from '../hooks/useUsers';
 import { DeliveryOption } from './Checkout';
-
+import AvatarGroup from '@mui/material/AvatarGroup';
+import NavigationBox from './Navigation';
+import { styled } from '@mui/material/styles';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import Stack from '@mui/material/Stack';
 const statuses = Object.values(orderStatuses);
+
+
+const IOSSwitch = styled((props:any) => (
+    <Switch focusVisibleClassName=".Mui-focusVisible" defaultChecked disableRipple {...props}  onChange = {p =>{props.setCheck(p.target.checked)}} />
+))(({ theme }) => ({
+  width: 42,
+  height: 26,
+  padding: 0,
+  '& .MuiSwitch-switchBase': {
+    padding: 0,
+    margin: 2,
+    transitionDuration: '300ms',
+    '&.Mui-checked': {
+      transform: 'translateX(16px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#65C466',
+        opacity: 1,
+        border: 0,
+      },
+      '&.Mui-disabled + .MuiSwitch-track': {
+        opacity: 0.5,
+      },
+    },
+    '&.Mui-focusVisible .MuiSwitch-thumb': {
+      color: '#33cf4d',
+      border: '6px solid #fff',
+    },
+    '&.Mui-disabled .MuiSwitch-thumb': {
+      color:
+          theme.palette.mode === 'light'
+              ? theme.palette.grey[100]
+              : theme.palette.grey[600],
+    },
+    '&.Mui-disabled + .MuiSwitch-track': {
+      opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    boxSizing: 'border-box',
+    width: 22,
+    height: 22,
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 26 / 2,
+    backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+    opacity: 1,
+    transition: theme.transitions.create(['background-color'], {
+      duration: 500,
+    }),
+  },
+}));
+
 
 export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
+  const [check, setCheck] = useState(true);
   const id = idParam === 'new' ? null : +idParam;
   const { order, upsertOrder, pending } = useOrder(id);
   const { users } = useUsers();
@@ -97,6 +157,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
       form.setValues(order);
     }
   }, [order]);
+
 
   const onProductSelected = (product: Product) => {
     setSelectingProduct(false);
@@ -307,6 +368,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               <ToggleButton value={DeliveryOption.DELIVERY}>
                 Deliver it
               </ToggleButton>
+              {deliveryOption === DeliveryOption.DELIVERY &&(
+              <FormControlLabel
+                control={<IOSSwitch sx={{ m: 1 ,marginLeft: 10}} setCheck={setCheck}/>}
+                label="Default address"
+            />)}
             </ToggleButtonGroup>
             {deliveryOption === DeliveryOption.DELIVERY && (
               <Grid
@@ -316,6 +382,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                 gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
                 sx={{ pt: 3 }}
               >
+
                 <Grid item xs={12} md={4}>
                   <FormControl
                     variant="outlined"
@@ -329,7 +396,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                     <OutlinedInput
                       id="outlined-adornment-name"
                       name="deliveryLocation.name"
-                      value={form.values?.deliveryLocation?.name ?? ''}
+                      disabled = {check}
+                      value={(check && form.values?.deliveryLocation?.name) || ''}
                       label="Name"
                       onChange={form.handleChange}
                     />
@@ -351,7 +419,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                     <OutlinedInput
                       id="outlined-adornment-surname"
                       name="deliveryLocation.surname"
-                      value={form.values?.deliveryLocation?.surname ?? ''}
+                      disabled = {check}
+                      value={(check && form.values?.deliveryLocation?.surname) || ''}
                       label="Surname"
                       onChange={form.handleChange}
                     />
@@ -373,7 +442,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                     <OutlinedInput
                       id="outlined-adornment-address"
                       name="deliveryLocation.address"
-                      value={form.values?.deliveryLocation?.address ?? ''}
+                      disabled = {check}
+                      value={(check && form.values?.deliveryLocation?.address) || ''}
                       label="Address"
                       onChange={form.handleChange}
                     />
@@ -396,7 +466,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       id="outlined-adornment-zipcode"
                       label="Zip code"
                       name="deliveryLocation.zipCode"
-                      value={form.values?.deliveryLocation?.zipCode ?? ''}
+                      disabled = {check}
+                      value={(check && form.values?.deliveryLocation?.zipCode) || ''}
                       onChange={form.handleChange}
                     />
                   </FormControl>
@@ -418,7 +489,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       id="outlined-adornment-city"
                       label="City"
                       name="deliveryLocation.city"
-                      value={form.values?.deliveryLocation?.city ?? ''}
+                      disabled = {check}
+                      value={(check && form.values?.deliveryLocation?.city) || ''}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
@@ -440,7 +512,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       id="outlined-adornment-province"
                       label="Province"
                       name="deliveryLocation.province"
-                      value={form.values?.deliveryLocation?.province ?? ''}
+                      disabled = {check}
+                      value={(check && form.values?.deliveryLocation?.province) || ''}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
@@ -462,7 +535,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       id="outlined-adornment-region"
                       label="Region"
                       name="deliveryLocation.region"
-                      value={form.values?.deliveryLocation?.region ?? ''}
+                      disabled = {check}
+                      value={(check && form.values?.deliveryLocation?.region) ||  ''}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
