@@ -89,7 +89,7 @@ export class OrdersController implements CrudController<Order> {
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
     ];
-    const order = await this.service.checkOrderUpdate(
+    const order = await this.service.validateUpdateDto(
       basket.id,
       dto,
       request.user,
@@ -123,7 +123,7 @@ export class OrdersController implements CrudController<Order> {
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
     ];
-    const order = await this.service.checkOrder(dto);
+    const order = await this.service.validateCreateDto(dto);
     return this.base
       .createOneBase(crudRequest, order as Order)
       .then(order => this.service.checkOrderBalance(order, request.user));
@@ -141,7 +141,7 @@ export class OrdersController implements CrudController<Order> {
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
     ];
-    const order = await this.service.checkOrderUpdate(id, dto, request.user);
+    const order = await this.service.validateUpdateDto(id, dto, request.user);
     return this.base
       .updateOneBase(crudRequest, order as Order)
       .then(order => this.service.checkOrderBalance(order, request.user));

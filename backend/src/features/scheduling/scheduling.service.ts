@@ -42,7 +42,10 @@ export class SchedulingService {
   }
 
   @Cron('0 9 * * 1')
-  deleteDraftOrderEntry() {
-    return this.ordersService.deleteDraftOrderEntry();
+  closeBaskets() {
+    return Promise.all([
+      this.ordersService.deleteDraftOrderEntries(),
+      this.ordersService.closeBaskets(),
+    ]);
   }
 }
