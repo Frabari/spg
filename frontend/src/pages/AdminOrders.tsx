@@ -236,7 +236,7 @@ export const AdminOrders = (props: {
           />
         </Search>
         <IconButton
-          sx={{ display: { xs: 'flex', md: 'none' } }}
+          sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
           className="add-icon-button"
           href="/admin/orders/new"
         >

@@ -185,7 +185,7 @@ export const AdminUsers = (props: {
           />
         </Search>
         <IconButton
-          sx={{ display: { xs: 'flex', md: 'none' } }}
+          sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
           className="add-icon-button"
           href="/admin/users/new"
         >
@@ -211,7 +211,7 @@ export const AdminUsers = (props: {
           value={sortOption}
           label="Filter by role"
           size="small"
-          sx={{ width: '150px' }}
+          sx={{ width: '175px' }}
           onChange={e => handleFilterByRole(e.target.value)}
         >
           {sort.map(option => (

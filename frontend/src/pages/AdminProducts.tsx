@@ -210,7 +210,7 @@ export const AdminProducts = (props: {
           />
         </Search>
         <IconButton
-          sx={{ display: { xs: 'flex', md: 'none' } }}
+          sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
           className="add-icon-button"
           href="/admin/products/new"
         >
@@ -236,7 +236,7 @@ export const AdminProducts = (props: {
           value={sortOption}
           label="Filter by category"
           size="small"
-          sx={{ width: '180px' }}
+          sx={{ width: '175px' }}
           onChange={e => handleFilterByCategory(e.target.value)}
         >
           <MenuItem key="all" value="all">

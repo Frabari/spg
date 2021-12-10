@@ -46,3 +46,13 @@ code {
     background-color: rgba(93, 216, 134, 0.75) !important;
     color: #ffffff !important;
 }
+
+.save-icon-button{
+    background-color: #5dd886 !important;
+    color: #ffffff !important;
+}
+
+.save-icon-button:hover{
+    background-color: rgba(93, 216, 134, 0.75) !important;
+    color: #ffffff !important;
+}
