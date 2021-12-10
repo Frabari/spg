@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
+import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
 import { ProductsService } from '../products/products.service';
 import { User } from '../users/entities/user.entity';
 import { ADMINS } from '../users/roles.enum';

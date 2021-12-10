@@ -14,6 +14,7 @@ import { TransactionsModule } from '../src/features/transactions/transactions.mo
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
+import { checkKeys } from './utils';
 
 describe('ProductssController (e2e)', () => {
   let app: INestApplication;
@@ -46,7 +47,7 @@ describe('ProductssController (e2e)', () => {
       return request(app.getHttpServer()).get('/products').expect(401);
     });
 
-    it('should fail if the role is customer with product that is not public', async () => {
+    it('should not return unlisted products to customers', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
@@ -60,7 +61,7 @@ describe('ProductssController (e2e)', () => {
       await entityManager.insert(Product, {
         name: 'Name',
         description: 'Description',
-        public: false,
+        baseUnit: '1Kg',
         price: 10,
       });
       const server = app.getHttpServer();
@@ -89,6 +90,7 @@ describe('ProductssController (e2e)', () => {
       await entityManager.insert(Product, {
         name: 'Name',
         description: 'Description',
+        baseUnit: '1Kg',
         public: true,
         price: 10,
         available: 0,
@@ -123,6 +125,7 @@ describe('ProductssController (e2e)', () => {
         public: true,
         price: 10,
         available: 5,
+        baseUnit: '1Kg',
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -133,8 +136,28 @@ describe('ProductssController (e2e)', () => {
         .get('/products')
         .auth(authToken, { type: 'bearer' })
         .expect(200)
-        .expect(r => {
-          expect(r.body.length).toEqual(1);
+        .expect(response => {
+          checkKeys<Product>(
+            response.body[0],
+            [
+              'id',
+              'public',
+              'name',
+              'description',
+              'price',
+              'baseUnit',
+              'available',
+              'reserved',
+              'sold',
+              'category',
+              'farmer',
+              'image',
+            ],
+            [],
+          );
+          expect(r => {
+            expect(r.body.length).toEqual(1);
+          });
         });
     });
 
@@ -155,6 +178,7 @@ describe('ProductssController (e2e)', () => {
         public: true,
         price: 10,
         available: 5,
+        baseUnit: '1Kg',
       });
       await entityManager.insert(Product, {
         name: 'Name2',
@@ -162,6 +186,7 @@ describe('ProductssController (e2e)', () => {
         public: false,
         price: 15,
         available: 5,
+        baseUnit: '1Kg',
       });
       await entityManager.insert(Product, {
         name: 'Name2',
@@ -169,6 +194,7 @@ describe('ProductssController (e2e)', () => {
         public: true,
         price: 20,
         available: 0,
+        baseUnit: '1Kg',
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -179,9 +205,158 @@ describe('ProductssController (e2e)', () => {
         .get('/products?stock')
         .auth(authToken, { type: 'bearer' })
         .expect(200)
-        .expect(r => {
-          expect(r.body.length).toEqual(3);
+        .expect(response => {
+          checkKeys<Product>(
+            response.body[0],
+            [
+              'id',
+              'public',
+              'name',
+              'description',
+              'price',
+              'baseUnit',
+              'available',
+              'reserved',
+              'sold',
+              'category',
+              'farmer',
+              'image',
+            ],
+            [],
+          );
+          expect(r => {
+            expect(r.body.length).toEqual(3);
+          });
         });
+    });
+  });
+
+  describe('PATCH /product/productId', () => {
+    it('should return the user specified if the requester is authenticated', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      await entityManager.save(User, {
+        name: 'John',
+        surname: 'Doe',
+        email,
+        password: await hash(password, 10),
+        role: Role.MANAGER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'Name',
+        description: 'Description',
+        public: true,
+        price: 10,
+        available: 5,
+        baseUnit: '1Kg',
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      const name = 'Name2';
+      return request(server)
+        .patch('/products/' + product.id)
+        .auth(authToken, { type: 'bearer' })
+        .send({ name })
+        .expect(response => {
+          checkKeys<Product>(
+            response.body,
+            [
+              'id',
+              'public',
+              'name',
+              'description',
+              'price',
+              'baseUnit',
+              'available',
+              'reserved',
+              'sold',
+              'farmer',
+              'image',
+            ],
+            [],
+          );
+          expect(response.body.name).toEqual(name);
+        });
+    });
+  });
+
+  describe('POST /products', () => {
+    it('should create a new product', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      await entityManager.save(User, {
+        name: 'John',
+        surname: 'Doe',
+        email,
+        password: await hash(password, 10),
+        role: Role.MANAGER,
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      await request(app.getHttpServer())
+        .post('/products')
+        .auth(authToken, { type: 'bearer' })
+        .send({
+          public: true,
+          name: 'name',
+          description: 'description',
+          price: 10,
+          baseUnit: '1Kg',
+          available: 5,
+          image: 'https://image.png',
+        })
+        .expect(201)
+        .expect(response => {
+          checkKeys<Product>(
+            response.body,
+            [
+              'id',
+              'public',
+              'name',
+              'description',
+              'price',
+              'baseUnit',
+              'available',
+              'farmer',
+              'image',
+            ],
+            [],
+          );
+        });
+      expect((await entityManager.find(Product)).length).toEqual(1);
+    });
+
+    it('should fail if some fields are missing', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      await entityManager.save(User, {
+        name: 'John',
+        surname: 'Doe',
+        email,
+        password: await hash(password, 10),
+        role: Role.MANAGER,
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      return request(app.getHttpServer())
+        .post('/products')
+        .auth(authToken, { type: 'bearer' })
+        .send({
+          name: 'name',
+        })
+        .expect(400);
     });
   });
 

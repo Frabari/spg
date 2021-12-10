@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
+import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/roles.enum';
 import { CreateProductDto } from './dtos/create-product.dto';
@@ -51,7 +51,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
   }
 
   async checkProduct(dto: CreateProductDto, user: User) {
-    if (user.role == Role.FARMER) {
+    if (user.role === Role.FARMER) {
       dto.farmer = user;
       dto.public = false;
       delete dto.reserved;

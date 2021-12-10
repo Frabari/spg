@@ -60,6 +60,7 @@ describe('ProductsService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -118,6 +119,7 @@ describe('ProductsService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -147,6 +149,7 @@ describe('ProductsService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -176,6 +179,7 @@ describe('ProductsService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
         farmer: user,
@@ -209,6 +213,7 @@ describe('ProductsService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
         reserved: 5,

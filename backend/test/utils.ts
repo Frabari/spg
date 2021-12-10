@@ -7,12 +7,18 @@ export const checkKeys = <T>(
   expect(
     include.every(key => {
       const ris = resultedKeys.includes(key as string);
+      if (!ris) {
+        console.log('Missing key in result:', key);
+      }
       return ris;
     }),
   ).toBeTruthy();
   expect(
     exclude.some(key => {
       const ris = resultedKeys.includes(key as string);
+      if (ris) {
+        console.log('Private key leaked in result:', key);
+      }
       return ris;
     }),
   ).toBeFalsy();
