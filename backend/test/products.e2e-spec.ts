@@ -43,8 +43,8 @@ describe('ProductssController (e2e)', () => {
   });
 
   describe('GET /products', () => {
-    it('should fail if the user is not authenticated', () => {
-      return request(app.getHttpServer()).get('/products').expect(401);
+    it('should work if the user is not authenticated', () => {
+      return request(app.getHttpServer()).get('/products').expect(200);
     });
 
     it('should not return unlisted products to customers', async () => {
