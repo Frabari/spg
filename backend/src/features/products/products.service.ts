@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
@@ -75,6 +76,55 @@ export class ProductsService extends TypeOrmCrudService<Product> {
       }
       delete dto.reserved;
       delete dto.public;
+    }
+    if (dto.reserved) {
+      const now = DateTime.now();
+      const from = now.set({
+        weekday: 7,
+        hour: 23,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+      });
+      const to = now.set({
+        weekday: 1,
+        hour: 9,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+      });
+      if (now < from || now > to) {
+        throw new BadRequestException({
+          constraints: {
+            reserved: 'Cannot edit reserved count now',
+          },
+        });
+      }
+    }
+
+    if (dto.available) {
+      const now = DateTime.now();
+      const from = now.set({
+        weekday: 1,
+        hour: 18,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+      });
+      const to = now.set({
+        weekday: 6,
+        hour: 9,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+      });
+      if (now < from || now > to) {
+        throw new BadRequestException({
+          constraints: {
+            available: 'Cannot edit available count now',
+          },
+        });
+      }
     }
 
     return dto;
