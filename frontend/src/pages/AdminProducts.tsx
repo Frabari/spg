@@ -65,6 +65,12 @@ const columns: {
     sortable: true,
     width: 100,
   },
+  {
+    key: 'farmer',
+    title: 'Farmer',
+    sortable: true,
+    width: 100,
+  },
 ];
 
 const Search = styled('div')(({ theme }) => ({
@@ -261,62 +267,112 @@ export const AdminProducts = (props: {
           <Table aria-label="Products table" stickyHeader>
             <TableHead>
               <TableRow>
-                {columns.map(c => (
-                  <TableCell
-                    key={c.key}
-                    sortDirection={sorting.by === c.key ? sorting.dir : false}
-                    sx={{ width: c.width }}
-                  >
-                    <Grid container direction="column" spacing={1}>
-                      <Grid item>
-                        {c.sortable ? (
-                          <TableSortLabel
-                            active={sorting.by === c.key}
-                            direction={
-                              sorting.by === c.key ? sorting.dir : 'asc'
-                            }
-                            onClick={toggleSorting(c.key)}
-                          >
-                            {c.title}
-                          </TableSortLabel>
-                        ) : (
-                          c.title
-                        )}
-                      </Grid>
-                      <Grid item>
-                        {c.key === 'category' ? (
-                          <TextField
-                            id="outlined-select-category"
-                            select
-                            value={sortOption}
-                            label="Filter by category"
-                            size="small"
-                            sx={{ width: '175px' }}
-                            onChange={e =>
-                              handleFilterByCategory(e.target.value)
-                            }
-                          >
-                            <MenuItem key="all" value="all">
-                              All
-                            </MenuItem>
-                            {sort.categories.map(option => (
-                              <MenuItem key={option.id} value={option.slug}>
-                                {option.name}
+                {columns.map(c =>
+                  c.key === 'farmer' && !props.farmer ? (
+                    <TableCell
+                      key={c.key}
+                      sortDirection={sorting.by === c.key ? sorting.dir : false}
+                      sx={{ width: c.width }}
+                    >
+                      <Grid container direction="column" spacing={1}>
+                        <Grid item>
+                          {c.sortable ? (
+                            <TableSortLabel
+                              active={sorting.by === c.key}
+                              direction={
+                                sorting.by === c.key ? sorting.dir : 'asc'
+                              }
+                              onClick={toggleSorting(c.key)}
+                            >
+                              {c.title}
+                            </TableSortLabel>
+                          ) : (
+                            c.title
+                          )}
+                        </Grid>
+                        <Grid item>
+                          {c.key === 'farmer' ? (
+                            <TextField
+                              id="outlined-select-farmer"
+                              select
+                              value={farmerFilter}
+                              label="Filter by farmer"
+                              size="small"
+                              sx={{ width: '175px' }}
+                              onChange={e =>
+                                handleFilterByFarmer(e.target.value)
+                              }
+                            >
+                              <MenuItem key="all" value="all">
+                                All
                               </MenuItem>
-                            ))}
-                          </TextField>
-                        ) : (
-                          <></>
-                        )}
+                              {farmers?.map((option: User) => (
+                                <MenuItem key={option.id} value={option.email}>
+                                  {option.name} {option.surname}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          ) : (
+                            <></>
+                          )}
+                        </Grid>
                       </Grid>
-                    </Grid>
-                  </TableCell>
-                ))}
-                {props.farmer ? (
-                  <TableCell>Notes</TableCell>
-                ) : (
-                  <TableCell>Farmer</TableCell>
+                    </TableCell>
+                  ) : c.key === 'farmer' && props.farmer ? (
+                    <></>
+                  ) : (
+                    <TableCell
+                      key={c.key}
+                      sortDirection={sorting.by === c.key ? sorting.dir : false}
+                      sx={{ width: c.width }}
+                    >
+                      <Grid container direction="column" spacing={1}>
+                        <Grid item>
+                          {c.sortable ? (
+                            <TableSortLabel
+                              active={sorting.by === c.key}
+                              direction={
+                                sorting.by === c.key ? sorting.dir : 'asc'
+                              }
+                              onClick={toggleSorting(c.key)}
+                            >
+                              {c.title}
+                            </TableSortLabel>
+                          ) : (
+                            c.title
+                          )}
+                        </Grid>
+                        <Grid item>
+                          {c.key === 'category' ? (
+                            <TextField
+                              id="outlined-select-category"
+                              select
+                              value={sortOption}
+                              label="Filter by category"
+                              size="small"
+                              sx={{ width: '175px' }}
+                              onChange={e =>
+                                handleFilterByCategory(e.target.value)
+                              }
+                            >
+                              <MenuItem key="all" value="all">
+                                All
+                              </MenuItem>
+                              {sort.categories.map(option => (
+                                <MenuItem key={option.id} value={option.slug}>
+                                  {option.name}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          ) : (
+                            <></>
+                          )}
+                        </Grid>
+                      </Grid>
+                    </TableCell>
+                  ),
                 )}
+                {props.farmer ? <TableCell>Notes</TableCell> : <></>}
               </TableRow>
             </TableHead>
             <TableBody>
