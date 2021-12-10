@@ -1,4 +1,5 @@
 import { hash } from 'bcrypt';
+import { DateTime, Settings } from 'luxon';
 import { EntityManager, Not } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -224,6 +225,83 @@ describe('ProductsService', () => {
         user,
       );
       expect(result.reserved).toBeUndefined();
+    });
+
+    it('should modify available field', async () => {
+      const salesDay = DateTime.now()
+        .set({
+          weekday: 3,
+          hour: 8,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
+
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 5,
+        available: 10,
+        farmer: user,
+      });
+      return expect(
+        await service.checkProductsUpdate(
+          product.id,
+          {
+            ...product,
+            available: 5,
+          },
+          user,
+        ),
+      ).toMatchObject({ available: 5 });
+    });
+
+    it('should modify reserved field', async () => {
+      const salesDay = DateTime.now()
+        .set({
+          weekday: 1,
+          hour: 8,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
+
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 5,
+        farmer: user,
+      });
+      expect(
+        await service.checkProductsUpdate(
+          product.id,
+          {
+            ...product,
+            reserved: 20,
+          },
+          user,
+        ),
+      ).toMatchObject({ reserved: 20 });
     });
   });
 

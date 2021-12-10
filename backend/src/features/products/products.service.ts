@@ -74,7 +74,6 @@ export class ProductsService extends TypeOrmCrudService<Product> {
           `The product not belongs to this farmer`,
         );
       }
-      delete dto.reserved;
       delete dto.public;
     }
     if (dto.reserved) {
@@ -93,7 +92,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
         second: 0,
         millisecond: 0,
       });
-      if (now < from || now > to) {
+      if (now < from && now > to) {
         throw new BadRequestException({
           constraints: {
             reserved: 'Cannot edit reserved count now',
