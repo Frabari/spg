@@ -204,23 +204,6 @@ export const AdminUsers = (props: {
           </Typography>
         </Button>
       </AdminAppBar>
-      <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
-        <TextField
-          id="outlined-select-role"
-          select
-          value={sortOption}
-          label="Filter by role"
-          size="small"
-          sx={{ width: '175px' }}
-          onChange={e => handleFilterByRole(e.target.value)}
-        >
-          {sort.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
       <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
         <TableContainer
           component={Paper}
@@ -234,17 +217,44 @@ export const AdminUsers = (props: {
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
                   >
-                    {c.sortable ? (
-                      <TableSortLabel
-                        active={sorting.by === c.key}
-                        direction={sorting.by === c.key ? sorting.dir : 'asc'}
-                        onClick={toggleSorting(c.key)}
-                      >
-                        {c.title}
-                      </TableSortLabel>
-                    ) : (
-                      c.title
-                    )}
+                    <Grid container direction="column" spacing={1}>
+                      <Grid item>
+                        {c.sortable ? (
+                          <TableSortLabel
+                            active={sorting.by === c.key}
+                            direction={
+                              sorting.by === c.key ? sorting.dir : 'asc'
+                            }
+                            onClick={toggleSorting(c.key)}
+                          >
+                            {c.title}
+                          </TableSortLabel>
+                        ) : (
+                          c.title
+                        )}
+                      </Grid>
+                      <Grid item>
+                        {c.key === 'role' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            value={sortOption}
+                            label="Filter by role"
+                            size="small"
+                            sx={{ width: '175px' }}
+                            onChange={e => handleFilterByRole(e.target.value)}
+                          >
+                            {sort.map(option => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : (
+                          <></>
+                        )}
+                      </Grid>
+                    </Grid>
                   </TableCell>
                 ))}
               </TableRow>
