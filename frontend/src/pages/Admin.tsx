@@ -23,6 +23,7 @@ import {
   ListItemText,
   Toolbar,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import { logout, Role, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
@@ -61,8 +62,11 @@ export const Admin = () => {
   const { profile, load } = useProfile();
   const { pending, setPending } = usePendingState();
   const [queryParams] = useSearchParams();
+  const isMobile = useMediaQuery('(max-width:760px)');
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    if (isMobile) {
+      setMobileOpen(!mobileOpen);
+    }
   };
 
   const handleLogout = async () => {
