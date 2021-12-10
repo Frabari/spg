@@ -1,10 +1,10 @@
 import {
   BaseRouteName,
-  CrudRequestInterceptor,
   CrudRoutesFactory as CrudRoutesFactoryBase,
 } from '@nestjsx/crud';
 import { R } from '@nestjsx/crud/lib/crud';
 import { isArrayFull } from '@nestjsx/util';
+import { CrudRequestInterceptor } from '../interceptors/crud-request.interceptor';
 import { CrudResponseInterceptor } from '../interceptors/crud-response.interceptor';
 
 export class CrudRoutesFactory extends CrudRoutesFactoryBase {
