@@ -48,7 +48,6 @@ describe('ProductsService', () => {
       const products = await entityManager.find(Product, {
         available: Not(0),
         reserved: Not(0),
-        sold: Not(0),
       });
       expect(products.length > 0).toBe(false);
     });

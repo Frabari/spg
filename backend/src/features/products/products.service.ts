@@ -45,7 +45,6 @@ export class ProductsService extends TypeOrmCrudService<Product> {
       {
         available: 0,
         reserved: 0,
-        sold: 0,
       },
     );
   }
@@ -55,7 +54,6 @@ export class ProductsService extends TypeOrmCrudService<Product> {
       dto.farmer = user;
       dto.public = false;
       delete dto.reserved;
-      delete dto.sold;
     }
     return dto;
   }
@@ -76,7 +74,6 @@ export class ProductsService extends TypeOrmCrudService<Product> {
         );
       }
       delete dto.reserved;
-      delete dto.sold;
       delete dto.public;
     }
 

@@ -74,15 +74,6 @@ export class Product {
   reserved: number;
 
   /**
-   * The number of sold units
-   */
-  @Column({ default: 0 })
-  @IsInt()
-  @Min(0)
-  @Expose({ groups: STAFF })
-  sold: number;
-
-  /**
    * The category to which this product belongs
    */
   @ManyToOne(() => Category, cat => cat.products)
