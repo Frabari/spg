@@ -11,6 +11,7 @@ import {
   Box,
   Button,
   Chip,
+  Grid,
   IconButton,
   InputBase,
   MenuItem,
@@ -255,38 +256,6 @@ export const AdminOrders = (props: {
           </Typography>
         </Button>
       </AdminAppBar>
-      <TableRow sx={{ pl: 3, pt: 2 }}>
-        <TextField
-          id="outlined-select-role"
-          select
-          value={weekfilter}
-          size="small"
-          label="Filter by week"
-          sx={{ width: '175px', ml: '25px' }}
-          onChange={e => handleFilterByWeek(e.target.value)}
-        >
-          {week.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          id="outlined-select-role"
-          select
-          value={orderstatus}
-          size="small"
-          label="Filter by status"
-          sx={{ width: '175px', marginLeft: '25px' }}
-          onChange={e => handleFilterByStatus(e.target.value)}
-        >
-          {stat.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-      </TableRow>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
@@ -302,17 +271,60 @@ export const AdminOrders = (props: {
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
                   >
-                    {c.sortable ? (
-                      <TableSortLabel
-                        active={sorting.by === c.key}
-                        direction={sorting.by === c.key ? sorting.dir : 'asc'}
-                        onClick={toggleSorting(c.key)}
-                      >
-                        {c.title}
-                      </TableSortLabel>
-                    ) : (
-                      c.title
-                    )}
+                    <Grid container direction="column" spacing={1}>
+                      <Grid item>
+                        {c.sortable ? (
+                          <TableSortLabel
+                            active={sorting.by === c.key}
+                            direction={
+                              sorting.by === c.key ? sorting.dir : 'asc'
+                            }
+                            onClick={toggleSorting(c.key)}
+                          >
+                            {c.title}
+                          </TableSortLabel>
+                        ) : (
+                          c.title
+                        )}
+                      </Grid>
+                      <Grid item>
+                        {c.key === 'status' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            value={orderstatus}
+                            size="small"
+                            label="Filter by status"
+                            sx={{ width: '150px' }}
+                            onChange={e => handleFilterByStatus(e.target.value)}
+                          >
+                            {stat.map(option => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : c.key === 'createdAt' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            value={weekfilter}
+                            size="small"
+                            label="Filter by week"
+                            sx={{ width: '150px' }}
+                            onChange={e => handleFilterByWeek(e.target.value)}
+                          >
+                            {week.map(option => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : (
+                          <></>
+                        )}
+                      </Grid>
+                    </Grid>
                   </TableCell>
                 ))}
               </TableRow>

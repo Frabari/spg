@@ -5,6 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
+  Grid,
   IconButton,
   InputBase,
   MenuItem,
@@ -203,26 +204,7 @@ export const AdminUsers = (props: {
           </Typography>
         </Button>
       </AdminAppBar>
-      <TableRow sx={{ pl: 3, pt: 2 }}>
-        <TextField
-          id="outlined-select-role"
-          select
-          value={sortOption}
-          label="Filter by role"
-          size="small"
-          sx={{ width: '175px', ml: '25px' }}
-          onChange={e => handleFilterByRole(e.target.value)}
-        >
-          {sort.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-      </TableRow>
-      <Box
-        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
-      >
+      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}
@@ -235,17 +217,44 @@ export const AdminUsers = (props: {
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
                   >
-                    {c.sortable ? (
-                      <TableSortLabel
-                        active={sorting.by === c.key}
-                        direction={sorting.by === c.key ? sorting.dir : 'asc'}
-                        onClick={toggleSorting(c.key)}
-                      >
-                        {c.title}
-                      </TableSortLabel>
-                    ) : (
-                      c.title
-                    )}
+                    <Grid container direction="column" spacing={1}>
+                      <Grid item>
+                        {c.sortable ? (
+                          <TableSortLabel
+                            active={sorting.by === c.key}
+                            direction={
+                              sorting.by === c.key ? sorting.dir : 'asc'
+                            }
+                            onClick={toggleSorting(c.key)}
+                          >
+                            {c.title}
+                          </TableSortLabel>
+                        ) : (
+                          c.title
+                        )}
+                      </Grid>
+                      <Grid item>
+                        {c.key === 'role' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            value={sortOption}
+                            label="Filter by role"
+                            size="small"
+                            sx={{ width: '175px' }}
+                            onChange={e => handleFilterByRole(e.target.value)}
+                          >
+                            {sort.map(option => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : (
+                          <></>
+                        )}
+                      </Grid>
+                    </Grid>
                   </TableCell>
                 ))}
               </TableRow>
