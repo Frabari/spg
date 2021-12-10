@@ -6,7 +6,9 @@ import {
   IsOptional,
   IsString,
   Validate,
+  ValidateNested,
 } from 'class-validator';
+import { JoinColumn } from 'typeorm';
 import {
   AfterLoad,
   Column,
@@ -14,10 +16,13 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { DeliveredBy } from '../validators/delivered-by.validator';
+import { DeliveredByValidator } from '../validators/delivered-by.validator';
+import { DeliveryDateValidator } from '../validators/delivery-date.validator';
+import { DeliveryLocation } from './delivery-location.entity';
 import { OrderEntry } from './order-entry.entity';
 
 export type OrderId = number;
@@ -33,6 +38,11 @@ export enum OrderStatus {
    * for confirmation from farmers and payment
    */
   LOCKED = 'locked',
+
+  /**
+   * The user balance is not enough to pay the order
+   */
+  PENDING_PAYMENT = 'pending_payment',
 
   /**
    * The products were confirmed and the
@@ -96,6 +106,8 @@ export class Order {
    * An array of products with their respective quantities
    */
   @OneToMany(() => OrderEntry, entry => entry.order, { cascade: true })
+  @ValidateNested()
+  @Type(() => OrderEntry)
   @Allow()
   entries: OrderEntry[];
 
@@ -103,23 +115,29 @@ export class Order {
    * The date when the user wants the order to be delivered
    * or to pick it up at the warehouse
    */
-  @Column({ type: 'varchar', default: null })
+  @Column({ default: null })
+  @Allow()
   @Type(() => Date)
+  @Validate(DeliveryDateValidator)
   deliverAt: Date;
 
   /**
    * A string representing an address. If null the order will
    * be picked up at the warehouse
    */
-  @Column({ default: null })
-  deliveryLocation: string;
+  @OneToOne(() => DeliveryLocation, dl => dl.order, { cascade: true })
+  @JoinColumn()
+  @Type(() => DeliveryLocation)
+  @IsOptional()
+  @ValidateNested()
+  deliveryLocation: DeliveryLocation;
 
   /**
    * The rider who will deliver this order. If null the order
    * will be picked up by the customer at the warehouse
    */
   @ManyToOne(() => User)
-  @Validate(DeliveredBy)
+  @Validate(DeliveredByValidator)
   deliveredBy: User;
 
   /**

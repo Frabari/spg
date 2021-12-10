@@ -1,19 +1,30 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import {
+  Constraints,
   createOrder,
   getOrder,
   Order,
+  OrderEntry,
   OrderId,
   updateOrder,
 } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { usePendingState } from './usePendingState';
 
+export type OrderConstraints = Constraints<Omit<Order, 'entries'>> & {
+  entries: Record<number, Constraints<OrderEntry>>;
+};
+
 export const useOrder = (id?: OrderId) => {
-  const { setPending } = usePendingState();
+  const { setPending: setGlobalPending } = usePendingState();
+  const [pending, setPending] = useState(false);
   const [order, setOrder] = useState<Order>(null);
-  const [error, setError] = useState<ApiException>(null);
+  const [error, setError] = useState<ApiException<OrderConstraints>>(null);
+
+  useEffect(() => {
+    setGlobalPending(pending);
+  }, [pending, setGlobalPending]);
 
   const upsertOrder = (order: Partial<Order>) => {
     setPending(true);
@@ -54,5 +65,5 @@ export const useOrder = (id?: OrderId) => {
         .finally(() => setPending(false));
     }
   }, [id, setPending]);
-  return { order, upsertOrder, error };
+  return { order, upsertOrder, pending, error };
 };

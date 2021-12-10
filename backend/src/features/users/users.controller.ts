@@ -3,14 +3,18 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CrudController,
   CrudRequest,
+  CrudRequestInterceptor,
   Override,
   ParsedBody,
   ParsedRequest,
@@ -18,6 +22,7 @@ import {
 import { Crud } from '../../core/decorators/crud.decorator';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { LoginDto } from './dtos/login.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -28,10 +33,17 @@ import { UsersService } from './users.service';
 
 @Crud(User, {
   routes: {
-    only: ['getOneBase', 'getManyBase', 'createOneBase'],
+    only: ['getOneBase', 'getManyBase', 'createOneBase', 'updateOneBase'],
+  },
+  query: {
+    join: {
+      notifications: {},
+      address: {},
+    },
   },
   dto: {
     create: CreateUserDto,
+    update: UpdateUserDto,
   },
 })
 @ApiTags(User.name)
@@ -59,19 +71,63 @@ export class UsersController implements CrudController<User> {
   }
 
   @Get('me')
+  @UseInterceptors(CrudRequestInterceptor)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: `Gets the current authenticated user's profile` })
-  getMe(@Request() req) {
-    return this.service.findOne(req.user.id);
+  getMe(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
+    const { id } = request.user;
+    crudRequest.parsed.search.$and = [{ id }];
+    crudRequest.parsed.join = [
+      {
+        field: 'notifications',
+      },
+      {
+        field: 'address',
+      },
+    ];
+    return this.base.getOneBase(crudRequest);
+  }
+
+  @Patch('me')
+  @UseInterceptors(CrudRequestInterceptor)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: `Updates the current authenticated user's profile` })
+  updateMe(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @Body() body: UpdateUserDto,
+  ) {
+    const { id } = request.user;
+    crudRequest.parsed.search.$and = [{ id }];
+    return this.base.updateOneBase(crudRequest, body as User);
   }
 
   @Override()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...ADMINS)
-  getOne(@ParsedRequest() req: CrudRequest) {
-    return this.base.getOneBase(req);
+  getOne(@ParsedRequest() crudRequest: CrudRequest) {
+    return this.base.getOneBase(crudRequest);
+  }
+
+  @Override()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...ADMINS)
+  async updateOne(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request,
+    @ParsedBody() dto: UpdateUserDto,
+    @Param('id') id: number,
+  ) {
+    crudRequest.parsed.join = [
+      { field: 'notifications' },
+      { field: 'address' },
+    ];
+    if (dto.password) dto.password = await bcrypt.hash(dto.password, 10);
+    return this.base.updateOneBase(crudRequest, dto as User);
   }
 
   @Override()
@@ -79,6 +135,7 @@ export class UsersController implements CrudController<User> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateUserDto,
   ) {
+    req.parsed.join = [{ field: 'notifications' }, { field: 'address' }];
     dto.password = await bcrypt.hash(dto.password, 10);
     return this.base.createOneBase(req, dto as User);
   }

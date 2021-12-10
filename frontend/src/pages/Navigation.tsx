@@ -1,9 +1,20 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { Person, ShoppingCart } from '@mui/icons-material';
+import {
+  Person,
+  ShoppingCart,
+  WarningAmberOutlined,
+} from '@mui/icons-material';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DoneIcon from '@mui/icons-material/Done';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   AppBar,
@@ -13,9 +24,15 @@ import {
   Box,
   Button,
   Container,
+  Divider,
   Drawer,
+  Grid,
   IconButton,
   InputAdornment,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
   Tab,
@@ -25,12 +42,13 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { logout, Role } from '../api/BasilApi';
+import { logout, NotificationType, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { useBasket } from '../hooks/useBasket';
 import { useCategories } from '../hooks/useCategories';
+import { useNotifications } from '../hooks/useNotifications';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
@@ -53,7 +71,7 @@ function LinkTab({ slug, label, ...rest }: LinkTabProps) {
   );
 }
 
-function NavTabs(props: any) {
+function NavTabs() {
   const [value, setValue] = React.useState(0);
   const [queryParams] = useSearchParams();
   const { categories } = useCategories();
@@ -79,40 +97,15 @@ function NavTabs(props: any) {
   );
 }
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: '#f7f7f7',
-  '&:hover': {
-    backgroundColor: '#f7f7f7',
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   color: 'inherit',
   '& .MuiFormControl-root': {
     border: 'none !important',
-    borderRadius: theme.shape.borderRadius,
+    borderRadius: '16px',
     backgroundColor: '#f7f7f7',
     '&:hover': {
-      backgroundColor: '#f7f7f7',
+      backgroundColor: '#eaeaea',
+      alpha: '0.75',
     },
     marginRight: theme.spacing(2),
     marginLeft: 0,
@@ -139,6 +132,8 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 
 function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorElNotifications, setAnchorElNotifications] =
+    React.useState<null | HTMLElement>(null);
   const [list, setList] = useState([]);
   const { profile, load } = useProfile();
   const { setPending } = usePendingState();
@@ -147,6 +142,7 @@ function NavBar(props: any) {
   const { products } = useProducts();
   const { users } = useUsers();
   const { basket } = useBasket();
+  const { notifications } = useNotifications();
 
   useEffect(() => {
     const u = users
@@ -168,8 +164,16 @@ function NavBar(props: any) {
     setAnchorEl(event.currentTarget);
   };
 
+  const handleMenuNotifications = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElNotifications(event.currentTarget);
+  };
+
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleCloseNotifications = () => {
+    setAnchorElNotifications(null);
   };
 
   const handleLogout = async () => {
@@ -214,7 +218,7 @@ function NavBar(props: any) {
               </Box>
             ) : (
               <>
-                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                <Box display={props.onProducts ? 'block' : 'none'}>
                   <StyledAutocomplete
                     id="free-solo-2-demo"
                     disableClearable
@@ -242,6 +246,7 @@ function NavBar(props: any) {
                     }}
                     renderOption={(props, option: any) => (
                       <Box
+                        key={option.id}
                         component="li"
                         sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
                         {...props}
@@ -283,33 +288,150 @@ function NavBar(props: any) {
                   />
                 </Box>
 
-                <Box sx={{ display: { md: 'flex' }, ml: 'auto' }}>
-                  <IconButton size="large" onClick={handleMenu}>
-                    <Avatar src={profile?.avatar} />
-                  </IconButton>
+                <Box
+                  sx={{
+                    display: { md: 'flex' },
+                    ml: 'auto',
+                    alignItems: 'center',
+                  }}
+                >
                   <Menu
                     id="menu-appbar"
                     anchorEl={anchorEl}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
                     keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
+                    PaperProps={{
+                      elevation: 0,
+                      sx: {
+                        overflow: 'visible',
+                        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                        mt: 1.5,
+                        '& .MuiAvatar-root': {
+                          width: 32,
+                          height: 32,
+                          ml: -0.5,
+                          mr: 1,
+                        },
+                        '&:before': {
+                          content: '""',
+                          display: 'block',
+                          position: 'absolute',
+                          top: 0,
+                          right: 14,
+                          width: 10,
+                          height: 10,
+                          bgcolor: 'background.paper',
+                          transform: 'translateY(-50%) rotate(45deg)',
+                          zIndex: 0,
+                        },
+                      },
                     }}
+                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
                     {profile.role !== Role.CUSTOMER && (
                       <MenuItem onClick={() => navigate('/admin')}>
-                        <Person /> Admin
+                        <AdminPanelSettingsIcon sx={{ mr: 2 }} /> Admin
                       </MenuItem>
                     )}
-                    <MenuItem onClick={handleLogout}>
-                      <LogoutIcon /> Logout
+                    <MenuItem onClick={() => navigate('/profile')}>
+                      <Person sx={{ mr: 2 }} /> Profile
                     </MenuItem>
+                    <MenuItem>
+                      <AccountBalanceWalletIcon sx={{ mr: 2 }} />{' '}
+                      {profile.balance} €
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout}>
+                      <LogoutIcon sx={{ mr: 2 }} /> Logout
+                    </MenuItem>
+                  </Menu>
+                  <IconButton
+                    size="large"
+                    aria-label="show notifications"
+                    onClick={handleMenuNotifications}
+                  >
+                    <Badge badgeContent={notifications?.length}>
+                      <NotificationsIcon />
+                    </Badge>
+                  </IconButton>
+                  <Menu
+                    id="menu-appbar-notifications"
+                    anchorEl={anchorElNotifications}
+                    keepMounted
+                    PaperProps={{
+                      elevation: 0,
+                      sx: {
+                        overflow: 'visible',
+                        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                        mt: 3,
+                        '&:before': {
+                          content: '""',
+                          display: 'block',
+                          position: 'absolute',
+                          top: 0,
+                          right: 14,
+                          width: 10,
+                          height: 10,
+                          color: 'background.paper',
+                          transform: 'translateY(-50%) rotate(45deg)',
+                          zIndex: 0,
+                        },
+                      },
+                    }}
+                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    open={Boolean(anchorElNotifications)}
+                    onClose={handleCloseNotifications}
+                  >
+                    <List
+                      sx={{
+                        width: 300,
+                        maxWidth: 360,
+                        bgcolor: 'background.paper',
+                        position: 'relative',
+                        overflow: 'auto',
+                        maxHeight: 200,
+                        '& ul': { padding: 0 },
+                      }}
+                    >
+                      {!notifications.length ? (
+                        <ListItem alignItems="center">
+                          <ListItemIcon>
+                            {' '}
+                            <WarningAmberOutlined sx={{ color: '#ff9800' }} />
+                          </ListItemIcon>
+                          <ListItemText secondary="You have no notifications!" />
+                        </ListItem>
+                      ) : (
+                        notifications.map(n => (
+                          <Fragment key={n.id}>
+                            <ListItem alignItems="flex-start">
+                              <ListItemIcon>
+                                {n.type === NotificationType.INFO && (
+                                  <InfoOutlinedIcon
+                                    sx={{ color: 'cornflowerblue' }}
+                                  />
+                                )}
+                                {n.type === NotificationType.ERROR && (
+                                  <ErrorOutlineIcon color="error" />
+                                )}
+                                {n.type === NotificationType.SUCCESS && (
+                                  <DoneIcon color="primary" />
+                                )}
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={n.title}
+                                secondary={
+                                  <React.Fragment>{n.message}</React.Fragment>
+                                }
+                              />
+                            </ListItem>
+                            <Divider variant="inset" component="li" />
+                          </Fragment>
+                        ))
+                      )}
+                    </List>
                   </Menu>
                   <IconButton
                     size="large"
@@ -320,6 +442,9 @@ function NavBar(props: any) {
                       <ShoppingCart />
                     </Badge>
                   </IconButton>
+                  <IconButton size="large" onClick={handleMenu}>
+                    <Avatar src={profile?.avatar} />
+                  </IconButton>
                 </Box>
               </>
             )}
@@ -329,18 +454,38 @@ function NavBar(props: any) {
       </AppBar>
 
       <Drawer
+        sx={{ width: '400px' }}
         anchor="right"
         open={showBasket}
-        onClose={() => setShowBasket(false)}
+        onClose={() => {
+          setShowBasket(false);
+          if (props.setBasketListener) props.setBasketListener(true);
+        }}
       >
-        <Box sx={{ width: { xs: '100%', sm: '40vw' } }}>
-          <Typography
-            variant="h5"
-            color="primary.main"
-            sx={{ p: 3, fontWeight: 'bold' }}
-          >
-            Basket
-          </Typography>
+        <Box>
+          <Grid container direction="row" spacing={1}>
+            <Grid item xs={1}>
+              <IconButton
+                sx={{ margin: 1.5 }}
+                onClick={() => {
+                  setShowBasket(false);
+                  if (props.setBasketListener) props.setBasketListener(true);
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </Grid>
+            <Grid item xs={11}>
+              <Typography
+                variant="h5"
+                color="primary.main"
+                fontWeight="bold"
+                m={2}
+              >
+                Basket
+              </Typography>
+            </Grid>
+          </Grid>
           <Basket balanceWarning={props.balanceWarning} />
         </Box>
       </Drawer>

@@ -3,6 +3,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as DbConfig from '../ormconfig.json';
 import { CategoriesModule } from './features/categories/categories.module';
+import { NotificationsModule } from './features/notifications/notifications.module';
 import { OrdersModule } from './features/orders/orders.module';
 import { ProductsModule } from './features/products/products.module';
 import { SchedulingModule } from './features/scheduling/scheduling.module';
@@ -25,6 +26,7 @@ const { entities, ...dbConfig } = DbConfig;
     TransactionsModule,
     ScheduleModule.forRoot(),
     SchedulingModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

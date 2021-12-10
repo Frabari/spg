@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 import { Container } from '@mui/material';
 import ProductsGrid from '../components/ProductsGrid';
 import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
+import ProductInfo from './ProductInfo';
 
 export default function Products() {
   const { profile } = useProfile();
+  const [basketListener, setBasketListener] = useState(false);
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
   const [farmer, setFarmer] = useState(null);
-  const [balanceWarning, setBalanceWarnig] = useState(false);
+  const [balanceWarning, setBalanceWarning] = useState(false);
   if (!profile) {
     return <Navigate to="/" />;
   }
@@ -32,17 +34,30 @@ export default function Products() {
         products={true}
         handleSearch={handleSearch}
         balanceWarning={balanceWarning}
+        basketListener={basketListener}
+        setBasketListener={setBasketListener}
+        onProducts={true}
       />
-      <Container sx={{ mt: 18 }}>
-        <ProductsGrid
-          farmer={farmer}
-          filter={queryParams.get('category')}
-          search={search}
-          onSelect={null}
-          handleDelete={handleDelete}
-          setBalanceWarnig={setBalanceWarnig}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Container sx={{ mt: 18 }}>
+              <ProductsGrid
+                farmer={farmer}
+                filter={queryParams.get('category')}
+                search={search}
+                onSelect={null}
+                handleDelete={handleDelete}
+                setBalanceWarning={setBalanceWarning}
+                basketListener={basketListener}
+                setBasketListener={setBasketListener}
+              />
+            </Container>
+          }
         />
-      </Container>
+        <Route path="/:id" element={<ProductInfo />} />
+      </Routes>
     </>
   );
 }

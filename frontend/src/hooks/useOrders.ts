@@ -5,9 +5,15 @@ import { ApiException } from '../api/createHttpClient';
 import { usePendingState } from './usePendingState';
 
 export const useOrders = () => {
-  const { setPending } = usePendingState();
+  const { setPending: setGlobalPending } = usePendingState();
+  const [pending, setPending] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState<ApiException>(null);
+
+  useEffect(() => {
+    setGlobalPending(pending);
+  }, [pending, setGlobalPending]);
+
   useEffect(() => {
     setPending(true);
     getOrders()
@@ -18,5 +24,5 @@ export const useOrders = () => {
       })
       .finally(() => setPending(false));
   }, [setPending]);
-  return { orders, error };
+  return { orders, pending, error };
 };

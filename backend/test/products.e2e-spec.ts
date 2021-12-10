@@ -6,6 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
+import { NotificationsModule } from '../src/features/notifications/notifications.module';
 import { OrdersModule } from '../src/features/orders/orders.module';
 import { Product } from '../src/features/products/entities/product.entity';
 import { ProductsModule } from '../src/features/products/products.module';
@@ -33,6 +34,7 @@ describe('ProductssController (e2e)', () => {
         CategoriesModule,
         TransactionsModule,
         OrdersModule,
+        NotificationsModule,
       ],
     }).compile();
     app = moduleFixture.createNestApplication();
