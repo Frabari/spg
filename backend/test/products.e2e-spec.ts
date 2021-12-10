@@ -47,7 +47,7 @@ describe('ProductssController (e2e)', () => {
       return request(app.getHttpServer()).get('/products').expect(401);
     });
 
-    it('should fail if the role is customer with product that is not public', async () => {
+    it('should not return unlisted products to customers', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
@@ -61,7 +61,7 @@ describe('ProductssController (e2e)', () => {
       await entityManager.insert(Product, {
         name: 'Name',
         description: 'Description',
-        public: false,
+        baseUnit: '1Kg',
         price: 10,
       });
       const server = app.getHttpServer();
@@ -90,6 +90,7 @@ describe('ProductssController (e2e)', () => {
       await entityManager.insert(Product, {
         name: 'Name',
         description: 'Description',
+        baseUnit: '1Kg',
         public: true,
         price: 10,
         available: 0,
@@ -124,7 +125,7 @@ describe('ProductssController (e2e)', () => {
         public: true,
         price: 10,
         available: 5,
-        baseUnit: 'baseUnit',
+        baseUnit: '1Kg',
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -177,7 +178,7 @@ describe('ProductssController (e2e)', () => {
         public: true,
         price: 10,
         available: 5,
-        baseUnit: 'baseUnit',
+        baseUnit: '1Kg',
       });
       await entityManager.insert(Product, {
         name: 'Name2',
@@ -185,7 +186,7 @@ describe('ProductssController (e2e)', () => {
         public: false,
         price: 15,
         available: 5,
-        baseUnit: 'baseUnit',
+        baseUnit: '1Kg',
       });
       await entityManager.insert(Product, {
         name: 'Name2',
@@ -193,7 +194,7 @@ describe('ProductssController (e2e)', () => {
         public: true,
         price: 20,
         available: 0,
-        baseUnit: 'baseUnit',
+        baseUnit: '1Kg',
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -248,7 +249,7 @@ describe('ProductssController (e2e)', () => {
         public: true,
         price: 10,
         available: 5,
-        baseUnit: 'base unit',
+        baseUnit: '1Kg',
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -308,7 +309,7 @@ describe('ProductssController (e2e)', () => {
           name: 'name',
           description: 'description',
           price: 10,
-          baseUnit: 'baseUnit',
+          baseUnit: '1Kg',
           available: 5,
           image: 'https://image.png',
         })

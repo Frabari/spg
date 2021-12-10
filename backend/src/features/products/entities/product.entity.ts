@@ -1,9 +1,9 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsInt, IsString, IsUrl, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsString, IsUrl, Min } from 'class-validator';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
-import { STAFF } from '../../users/roles.enum';
+import { ADMINS, Role, STAFF } from '../../users/roles.enum';
 
 export type ProductId = number;
 
@@ -18,7 +18,8 @@ export class Product {
    * If true this product is visible and saleable
    */
   @Column({ default: false })
-  @Expose({ groups: STAFF })
+  @Expose({ groups: ADMINS.concat(Role.FARMER) })
+  @IsBoolean()
   public: boolean;
 
   /**

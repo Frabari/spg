@@ -120,6 +120,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -157,6 +158,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -194,6 +196,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -231,6 +234,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -287,6 +291,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 20,
       });
@@ -327,6 +332,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 2,
       });
@@ -367,6 +373,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 2,
       });
@@ -407,6 +414,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });

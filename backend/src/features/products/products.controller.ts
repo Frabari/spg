@@ -48,21 +48,19 @@ import { ProductsService } from './products.service';
   filter: (req: ExpressRequest & { user: User }) => {
     const filters: any = {};
     if (
-      'stock' in req.query &&
-      req.query.stock != 'false' &&
-      req.user.role === Role.FARMER
-    ) {
-      filters['farmer.id'] = { $eq: req.user.id };
-    }
-    if (
-      'stock' in req.query &&
-      req.query.stock == 'false' &&
-      req.user.role === Role.CUSTOMER
+      req.user.role === Role.CUSTOMER ||
+      !('stock' in req.query) ||
+      req.query.stock === 'false'
     ) {
       filters.public = true;
       filters.available = {
         $gt: 0,
       };
+    }
+    if ('stock' in req.query && req.query.stock !== 'false') {
+      if (req.user.role === Role.FARMER) {
+        filters['farmer.id'] = { $eq: req.user.id };
+      }
     }
     return filters;
   },
@@ -116,6 +114,7 @@ export class ProductsController implements CrudController<Product> {
     @Request() request,
     @ParsedBody() dto: CreateProductDto,
   ) {
+    console.log('Dto', dto);
     const product = await this.service.checkProduct(dto, request.user);
     return this.base.createOneBase(crudRequest, product as Product);
   }

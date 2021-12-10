@@ -1,40 +1,49 @@
 import { Expose } from 'class-transformer';
-import { Allow, IsDefined, IsInt, IsString, IsUrl, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsDefined,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  IsUrl,
+  Min,
+} from 'class-validator';
 import { OmitType } from '@nestjs/swagger';
-import { ADMINS, STAFF } from '../../users/roles.enum';
 import { Product } from '../entities/product.entity';
 
 export class CreateProductDto extends OmitType(Product, ['id'] as const) {
-  @Allow({ groups: ADMINS })
+  @IsBoolean()
+  @Expose()
   public: boolean;
 
   @IsString()
   @IsDefined()
+  @IsNotEmpty()
   name: string;
 
   @IsString()
   @IsDefined()
+  @IsNotEmpty()
   description: string;
 
   @IsDefined()
+  @IsNotEmpty()
   @Min(0)
   price: number;
 
   @IsString()
   @IsDefined()
+  @IsNotEmpty()
   baseUnit: string;
 
   @IsInt()
   @IsDefined()
+  @IsNotEmpty()
   @Min(0)
   available: number;
 
-  @IsInt()
-  @Min(0)
-  @Expose({ groups: STAFF })
-  reserved: number;
-
   @IsDefined()
+  @IsNotEmpty()
   @IsString()
   @IsUrl()
   image: string;
