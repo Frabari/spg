@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
+import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
 import { UsersService } from '../users/users.service';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { Transaction } from './entities/transaction.entity';
