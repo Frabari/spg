@@ -48,7 +48,6 @@ import { ProductsService } from './products.service';
 @CrudAuth({
   filter: (req: ExpressRequest & { user: User }) => {
     const filters: any = {};
-    console.log(req.user);
     if (
       req.user.role === Role.CUSTOMER ||
       !('stock' in req.query) ||
@@ -119,7 +118,6 @@ export class ProductsController implements CrudController<Product> {
     @Request() request,
     @ParsedBody() dto: CreateProductDto,
   ) {
-    console.log('Dto', dto);
     const product = await this.service.checkProduct(dto, request.user);
     return this.base.createOneBase(crudRequest, product as Product);
   }
