@@ -23,9 +23,11 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
 import { Product } from '../api/BasilApi';
+import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
+import { useProfile } from '../hooks/useProfile';
 
 const columns: {
   key: keyof Product;
@@ -118,6 +120,8 @@ export const AdminProducts = (props: {
   category: string;
 }) => {
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const [dto, setDto] = useState<Partial<User>>(profile as User);
   const { products } = useProducts(true);
   const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
   const [sorting, setSorting] = useState<{
@@ -139,6 +143,10 @@ export const AdminProducts = (props: {
       }
     }
   }, [products, sorting]);
+
+  useEffect(() => {
+    setDto(profile as User);
+  }, [profile]);
 
   const toggleSorting = (byKey: keyof Product) => () => {
     const { by, dir } = sorting;
@@ -164,12 +172,13 @@ export const AdminProducts = (props: {
   };
 
   const [sortOption, setSortOption] = useState(props.category);
+  const [sortOptionFarmer, setSortOptionFarmer] = useState(props.category);
   const sort = useCategories();
 
   const handleFilterByCategory = (s: string) => {
     setSortOption(s);
     if (s === 'all') {
-      navigate(`/admin/products?category=${s}`);
+      navigate(`/admin/products`);
       setSortedProducts(products);
     } else {
       navigate(`/admin/products?category=${s}`);
@@ -227,7 +236,7 @@ export const AdminProducts = (props: {
           value={sortOption}
           label="Filter by category"
           size="small"
-          sx={{ width: '150px' }}
+          sx={{ width: '180px' }}
           onChange={e => handleFilterByCategory(e.target.value)}
         >
           <MenuItem key="all" value="all">
@@ -268,63 +277,124 @@ export const AdminProducts = (props: {
                     )}
                   </TableCell>
                 ))}
-                <TableCell>Notes</TableCell>
+                {props.farmer ? (
+                  <TableCell>Notes</TableCell>
+                ) : (
+                  <TableCell>Farmer</TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedProducts
-                ?.filter(
-                  p =>
-                    !sortOption ||
-                    sortOption === 'all' ||
-                    p.category.slug === sortOption,
-                )
-                ?.map(product => (
-                  <TableRow
-                    hover
-                    key={product.id}
-                    sx={{
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => navigate(`/admin/products/${product.id}`)}
-                  >
-                    <TableCell sx={{ py: 0 }}>
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        style={{
-                          width: 50,
-                          height: 50,
-                          borderRadius: '50%',
-                          objectFit: 'cover',
+              {props.farmer ? (
+                <>
+                  {sortedProducts
+                    ?.filter(
+                      p =>
+                        !sortOption ||
+                        sortOption === 'all' ||
+                        p.category.slug === sortOption,
+                    )
+                    ?.filter(p => p.farmer.id === dto.id)
+                    ?.map(product => (
+                      <TableRow
+                        hover
+                        key={product.id}
+                        sx={{
+                          '&:last-child td, &:last-child th': { border: 0 },
+                          cursor: 'pointer',
                         }}
-                      />
-                    </TableCell>
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      align="left"
-                      sx={{ pr: 0 }}
-                    >
-                      {product.name}
-                    </TableCell>
-                    <TableCell sx={{ pr: 0 }}>
-                      <Description>{product.description}</Description>
-                    </TableCell>
-                    <TableCell>{product.price}</TableCell>
-                    <TableCell>{product.category.name}</TableCell>
-                    <TableCell>
-                      {props.farmer &&
-                        product.available === 0 &&
-                        product.public === true && (
-                          <Alert severity="warning">
-                            {'Remember to update the availability field'}
-                          </Alert>
-                        )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        onClick={() =>
+                          navigate(`/admin/products/${product.id}`)
+                        }
+                      >
+                        <TableCell sx={{ py: 0 }}>
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            style={{
+                              width: 50,
+                              height: 50,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          align="left"
+                          sx={{ pr: 0 }}
+                        >
+                          {product.name}
+                        </TableCell>
+                        <TableCell sx={{ pr: 0 }}>
+                          <Description>{product.description}</Description>
+                        </TableCell>
+                        <TableCell>{product.price}</TableCell>
+                        <TableCell>{product.category.name}</TableCell>
+                        <TableCell>
+                          {product.available === 0 && (
+                            <Alert severity="warning">
+                              {'Remember to update the availability field'}
+                            </Alert>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </>
+              ) : (
+                <>
+                  {sortedProducts
+                    ?.filter(
+                      p =>
+                        !sortOption ||
+                        sortOption === 'all' ||
+                        p.category.slug === sortOption,
+                    )
+                    ?.map(product => (
+                      <TableRow
+                        hover
+                        key={product.id}
+                        sx={{
+                          '&:last-child td, &:last-child th': { border: 0 },
+                          cursor: 'pointer',
+                        }}
+                        onClick={() =>
+                          navigate(`/admin/products/${product.id}`)
+                        }
+                      >
+                        <TableCell sx={{ py: 0 }}>
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            style={{
+                              width: 50,
+                              height: 50,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          align="left"
+                          sx={{ pr: 0 }}
+                        >
+                          {product.name}
+                        </TableCell>
+                        <TableCell sx={{ pr: 0 }}>
+                          <Description>{product.description}</Description>
+                        </TableCell>
+                        <TableCell>{product.price}</TableCell>
+                        <TableCell>{product.category.name}</TableCell>
+                        <TableCell>
+                          {product.farmer.name + ' ' + product.farmer.surname}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
