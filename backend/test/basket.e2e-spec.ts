@@ -1,4 +1,5 @@
 import { hash } from 'bcrypt';
+import { DateTime, Settings } from 'luxon';
 import * as request from 'supertest';
 import { EntityManager } from 'typeorm';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -15,6 +16,14 @@ import { TransactionsModule } from '../src/features/transactions/transactions.mo
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
+
+const salesDay = DateTime.now()
+  .set({
+    weekday: 6,
+    hour: 10,
+  })
+  .toMillis();
+Settings.now = () => salesDay;
 
 describe('BasketController (e2e)', () => {
   let app: INestApplication;
