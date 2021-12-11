@@ -33,6 +33,17 @@ code {
     background: #e6faed;
 }
 
+.AdminProduct:before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: #e6faed;
+}
+
 .add-icon-button{
     background-color: #5dd886 !important;
     color: #ffffff !important;
