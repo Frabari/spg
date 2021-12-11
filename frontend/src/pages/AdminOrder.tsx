@@ -232,7 +232,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       </ListItemAvatar>
                       <ListItemText
                         primary={e.product.name}
-                        secondary={`€ ${e.product.price}/${e.product.unitOfMeasure}`}
+                        secondary={`€ ${e.product.price}/${e.product.baseUnit}`}
                       />
                     </ListItem>
                     <Divider />

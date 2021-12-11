@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -10,36 +10,41 @@ import {
   FormHelperText,
   Grid,
   InputLabel,
+  MenuItem,
   OutlinedInput,
   Paper,
+  TextField,
   ThemeProvider,
   Typography,
 } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import { createTheme } from '@mui/material/styles';
-import { Product } from '../api/BasilApi';
+import { Product, Role, User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { useCategories } from '../hooks/useCategories';
 import { useProduct } from '../hooks/useProduct';
+import { useProfile } from '../hooks/useProfile';
+import { useUsers } from '../hooks/useUsers';
 
 export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { product, upsertProduct, error } = useProduct(id);
+  const [farmers, setFarmers] = useState(null);
+  const { product, upsertProduct } = useProduct(id);
+  const { categories } = useCategories();
+  const { users } = useUsers();
   const navigate = useNavigate();
+  const { profile } = useProfile();
   const form = useFormik({
     initialValues: {
-      farmer: { id: null },
-      name: null,
-      description: null,
+      name: '',
+      description: '',
       price: null,
       available: null,
-      reserved: null,
-      sold: null,
-      category: { id: null },
+      baseUnit: null,
     } as Partial<Product>,
-    validate: () => error?.data?.constraints ?? {},
     onSubmit: (values: Partial<Product>, { setErrors }) => {
-      return upsertProduct(values)
+      upsertProduct(values)
         .then(newProduct => {
           const creating = id == null;
           toast.success(`Product ${creating ? 'created' : 'updated'}`);
@@ -54,10 +59,32 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   });
 
   useEffect(() => {
+    if (users) {
+      setFarmers(users.filter(u => u.role === Role.FARMER));
+    }
+  }, [users]);
+
+  useEffect(() => {
     if (product) {
       form.setValues(product);
+    } else {
+      if ((profile as User)?.role === Role.FARMER) {
+        form.setFieldValue('farmer', profile as User);
+      }
     }
   }, [product]);
+
+  const handleChangeFarmer = (value: string) => {
+    const f = farmers.find((fa: User) => fa.name + ' ' + fa.surname === value);
+    form.setFieldValue('farmer', f);
+  };
+
+  const handleChangeCategory = (value: string) => {
+    form.setFieldValue(
+      'category',
+      categories.find(c => c.name === value),
+    );
+  };
 
   return (
     <>
@@ -127,22 +154,26 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
               >
                 <Grid item>
                   <FormControl required error={!!form.errors?.name}>
-                    <InputLabel id="product-name">Name</InputLabel>
+                    <InputLabel htmlFor="product-name">Name</InputLabel>
                     <OutlinedInput
+                      id="name"
+                      type="text"
                       name="name"
                       onChange={form.handleChange}
                       label="Name"
-                      value={form.values?.name ?? ''}
+                      value={form.values?.name}
                     />
                     <FormHelperText>{form.errors?.name}</FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
                   <FormControl required error={!!form.errors?.description}>
-                    <InputLabel id="product-description">
+                    <InputLabel htmlFor="product-description">
                       Description
                     </InputLabel>
                     <OutlinedInput
+                      id="description"
+                      type="text"
                       name="description"
                       onChange={form.handleChange}
                       label="Description"
@@ -152,9 +183,41 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                   </FormControl>
                 </Grid>
                 <Grid item>
+                  <FormControl required error={!!form.errors?.baseUnit}>
+                    <InputLabel htmlFor="product-baseUnit">
+                      Base Unit
+                    </InputLabel>
+                    <OutlinedInput
+                      id="baseUnit"
+                      type="text"
+                      name="baseUnit"
+                      onChange={form.handleChange}
+                      label="Base Unit"
+                      value={form.values?.baseUnit ?? ''}
+                    />
+                    <FormHelperText>{form.errors?.baseUnit}</FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item>
+                  <FormControl required error={!!form.errors?.image}>
+                    <InputLabel htmlFor="product-image">Image</InputLabel>
+                    <OutlinedInput
+                      id="image"
+                      type="text"
+                      name="image"
+                      onChange={form.handleChange}
+                      label="Image"
+                      value={form.values?.image ?? ''}
+                    />
+                    <FormHelperText>{form.errors?.image}</FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item>
                   <FormControl required error={!!form.errors?.price}>
                     <InputLabel id="product-price">Price</InputLabel>
                     <OutlinedInput
+                      id="price"
+                      type="number"
                       onChange={form.handleChange}
                       label="Price"
                       value={form.values?.price ?? ''}
@@ -167,30 +230,35 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl required error={!!form.errors?.available}>
                     <InputLabel id="product-available">Available</InputLabel>
                     <OutlinedInput
+                      id="available"
+                      type="number"
                       label="Available"
                       value={form.values?.available ?? ''}
                       onChange={form.handleChange}
                       name="available"
                     />
-                    <FormHelperText>{form.errors?.price}</FormHelperText>
+                    <FormHelperText>{form.errors?.available}</FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl required error={!!form.errors?.reserved}>
+                  <FormControl>
                     <InputLabel id="product-reserved">Reserved</InputLabel>
                     <OutlinedInput
+                      id="reserved"
+                      type="number"
                       name="reserved"
                       onChange={form.handleChange}
                       label="Reserved"
                       value={form.values?.reserved ?? ''}
                     />
-                    <FormHelperText>{form.errors?.reserved}</FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl required error={!!form.errors?.sold}>
+                  <FormControl>
                     <InputLabel id="product-sold">Sold</InputLabel>
                     <OutlinedInput
+                      id="sold"
+                      type="number"
                       name="sold"
                       onChange={form.handleChange}
                       label="Sold"
@@ -201,27 +269,46 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                 </Grid>
                 <Grid item>
                   <FormControl required error={!!form.errors?.category}>
-                    <InputLabel id="product-category">Category</InputLabel>
-                    <OutlinedInput
+                    <TextField
+                      sx={{ width: '223px' }}
+                      id="category"
+                      select
                       name="category"
                       label="Category"
                       value={form.values?.category?.name ?? ''}
-                    />
+                      onChange={e => handleChangeCategory(e.target.value)}
+                    >
+                      {categories.map(c => (
+                        <MenuItem key={c.id} value={c.name}>
+                          {c.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                     <FormHelperText>{form.errors?.sold}</FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl required error={!!form.errors?.farmer}>
-                    <InputLabel id="product-farmer">Farmer</InputLabel>
-                    <OutlinedInput
+                  <FormControl>
+                    <TextField
+                      sx={{ width: '223px' }}
+                      disabled={(profile as User)?.role === Role.FARMER}
                       name="farmer"
                       label="Farmer"
+                      select={(profile as User)?.role !== Role.FARMER}
+                      id="farmer"
                       value={
                         form.values?.farmer?.name +
-                          ' ' +
-                          form.values?.farmer?.surname ?? ''
+                        ' ' +
+                        form.values?.farmer?.surname
                       }
-                    />
+                      onChange={e => handleChangeFarmer(e.target.value)}
+                    >
+                      {farmers?.map((f: User) => (
+                        <MenuItem key={f.id} value={f.name + ' ' + f.surname}>
+                          {f.name} {f.surname}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                     <FormHelperText>{form.errors?.farmer}</FormHelperText>
                   </FormControl>
                 </Grid>

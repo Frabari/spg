@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsBoolean, IsInt, IsString, IsUrl, Min } from 'class-validator';
+import { Allow, IsBoolean, IsInt, IsString, IsUrl, Min } from 'class-validator';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
@@ -87,6 +87,7 @@ export class Product {
    */
   @ManyToOne(() => Category, cat => cat.products)
   @Expose()
+  @Allow()
   category: Category;
 
   /**
@@ -94,6 +95,7 @@ export class Product {
    */
   @ManyToOne(() => User, user => user.products)
   @Expose()
+  @Allow()
   farmer: User;
 
   /**

@@ -173,11 +173,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <IconButton
-          disabled
-          className="add-icon-button"
-          href="/admin/products/new"
-        >
+        <IconButton className="add-icon-button" href="/admin/products/new">
           <Add />
         </IconButton>
         <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
@@ -261,7 +257,7 @@ export const AdminProducts = (props: { handleDrawerToggle: () => void }) => {
                   </TableCell>
                   <TableCell>{product.description}</TableCell>
                   <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.category.name}</TableCell>
+                  <TableCell>{product.category?.name}</TableCell>
                   <TableCell>
                     {product.available === 0 && product.public === true && (
                       <Alert severity="warning">

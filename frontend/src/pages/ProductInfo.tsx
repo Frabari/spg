@@ -147,7 +147,7 @@ export default function ProductInfo(props: any) {
                             fontSize: 20,
                             py: 3,
                           }}
-                          label={`${product?.available} ${product.unitOfMeasure} left!`}
+                          label={`${product?.available} ${product.baseUnit} left!`}
                         />
                       </Grid>
                     </Grid>
@@ -181,7 +181,7 @@ export default function ProductInfo(props: any) {
                       display="inline"
                       fontWeight="bold"
                     >
-                      /{product.unitOfMeasure}
+                      /unit
                     </Typography>
                   </Grid>
                   <Grid item>

@@ -63,7 +63,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  unitOfMeasure: string;
+  baseUnit: string;
   available: number;
   reserved: number;
   sold: number;

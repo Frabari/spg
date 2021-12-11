@@ -79,7 +79,7 @@ function ProductCard(props: any) {
                       component="div"
                       textAlign="center"
                     >
-                      (€ {props.price} /{props.product.unitOfMeasure})
+                      (€ {props.price} /{props.product.baseUnit})
                     </Typography>
                   </CardContent>
                 </Box>
