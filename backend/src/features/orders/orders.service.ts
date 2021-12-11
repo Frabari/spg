@@ -1,4 +1,5 @@
-import { Repository } from 'typeorm';
+import { DateTime } from 'luxon';
+import { In, Repository } from 'typeorm';
 import {
   BadRequestException,
   ForbiddenException,
@@ -12,6 +13,7 @@ import { User } from '../users/entities/user.entity';
 import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
+import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
 
 const statuses = Object.values(OrderStatus);
@@ -21,15 +23,23 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   constructor(
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
+    @InjectRepository(OrderEntry)
+    private readonly ordersEntryRepository: Repository<OrderEntry>,
     private readonly productsService: ProductsService,
   ) {
     super(ordersRepository);
   }
 
+  /**
+   * Resolves a user's basket (tries to find an existing
+   * one or creates it otherwise)
+   *
+   * @param user The authenticated user
+   */
   async resolveBasket(user: User) {
     const basket = await this.ordersRepository.findOne(
       {
-        status: OrderStatus.DRAFT,
+        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
         user,
       },
       {
@@ -42,22 +52,51 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     return this.ordersRepository.save({ user });
   }
 
-  async checkOrder(dto: CreateOrderDto) {
+  /**
+   * Validates an order creation dto
+   * @param dto The incoming dto
+   */
+  async validateCreateDto(dto: CreateOrderDto) {
+    const now = DateTime.now();
+    const from = now.set({
+      weekday: 6,
+      hour: 9,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const to = from.plus({ hour: 38 });
+    if (now < from || now > to) {
+      throw new BadRequestException(
+        'Order.ReserveOutsideOfSales',
+        'Cannot add products to an order while outside the sales window',
+      );
+    }
     if (dto.entries?.length) {
       for (let ei = 0; ei < dto.entries.length; ei++) {
         const entry = dto.entries[ei];
         if (entry.quantity < 1) {
-          throw new BadRequestException(
-            'Order.QuantityZero',
-            `You make an order with a wrong quantity`,
-          );
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  quantity: `Add at least a product`,
+                },
+              },
+            },
+          });
         }
         const product = await this.productsService.findOne(entry.product?.id);
         if (!product) {
-          throw new BadRequestException(
-            'Order.EntryProductNotFound',
-            'An entry in your order references an invalid product',
-          );
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  product: `Product not found`,
+                },
+              },
+            },
+          });
         }
         if (product.available < entry.quantity) {
           throw new BadRequestException({
@@ -79,7 +118,15 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     return dto;
   }
 
-  async checkOrderUpdate(
+  /**
+   * Validates an order update dto
+   *
+   * @param id The order's id
+   * @param dto The incoming dto
+   * @param user The authenticated user executing this operation
+   * @param isBasket Whether this is a basket or order update
+   */
+  async validateUpdateDto(
     id: OrderId,
     dto: UpdateOrderDto,
     user: User,
@@ -104,10 +151,11 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       const oldStatusOrder = statuses.indexOf(order.status);
       const newStatusOrder = statuses.indexOf(dto.status);
       if (newStatusOrder < oldStatusOrder) {
-        throw new BadRequestException(
-          'Order.IllegalStatusTransition',
-          `Cannot revert an order's status change`,
-        );
+        throw new BadRequestException({
+          constraints: {
+            status: `Cannot revert an order's status change`,
+          },
+        });
       }
     }
     if (!ADMINS.includes(user.role)) {
@@ -121,20 +169,45 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     }
 
     if (dto.entries?.length) {
+      const now = DateTime.now();
+      const from = now.set({
+        weekday: 6,
+        hour: 9,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+      });
+      const to = from.plus({ hour: 38 });
+      if (now < from || now > to) {
+        throw new BadRequestException(
+          'Order.ReserveOutsideOfSales',
+          'Cannot add products to an order while outside the sales window',
+        );
+      }
       for (let ei = 0; ei < dto.entries.length; ei++) {
         const entry = dto.entries[ei];
         if (entry.quantity < 1) {
-          throw new BadRequestException(
-            'Order.QuantityZero',
-            `You make an order with a wrong quantity`,
-          );
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  quantity: `Add at least a product`,
+                },
+              },
+            },
+          });
         }
         const product = await this.productsService.findOne(entry.product?.id);
         if (!product) {
-          throw new BadRequestException(
-            'Order.EntryProductNotFound',
-            'An entry in your order references an invalid product',
-          );
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  product: `Product not found`,
+                },
+              },
+            },
+          });
         }
         entry.product = product;
 
@@ -182,21 +255,14 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           );
         }
       }
-
-      /*const total = dto.entries?.reduce(
-        (acc, val) => acc + val.quantity * val.product?.price,
-        0,
-      );
-      if(user.balance < total){
-        throw new BadRequestException(
-          'Order.InsufficientBalance',
-          `The  user balance is insufficient to satisfy your request`,
-        );
-      }*/
     }
     return dto;
   }
 
+  /**
+   * Locks all the draft baskets so that
+   * entries cannot be changed anymore
+   */
   lockBaskets() {
     return this.ordersRepository.update(
       {
@@ -208,10 +274,40 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     );
   }
 
+  /**
+   * Deletes all the draft (unconfirmed) order entries
+   */
+  deleteDraftOrderEntries() {
+    return this.ordersEntryRepository.delete({
+      status: OrderEntryStatus.DRAFT,
+    });
+  }
+
+  /**
+   * Compares the order total with the user balance
+   *
+   * @param order The order
+   * @param user The authenticated user
+   */
   checkOrderBalance(order: Order, user: User) {
     if (user.balance < order.total) {
       order.insufficientBalance = true;
     }
     return order;
+  }
+
+  /**
+   * Closes the baskets: sets the status to
+   * pending payment
+   */
+  closeBaskets() {
+    return this.ordersRepository.update(
+      {
+        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+      },
+      {
+        status: OrderStatus.PENDING_PAYMENT,
+      },
+    );
   }
 }

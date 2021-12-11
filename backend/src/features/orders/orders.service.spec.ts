@@ -1,4 +1,5 @@
 import { hash } from 'bcrypt';
+import { DateTime, Settings } from 'luxon';
 import { EntityManager } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -17,6 +18,14 @@ import { OrderEntry } from './entities/order-entry.entity';
 import { Order, OrderStatus } from './entities/order.entity';
 import { OrdersModule } from './orders.module';
 import { OrdersService } from './orders.service';
+
+const salesDay = DateTime.now()
+  .set({
+    weekday: 6,
+    hour: 10,
+  })
+  .toMillis();
+Settings.now = () => salesDay;
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -97,7 +106,7 @@ describe('OrdersService', () => {
         available: 10,
       });
       return expect(
-        service.checkOrder({
+        service.validateCreateDto({
           user: { id: user.id } as User,
           entries: [{ product, quantity: 20 }] as OrderEntry[],
         } as CreateOrderDto),
@@ -122,7 +131,7 @@ describe('OrdersService', () => {
         available: 10,
       });
       return expect(
-        service.checkOrder({
+        service.validateCreateDto({
           user: { id: user.id } as User,
           entries: [{ product, quantity: 0 }] as OrderEntry[],
         } as CreateOrderDto),
@@ -140,7 +149,7 @@ describe('OrdersService', () => {
         surname: 'Doe',
       });
       return expect(
-        service.checkOrder({
+        service.validateCreateDto({
           user: { id: user.id } as User,
           entries: [
             {
@@ -174,7 +183,7 @@ describe('OrdersService', () => {
         available: 10,
       });
       return expect(
-        service.checkOrder({
+        service.validateCreateDto({
           user: { id: user.id } as User,
           entries: [{ product, quantity: 5 }] as OrderEntry[],
         } as CreateOrderDto),
@@ -197,7 +206,7 @@ describe('OrdersService', () => {
         user: { id: user.id },
       });
       expect(
-        await service.checkOrderUpdate(
+        await service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.PAID,
@@ -223,7 +232,7 @@ describe('OrdersService', () => {
         status: OrderStatus.PAID,
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.DRAFT,
@@ -263,7 +272,7 @@ describe('OrdersService', () => {
           },
         ],
       });
-      await service.checkOrderUpdate(
+      await service.validateUpdateDto(
         order.id,
         {
           status: OrderStatus.LOCKED,
@@ -294,7 +303,7 @@ describe('OrdersService', () => {
         surname: 'Doe',
       });
       return expect(
-        service.checkOrderUpdate(100, {} as UpdateOrderDto, user),
+        service.validateUpdateDto(100, {} as UpdateOrderDto, user),
       ).rejects.toThrowError(NotFoundException);
     });
 
@@ -328,7 +337,7 @@ describe('OrdersService', () => {
           },
         ],
       });
-      const finalDto = await service.checkOrderUpdate(
+      const finalDto = await service.validateUpdateDto(
         order.id,
         {
           entries: [
@@ -375,7 +384,7 @@ describe('OrdersService', () => {
         ],
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.COMPLETED,
@@ -422,7 +431,7 @@ describe('OrdersService', () => {
         ],
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.COMPLETED,
@@ -471,7 +480,7 @@ describe('OrdersService', () => {
         ],
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.COMPLETED,
@@ -525,7 +534,7 @@ describe('OrdersService', () => {
         ],
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.COMPLETED,
@@ -574,7 +583,7 @@ describe('OrdersService', () => {
           },
         ],
       });
-      await service.checkOrderUpdate(
+      await service.validateUpdateDto(
         order.id,
         {
           status: OrderStatus.COMPLETED,
