@@ -114,7 +114,6 @@ export class ProductsController implements CrudController<Product> {
     @Request() request,
     @ParsedBody() dto: CreateProductDto,
   ) {
-    console.log('Dto', dto);
     const product = await this.service.checkProduct(dto, request.user);
     return this.base.createOneBase(crudRequest, product as Product);
   }
