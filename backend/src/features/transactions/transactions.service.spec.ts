@@ -41,7 +41,7 @@ describe('TransactionsService', () => {
   describe('checkTransaction', () => {
     it('should fail when the related user is missing', () => {
       expect(
-        service.checkTransaction({
+        service.validateTransactionCreateDto({
           user: { id: 1 } as User,
           amount: 10,
         }),
@@ -59,7 +59,7 @@ describe('TransactionsService', () => {
         surname: 'Doe',
       });
       await expect(
-        service.checkTransaction({
+        service.validateTransactionCreateDto({
           user,
           amount: -10,
         }),
@@ -76,7 +76,7 @@ describe('TransactionsService', () => {
         name: 'John',
         surname: 'Doe',
       });
-      await service.checkTransaction({
+      await service.validateTransactionCreateDto({
         user,
         amount: 10,
       });

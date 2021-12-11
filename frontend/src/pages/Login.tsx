@@ -33,7 +33,7 @@ function OutlinedCard(props: any) {
       password: null,
     } as Partial<User>,
     validate: () => error?.data?.constraints ?? {},
-    onSubmit: (values: Partial<User>, { setErrors }) => {
+    onSubmit: (values: Partial<User>, { setErrors }) =>
       login(values.email, values.password)
         .then(p => {
           setPending(true);
@@ -41,8 +41,7 @@ function OutlinedCard(props: any) {
         })
         .catch(e => {
           setErrors(e.data.constraints);
-        });
-    },
+        }),
   });
 
   const handleClickShowPassword = () => {
