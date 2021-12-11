@@ -115,21 +115,27 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
         >
           Users / {user ? `${user.name} ${user.surname}` : 'New'}
         </Typography>
-        <Button
-          type="submit"
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
-          onClick={form.submitForm}
+        <IconButton
+		  type="submit"
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+          className="save-icon-button"
+		  onClick={form.submitForm}
           disabled={pending}
         >
           <Save />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Save changes
+        </IconButton>
+        <Button
+		  type="submit"
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+		  onClick={form.submitForm}
+          disabled={pending}
+          startIcon={<Save />}
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Save Changes
           </Typography>
         </Button>
       </AdminAppBar>

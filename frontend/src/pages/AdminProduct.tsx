@@ -10,6 +10,7 @@ import {
   FormControl,
   FormHelperText,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -97,20 +98,25 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
         >
           Products / {product?.name}
         </Typography>
-        <Button
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
+        <IconButton
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+          className="save-icon-button"
           onClick={form.submitForm}
           type="submit"
         >
           <Save />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Save changes
+        </IconButton>
+        <Button
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          startIcon={<Save />}
+          onClick={form.submitForm}
+          type="submit"
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Save Changes
           </Typography>
         </Button>
       </AdminAppBar>
@@ -159,27 +165,6 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                     value={form.values?.name}
                   />
                   <FormHelperText>{form.errors?.name}</FormHelperText>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <FormControl
-                  variant="outlined"
-                  fullWidth
-                  required
-                  error={!!form.errors?.description}
-                >
-                  <InputLabel htmlFor="product-description">
-                    Description
-                  </InputLabel>
-                  <OutlinedInput
-                    id="description"
-                    type="text"
-                    name="description"
-                    onChange={form.handleChange}
-                    label="Description"
-                    value={form.values?.description ?? ''}
-                  />
-                  <FormHelperText>{form.errors?.description}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
@@ -320,6 +305,28 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                 </FormControl>
               </Grid>
             </Grid>
+            <Grid container display="grid" marginTop="32px">
+                <Grid item>
+                  <FormControl
+                      variant="outlined"
+                      fullWidth
+                      required
+                      error={!!form.errors?.description}
+                  >
+                    <InputLabel htmlFor="product-description">Description</InputLabel>
+                    <OutlinedInput
+                        multiline
+                        id="product-description"
+                        type="text"
+                        name="description"
+                        onChange={form.handleChange}
+                        label="Description"
+                        value={form.values?.description ?? ''}
+                    />
+                    <FormHelperText>{form.errors?.description}</FormHelperText>
+                  </FormControl>
+                </Grid>
+              </Grid>
           </div>
         </Paper>
       </Box>
