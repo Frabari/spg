@@ -254,20 +254,6 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                   </FormControl>
                 </Grid>
                 <Grid item>
-                  <FormControl>
-                    <InputLabel id="product-sold">Sold</InputLabel>
-                    <OutlinedInput
-                      id="sold"
-                      type="number"
-                      name="sold"
-                      onChange={form.handleChange}
-                      label="Sold"
-                      value={form.values?.sold ?? ''}
-                    />
-                    <FormHelperText>{form.errors?.sold}</FormHelperText>
-                  </FormControl>
-                </Grid>
-                <Grid item>
                   <FormControl required error={!!form.errors?.category}>
                     <TextField
                       sx={{ width: '223px' }}
