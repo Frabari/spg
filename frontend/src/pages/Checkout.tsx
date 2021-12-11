@@ -1,3 +1,4 @@
+import { addDays } from 'date-fns';
 import * as React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -61,6 +62,11 @@ export default function Checkout() {
         // noop
       });
   };
+
+  const deliveryDay = (date: Date) => {
+    return date.getDay() !== 3 && date.getDay() !== 4 && date.getDay() !== 5;
+  };
+
   return (
     <>
       <NavigationBox.NavBar onProducts={false} setBasketListener={null} />
@@ -150,7 +156,7 @@ export default function Checkout() {
                     display="inline"
                     color="#757575"
                   >
-                    {user?.balance == null ? '0' : user?.balance}
+                    {basket?.user?.balance == null ? '0' : basket.user.balance}
                   </Typography>
                 </Typography>
                 <Typography
@@ -286,7 +292,7 @@ export default function Checkout() {
                     <OutlinedInput
                       id="outlined-adornment-province"
                       onChange={e =>
-                        handleAddressChange('privince', e.target.value)
+                        handleAddressChange('province', e.target.value)
                       }
                       label="Province"
                     />
@@ -317,8 +323,9 @@ export default function Checkout() {
               <DesktopDatePicker
                 label="Choose a date"
                 value={date}
-                minDate={new Date('2021-01-01')}
-                maxDate={new Date('2025-12-31')}
+                shouldDisableDate={deliveryDay}
+                minDate={date}
+                maxDate={addDays(new Date(), 7)}
                 onChange={(newDate: Date) => {
                   setDate(newDate);
                 }}
@@ -329,6 +336,9 @@ export default function Checkout() {
               <TimePicker
                 label="Choose a time"
                 value={time}
+                minTime={new Date(0, 0, 0, 9)}
+                maxTime={new Date(0, 0, 0, 18, 0)}
+                minutesStep={5}
                 onChange={(newTime: any) => {
                   setTime(newTime);
                 }}
