@@ -82,7 +82,7 @@ function ProductCard({
             align="center"
             my={1}
           >
-            {product?.available} {product.unitOfMeasure} available
+            {product?.available} units available
           </Typography>
           <Typography
             variant="body2"
@@ -90,7 +90,7 @@ function ProductCard({
             align="center"
             fontWeight="bold"
           >
-            € {product.price}/{product.unitOfMeasure}
+            € {product.price}/unit
           </Typography>
         </CardContent>
         <CardActions>

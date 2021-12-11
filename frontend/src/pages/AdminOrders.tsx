@@ -4,7 +4,9 @@ import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
+  Button,
   Chip,
+  Grid,
   IconButton,
   InputBase,
   MenuItem,
@@ -117,11 +119,15 @@ const dateDiffInDays = (a: Date, b: Date) => {
   return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 };
 
-export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
+export const AdminOrders = (props: {
+  handleDrawerToggle: () => void;
+  status: string;
+  week: string;
+}) => {
   const navigate = useNavigate();
   const { orders } = useOrders();
-  const [orderstatus, setOrderStatus] = useState('all');
-  const [weekfilter, setWeekFilter] = useState('all');
+  const [orderstatus, setOrderStatus] = useState(props.status);
+  const [weekfilter, setWeekFilter] = useState(props.week);
   const [sortedOrders, setSortedOrders] = useState<Order[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Order;
@@ -148,10 +154,12 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   }, [orders, sorting]);
 
   const handleFilterByStatus = (s: string) => {
+    navigate(`/admin/orders?status=${s}&week=${weekfilter}`);
     setOrderStatus(s);
   };
 
   const handleFilterByWeek = (s: string) => {
+    navigate(`/admin/orders?week=${s}&status=${orderstatus}`);
     setWeekFilter(s);
   };
 
@@ -203,46 +211,26 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <IconButton className="add-icon-button" href="/admin/orders/new">
+        <IconButton
+          sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
+          className="add-icon-button"
+          href="/admin/orders/new"
+        >
           <Add />
         </IconButton>
-        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
-          Create order
-        </Typography>
+        <Button
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          href="/admin/orders/new"
+          startIcon={<Add />}
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Create order
+          </Typography>
+        </Button>
       </AdminAppBar>
-      <TableRow sx={{ pl: 3 }}>
-        <TextField
-          id="outlined-select-role"
-          select
-          value={weekfilter}
-          size="small"
-          label="Filter by week"
-          sx={{ width: '150px' }}
-          onChange={e => handleFilterByWeek(e.target.value)}
-        >
-          {week.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        <TextField
-          id="outlined-select-role"
-          select
-          value={orderstatus}
-          size="small"
-          label="Filter by status"
-          sx={{ width: '150px', marginLeft: '50px' }}
-          onChange={e => handleFilterByStatus(e.target.value)}
-        >
-          {statusFilters.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-      </TableRow>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
@@ -258,17 +246,60 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
                   >
-                    {c.sortable ? (
-                      <TableSortLabel
-                        active={sorting.by === c.key}
-                        direction={sorting.by === c.key ? sorting.dir : 'asc'}
-                        onClick={toggleSorting(c.key)}
-                      >
-                        {c.title}
-                      </TableSortLabel>
-                    ) : (
-                      c.title
-                    )}
+                    <Grid container direction="column" spacing={1}>
+                      <Grid item>
+                        {c.sortable ? (
+                          <TableSortLabel
+                            active={sorting.by === c.key}
+                            direction={
+                              sorting.by === c.key ? sorting.dir : 'asc'
+                            }
+                            onClick={toggleSorting(c.key)}
+                          >
+                            {c.title}
+                          </TableSortLabel>
+                        ) : (
+                          c.title
+                        )}
+                      </Grid>
+                      <Grid item>
+                        {c.key === 'status' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            value={orderstatus}
+                            size="small"
+                            label="Filter by status"
+                            sx={{ width: '150px' }}
+                            onChange={e => handleFilterByStatus(e.target.value)}
+                          >
+                            {statusFilters.map(option => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : c.key === 'createdAt' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            value={weekfilter}
+                            size="small"
+                            label="Filter by week"
+                            sx={{ width: '150px' }}
+                            onChange={e => handleFilterByWeek(e.target.value)}
+                          >
+                            {week.map(option => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : (
+                          <></>
+                        )}
+                      </Grid>
+                    </Grid>
                   </TableCell>
                 ))}
               </TableRow>
@@ -278,6 +309,8 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                 ?.filter(
                   order =>
                     weekfilter === 'all' ||
+                    weekfilter === null ||
+                    weekfilter === 'null' ||
                     (weekfilter === 'thisWeek' &&
                       new Date(order.createdAt).getDay() <= data.getDay() &&
                       dateDiffInDays(data, new Date(order.createdAt)) < 7) ||
@@ -288,7 +321,10 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                 )
                 ?.filter(
                   order =>
-                    orderstatus === 'all' || order.status === orderstatus,
+                    orderstatus === 'all' ||
+                    orderstatus === null ||
+                    orderstatus === 'null' ||
+                    order.status === orderstatus,
                 )
                 .map(order => {
                   const {

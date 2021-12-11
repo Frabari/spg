@@ -1,8 +1,9 @@
+import { addDays } from 'date-fns';
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import {
@@ -21,10 +22,11 @@ import {
   FormHelperText,
 } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
-import { Order } from '../api/BasilApi';
+import { Order, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
-import { useUser } from '../hooks/useUser';
+import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
+import {DesktopDatePicker, TimePicker} from "@mui/lab";
 
 export enum DeliveryOption {
   PICKUP = 'pickup',
@@ -32,8 +34,11 @@ export enum DeliveryOption {
 }
 
 export default function Checkout() {
+  const navigate = useNavigate();
   const { basket, updateBasket, pending } = useBasket();
-  const { user } = useUser();
+  const { profile } = useProfile();
+  const [date, setDate] = useState<Date | null>(new Date())
+  const [time, setTime] = useState<Date | null>(new Date())
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
   );
@@ -62,21 +67,58 @@ export default function Checkout() {
     }
   }, [basket]);
 
+  const deliveryDay = (date: Date) => {
+    return date.getDay() !== 3 && date.getDay() !== 4 && date.getDay() !== 5;
+  };
+
   return (
     <>
       <NavigationBox.NavBar onProducts={false} setBasketListener={null} />
-      <Grid container direction="row" sx={{ px: 15, py: 8 }}>
-        <Grid container item xs={12} spacing={2} sx={{ py: 5 }}>
+      <Grid
+        container
+        direction="row"
+        spacing="1rem"
+        paddingY="5rem"
+        alignItems="center"
+        justifyItems="center"
+        width="auto"
+        xs={12}
+        sx={{ ml: '0' }}
+      >
+        {' '}
+        <Grid container item xs={12} sx={{ pb: 2 }}>
           <Typography
             variant="h6"
             noWrap
-            component="h1"
             color="primary.main"
             fontWeight="bold"
             sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
           >
             {'Checkout'}
           </Typography>
+          {deliveryOption === 'pickup' ? (
+            <Button
+              sx={{
+                minWidth: 0,
+                float: 'right',
+              }}
+              variant="contained"
+              type="submit"
+              onClick={form.submitForm}
+            >
+              <AddShoppingCartIcon />
+              <Typography
+                sx={{
+                  textTransform: 'none',
+                  marginLeft: 1,
+                }}
+              >
+                {'Save basket'}
+              </Typography>
+            </Button>
+          ) : (
+            ''
+          )}
         </Grid>
         <Grid container item xs={12} spacing={2} sx={{ pb: 5 }}>
           <Card sx={{ width: '100%', p: 3 }}>
@@ -119,7 +161,7 @@ export default function Checkout() {
                     display="inline"
                     color="#757575"
                   >
-                    {user?.balance == null ? '0' : user?.balance}
+                    {basket?.user?.balance == null ? '0' : basket.user.balance}
                   </Typography>
                 </Typography>
                 <Typography
@@ -170,13 +212,13 @@ export default function Checkout() {
                   value === DeliveryOption.PICKUP
                     ? null
                     : basket.deliveryLocation ?? {
-                        name: '',
-                        surname: '',
-                        address: '',
-                        zipCode: '',
-                        city: '',
-                        province: '',
-                        region: '',
+                        name: (profile as User).name,
+                        surname: (profile as User).surname,
+                        address: (profile as User)?.address.address,
+                        zipCode: (profile as User)?.address.zipCode,
+                        city: (profile as User)?.address.city,
+                        province: (profile as User)?.address.province,
+                        region: (profile as User)?.address.region,
                       },
                 );
               }}
@@ -358,43 +400,56 @@ export default function Checkout() {
               Delivery date:
             </Typography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DateTimePicker
-                label="Delivery date and time"
-                value={form.values?.deliverAt}
-                onChange={date => form.setFieldValue('deliverAt', date)}
+              <DesktopDatePicker
+                label="Choose a date"
+                value={date}
+                shouldDisableDate={deliveryDay}
+                minDate={date}
+                maxDate={addDays(new Date(), 7)}
+                onChange={(newDate: Date) => {
+                  setDate(newDate);
+                }}
                 renderInput={(params: any) => (
-                  <TextField
-                    sx={{ mr: 8 }}
-                    {...params}
-                    name="deliverAt"
-                    disabled={pending}
-                    error={form.errors?.deliverAt}
-                    helperText={form.errors?.deliverAt}
-                  />
+                  <TextField sx={{ mr: 8 }} {...params} />
+                )}
+              />
+              <TimePicker
+                label="Choose a time"
+                value={time}
+                minTime={new Date(0, 0, 0, 9)}
+                maxTime={new Date(0, 0, 0, 18, 0)}
+                minutesStep={5}
+                onChange={(newTime: any) => {
+                  setTime(newTime);
+                }}
+                renderInput={params => (
+                  <TextField sx={{ mr: 'auto' }} {...params} />
                 )}
               />
             </LocalizationProvider>
           </Card>
-          <Button
-            sx={{
-              minWidth: 0,
-              px: { xs: 1, sm: 2 },
-              mt: 2,
-              float: 'right',
-            }}
-            variant="contained"
-            onClick={() => form.submitForm()}
-            startIcon={<CreditCardIcon />}
-          >
-            <Typography
+          {deliveryOption === 'delivery' ? (<Button
+              type="submit"
               sx={{
-                textTransform: 'none',
-                marginLeft: 1,
+                minWidth: 0,
+                float: 'right',
               }}
+              variant="contained"
+              onClick={form.submitForm}
+          >
+            <AddShoppingCartIcon />
+            <Typography
+                sx={{
+                  textTransform: 'none',
+                  marginLeft: 1,
+                }}
             >
-              Save basket
+              {'Save basket'}
             </Typography>
           </Button>
+          ) : (
+            ''
+          )}
         </Grid>
       </Grid>
     </>

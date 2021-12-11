@@ -107,20 +107,16 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
       backgroundColor: '#eaeaea',
       alpha: '0.75',
     },
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(3),
     marginLeft: 0,
     width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      marginLeft: theme.spacing(3),
-      width: 'auto',
-    },
   },
   '& .MuiAutocomplete-inputRoot': {
     padding: theme.spacing(0, 0, 0, 0),
     // vertical padding + font size from searchIcon
     transition: theme.transitions.create('width'),
     width: '100%',
-    [theme.breakpoints.up('md')]: {
+    [theme.breakpoints.up('sm')]: {
       width: '35ch',
     },
   },
@@ -248,11 +244,13 @@ function NavBar(props: any) {
                       <Box
                         key={option.id}
                         component="li"
-                        sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
+                        sx={{
+                          '& > img': { mr: 2, flexShrink: 0 },
+                        }}
                         {...props}
                       >
                         <Avatar
-                          sx={{ margin: 1 }}
+                          sx={{ m: 1 }}
                           src={
                             option?.type === 'Farmers'
                               ? option?.avatar
@@ -486,7 +484,10 @@ function NavBar(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <Basket balanceWarning={props.balanceWarning} />
+          <Basket
+            balanceWarning={props.balanceWarning}
+            setShowBasket={setShowBasket}
+          />
         </Box>
       </Drawer>
     </>

@@ -17,12 +17,27 @@ code {
     max-width: 1200px;
     margin: 0 auto;
 }
-
+.textarea{
+    resize:none !important;
+    font-family: system-ui;
+    padding: 8px;
+}
 .relative {
     position: relative;
 }
 
 .AdminUser:before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: #e6faed;
+}
+
+.AdminProduct:before {
     content: '';
     display: block;
     position: absolute;
@@ -39,6 +54,16 @@ code {
 }
 
 .add-icon-button:hover{
+    background-color: rgba(93, 216, 134, 0.75) !important;
+    color: #ffffff !important;
+}
+
+.save-icon-button{
+    background-color: #5dd886 !important;
+    color: #ffffff !important;
+}
+
+.save-icon-button:hover{
     background-color: rgba(93, 216, 134, 0.75) !important;
     color: #ffffff !important;
 }

@@ -63,7 +63,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  unitOfMeasure: string;
+  baseUnit: string;
   available: number;
   reserved: number;
   sold: number;
@@ -113,7 +113,7 @@ export interface User {
   deliveries: Order[];
   products: Product[];
   notifications: Notification[];
-  location: DeliveryLocation;
+  address: DeliveryLocation;
 }
 
 export interface Notification {

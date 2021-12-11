@@ -4,6 +4,7 @@ import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
+  Button,
   Grid,
   IconButton,
   InputBase,
@@ -92,7 +93,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
+export const AdminUsers = (props: {
+  handleDrawerToggle: () => void;
+  role: string;
+}) => {
   const navigate = useNavigate();
   const { users } = useUsers();
   const [sortedUsers, setSortedUsers] = useState<User[]>([]);
@@ -134,8 +138,9 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
-  const [sortOption, setSortOption] = useState('No sort');
+  const [sortOption, setSortOption] = useState(props.role);
   const sort = [
+    'all',
     'customer',
     'farmer',
     'rider',
@@ -147,8 +152,13 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
 
   const handleFilterByRole = (s: string) => {
     setSortOption(s);
-    setSortedUsers(users.filter(u => u.role === s));
-    navigate(`/admin/users?role=${s}`);
+    if (s === 'all') {
+      navigate(`/admin/users?role=${s}`);
+      setSortedUsers(users);
+    } else {
+      setSortedUsers(users.filter(u => u.role === s));
+      navigate(`/admin/users?role=${s}`);
+    }
   };
 
   return (
@@ -174,30 +184,26 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <IconButton className="add-icon-button" href="/admin/users/new">
+        <IconButton
+          sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
+          className="add-icon-button"
+          href="/admin/users/new"
+        >
           <Add />
         </IconButton>
-        <Typography variant="h6" ml={2} display={{ xs: 'none', md: 'inline' }}>
-          Create user
-        </Typography>
-      </AdminAppBar>
-      <Grid item xs={12} sm={1} sx={{ pt: { xs: 2, sm: 1 }, pl: 4 }}>
-        <TextField
-          id="outlined-select-role"
-          select
-          value={sortOption}
-          label="Filter by role"
-          size="small"
-          sx={{ width: '150px' }}
-          onChange={e => handleFilterByRole(e.target.value)}
+        <Button
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          href="/admin/users/new"
+          startIcon={<Add />}
         >
-          {sort.map(option => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Create user
+          </Typography>
+        </Button>
+      </AdminAppBar>
       <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
         <TableContainer
           component={Paper}
@@ -211,41 +217,75 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
                   >
-                    {c.sortable ? (
-                      <TableSortLabel
-                        active={sorting.by === c.key}
-                        direction={sorting.by === c.key ? sorting.dir : 'asc'}
-                        onClick={toggleSorting(c.key)}
-                      >
-                        {c.title}
-                      </TableSortLabel>
-                    ) : (
-                      c.title
-                    )}
+                    <Grid container direction="column" spacing={1}>
+                      <Grid item>
+                        {c.sortable ? (
+                          <TableSortLabel
+                            active={sorting.by === c.key}
+                            direction={
+                              sorting.by === c.key ? sorting.dir : 'asc'
+                            }
+                            onClick={toggleSorting(c.key)}
+                          >
+                            {c.title}
+                          </TableSortLabel>
+                        ) : (
+                          c.title
+                        )}
+                      </Grid>
+                      <Grid item>
+                        {c.key === 'role' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            value={sortOption}
+                            label="Filter by role"
+                            size="small"
+                            sx={{ width: '175px' }}
+                            onChange={e => handleFilterByRole(e.target.value)}
+                          >
+                            {sort.map(option => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : (
+                          <></>
+                        )}
+                      </Grid>
+                    </Grid>
                   </TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedUsers?.map(user => (
-                <TableRow
-                  hover
-                  key={user.id}
-                  sx={{
-                    '&:last-child td, &:last-child th': { border: 0 },
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => navigate(`/admin/users/${user.id}`)}
-                >
-                  <TableCell component="th" scope="row">
-                    {user.name}
-                  </TableCell>
-                  <TableCell>{user.surname}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>€ {user.balance}</TableCell>
-                </TableRow>
-              ))}
+              {sortedUsers
+                ?.filter(
+                  u =>
+                    !sortOption ||
+                    sortOption === 'all' ||
+                    u.role === sortOption,
+                )
+                ?.map(user => (
+                  <TableRow
+                    hover
+                    key={user.id}
+                    sx={{
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/admin/users/${user.id}`)}
+                  >
+                    <TableCell component="th" scope="row">
+                      {user.name}
+                    </TableCell>
+                    <TableCell>{user.surname}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell>€ {user.balance}</TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
