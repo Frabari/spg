@@ -1,10 +1,11 @@
 import { addDays } from 'date-fns';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import { DesktopDatePicker, TimePicker } from '@mui/lab';
+import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import {
@@ -12,15 +13,15 @@ import {
   Box,
   Button,
   Card,
-  Grid,
-  Typography,
-  InputLabel,
   FormControl,
-  OutlinedInput,
-  ToggleButtonGroup,
-  ToggleButton,
-  TextField,
   FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import { Order, User } from '../api/BasilApi';
@@ -37,8 +38,6 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { basket, updateBasket, pending } = useBasket();
   const { profile } = useProfile();
-  const [date, setDate] = useState<Date | null>(new Date());
-  const [time, setTime] = useState<Date | null>(new Date());
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
   );
@@ -50,10 +49,16 @@ export default function Checkout() {
       total: 0,
       insufficientBalance: false,
     } as Partial<Order>,
-    onSubmit: (values, { setErrors }) =>
-      updateBasket(values).catch(e => {
-        setErrors(e.data?.constraints);
-      }),
+    onSubmit: (values, { setErrors }) => {
+      return updateBasket(values)
+        .then(b => {
+          toast.success('Basket saved!');
+          navigate('/products');
+        })
+        .catch(e => {
+          setErrors(e.data?.constraints);
+        });
+    },
   });
 
   useEffect(() => {
@@ -128,7 +133,7 @@ export default function Checkout() {
                 component="h2"
                 sx={{ fontWeight: 'bold' }}
               >
-                {'Your basket'}
+                Your basket
               </Typography>
             </Box>
             <Grid
@@ -152,7 +157,7 @@ export default function Checkout() {
                   component="div"
                   color="#757575"
                 >
-                  {'Your balance €'}
+                  Your balance €
                   <Typography
                     fontWeight="bold"
                     align="right"
@@ -170,7 +175,7 @@ export default function Checkout() {
                   variant="h5"
                   component="div"
                 >
-                  {'Total €'}
+                  Total €
                   <Typography
                     fontWeight="bold"
                     align="right"
@@ -194,11 +199,11 @@ export default function Checkout() {
                 component="h2"
                 sx={{ fontWeight: 'bold' }}
               >
-                {'Delivery options'}
+                Delivery options
               </Typography>
             </Box>
             <Typography component="div" sx={{ fontSize: '15px' }}>
-              {'Choose an option:'}
+              Choose an option:
             </Typography>
 
             <ToggleButtonGroup
@@ -226,10 +231,10 @@ export default function Checkout() {
               sx={{ mt: 2, borderRadius: '16px' }}
             >
               <ToggleButton value={DeliveryOption.PICKUP}>
-                {"I'll pick it up"}
+                I'll pick it up
               </ToggleButton>
               <ToggleButton value={DeliveryOption.DELIVERY}>
-                {'Deliver it'}
+                Deliver it
               </ToggleButton>
             </ToggleButtonGroup>
             {form.values?.deliveryLocation != null && (
@@ -248,7 +253,7 @@ export default function Checkout() {
                     error={!!form.errors?.deliveryLocation?.name}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Name'}
+                      Name
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-name"
@@ -270,7 +275,7 @@ export default function Checkout() {
                     error={!!form.errors?.deliveryLocation?.surname}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Surname'}
+                      Surname
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-surname"
@@ -292,7 +297,7 @@ export default function Checkout() {
                     error={!!form.errors?.deliveryLocation?.address}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Address'}
+                      Address
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-address"
@@ -314,7 +319,7 @@ export default function Checkout() {
                     error={!!form.errors?.deliveryLocation?.zipCode}
                   >
                     <InputLabel htmlFor="outlined-adornment-zipcode">
-                      {'Zip code'}
+                      Zip code
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-zipcode"
@@ -336,7 +341,7 @@ export default function Checkout() {
                     error={!!form.errors?.deliveryLocation?.city}
                   >
                     <InputLabel htmlFor="outlined-adornment-city">
-                      {'City'}
+                      City
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-city"
@@ -358,7 +363,7 @@ export default function Checkout() {
                     error={!!form.errors?.deliveryLocation?.province}
                   >
                     <InputLabel htmlFor="outlined-adornment-province">
-                      {'Province'}
+                      Province
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-province"
@@ -380,7 +385,7 @@ export default function Checkout() {
                     error={!!form.errors?.deliveryLocation?.region}
                   >
                     <InputLabel htmlFor="outlined-adornment-region">
-                      {'Region'}
+                      Region
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-region"
@@ -397,35 +402,23 @@ export default function Checkout() {
               </Grid>
             )}
             <Typography component="div" sx={{ py: 3, fontSize: '15px' }}>
-              {'Delivery date:'}
+              Delivery date:
             </Typography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
-                label="Choose a date"
-                value={date}
+              <DateTimePicker
+                renderInput={props => <TextField {...props} />}
+                label="Delivery date and time"
+                value={form.values?.deliverAt}
                 shouldDisableDate={deliveryDay}
-                minDate={date}
+                minDate={new Date()}
                 maxDate={addDays(new Date(), 7)}
-                onChange={(newDate: Date) => {
-                  setDate(newDate);
-                }}
-                renderInput={(params: any) => (
-                  <TextField sx={{ mr: 8 }} {...params} />
-                )}
-              />
-              <TimePicker
-                label="Choose a time"
-                value={time}
                 minTime={new Date(0, 0, 0, 9)}
                 maxTime={new Date(0, 0, 0, 18, 0)}
-                minutesStep={5}
-                onChange={(newTime: any) => {
-                  setTime(newTime);
+                onChange={newValue => {
+                  form.setFieldValue('deliverAt', newValue);
                 }}
-                renderInput={params => (
-                  <TextField sx={{ mr: 'auto' }} {...params} />
-                )}
               />
+              <FormHelperText>{form.errors?.deliverAt}</FormHelperText>
             </LocalizationProvider>
           </Card>
           {deliveryOption === 'delivery' ? (
@@ -434,6 +427,7 @@ export default function Checkout() {
               sx={{
                 minWidth: 0,
                 float: 'right',
+                mt: '16px',
               }}
               variant="contained"
               onClick={form.submitForm}

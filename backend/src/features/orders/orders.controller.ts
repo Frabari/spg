@@ -59,7 +59,7 @@ export class OrdersController implements CrudController<Order> {
   @Override()
   @Roles(...STAFF)
   getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
-    crudRequest.parsed.fields = ['id', 'status', 'createdAt'];
+    crudRequest.parsed.fields = ['id', 'status', 'createdAt', 'deliverAt'];
     return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
       return orders?.map(order =>
         this.service.checkOrderBalance(order, request.user),

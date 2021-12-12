@@ -1,3 +1,4 @@
+import { addDays } from 'date-fns';
 import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -118,6 +119,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const { order, upsertOrder, pending } = useOrder(id);
   const { users } = useUsers();
   const [user, setUser] = useState<User>();
+  const [date, setDate] = useState<Date | null>(new Date());
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
@@ -134,16 +136,17 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
     } as Partial<Order>,
     onSubmit: (values: Partial<Order>, { setErrors }) => {
       return upsertOrder(values)
-          .then(newOrder => {
-            const creating = id == null;
-            toast.success(`Order ${creating ? 'created' : 'updated'}`);
-            if (creating) {
-              navigate(`/admin/orders/${(newOrder as Order).id}`);
-            } else navigate('/admin/orders')
-          })
-          .catch(e => {
-            setErrors(e.data?.constraints);
-          })
+        .then(newOrder => {
+          console.log(newOrder);
+          const creating = id == null;
+          toast.success(`Order ${creating ? 'created' : 'updated'}`);
+          if (creating) {
+            navigate(`/admin/orders/${(newOrder as Order).id}`);
+          } else navigate('/admin/orders');
+        })
+        .catch(e => {
+          setErrors(e.data?.constraints);
+        });
     },
   });
 
@@ -183,6 +186,10 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
       });
     }
     form.setValues(newValues);
+  };
+
+  const deliveryDay = (date: Date) => {
+    return date.getDay() !== 3 && date.getDay() !== 4 && date.getDay() !== 5;
   };
 
   return (
@@ -333,7 +340,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       </ListItemAvatar>
                       <ListItemText
                         primary={e.product.name}
-                        secondary={`€ ${e.product.price}/${e.product.baseUnit}`}
+                        secondary={`€ ${e.product.price} - ${e.product.baseUnit}`}
                       />
                     </ListItem>
                     <Divider />
@@ -574,20 +581,19 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               </Typography>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DateTimePicker
+                  renderInput={props => <TextField {...props} />}
                   label="Delivery date and time"
                   value={form.values?.deliverAt}
-                  onChange={date => form.setFieldValue('deliverAt', date)}
-                  renderInput={(params: any) => (
-                    <TextField
-                      sx={{ mr: 8 }}
-                      {...params}
-                      name="deliverAt"
-                      disabled={pending}
-                      error={form.errors?.deliverAt}
-                      helperText={form.errors?.deliverAt}
-                    />
-                  )}
+                  shouldDisableDate={deliveryDay}
+                  minDate={new Date()}
+                  maxDate={addDays(new Date(), 7)}
+                  minTime={new Date(0, 0, 0, 9)}
+                  maxTime={new Date(0, 0, 0, 18, 0)}
+                  onChange={newValue => {
+                    form.setFieldValue('deliverAt', newValue);
+                  }}
                 />
+                <FormHelperText>{form.errors?.deliverAt}</FormHelperText>
               </LocalizationProvider>
             </Grid>
           </Container>

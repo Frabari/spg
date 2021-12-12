@@ -26,6 +26,7 @@ import { Order } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { orderStatuses } from '../constants';
 import { useOrders } from '../hooks/useOrders';
+import { DeliveryOption } from './Checkout';
 
 const statusFilters = [
   'all',
@@ -67,6 +68,11 @@ const columns: {
   {
     key: 'createdAt',
     title: 'Created on',
+    sortable: true,
+  },
+  {
+    key: 'deliverAt',
+    title: 'Deliver/Pick up at',
     sortable: true,
   },
 ];
@@ -137,6 +143,7 @@ export const AdminOrders = (props: {
   var data = new Date();
 
   useEffect(() => {
+    console.log(orders);
     if (orders?.length) {
       const { by, dir, value } = sorting;
       if (by != null) {
@@ -295,6 +302,29 @@ export const AdminOrders = (props: {
                               </MenuItem>
                             ))}
                           </TextField>
+                        ) : c.key === 'deliverAt' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            // value
+                            size="small"
+                            label="Filter by delivery option"
+                            sx={{ width: '150px' }}
+                            // onChange
+                          >
+                            <MenuItem
+                              key={DeliveryOption.PICKUP}
+                              value={DeliveryOption.PICKUP}
+                            >
+                              {DeliveryOption.PICKUP}
+                            </MenuItem>
+                            <MenuItem
+                              key={DeliveryOption.DELIVERY}
+                              value={DeliveryOption.DELIVERY}
+                            >
+                              {DeliveryOption.DELIVERY}
+                            </MenuItem>
+                          </TextField>
                         ) : (
                           <></>
                         )}
@@ -369,6 +399,16 @@ export const AdminOrders = (props: {
                       <TableCell>{order.entries.length}</TableCell>
                       <TableCell>
                         {new Date(order.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {`${new Date(
+                          order.deliverAt,
+                        ).toLocaleDateString()} - ${new Date(
+                          order.deliverAt,
+                        ).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}`}
                       </TableCell>
                     </TableRow>
                   );
