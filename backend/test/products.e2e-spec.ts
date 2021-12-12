@@ -6,6 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
+import { Category } from '../src/features/categories/entities/category.entity';
 import { NotificationsModule } from '../src/features/notifications/notifications.module';
 import { OrdersModule } from '../src/features/orders/orders.module';
 import { Product } from '../src/features/products/entities/product.entity';
@@ -293,6 +294,17 @@ describe('ProductssController (e2e)', () => {
         password: await hash(password, 10),
         role: Role.MANAGER,
       });
+      const category = await entityManager.save(Category, {
+        name: 'Test category',
+        slug: 'test-category',
+      });
+      const farmer = await entityManager.save(User, {
+        name: 'Test name',
+        surname: 'Test surname',
+        email: 'test@email.com',
+        password: await hash(password, 10),
+        role: Role.FARMER,
+      });
       const server = app.getHttpServer();
       const response = await request(server)
         .post('/users/login')
@@ -309,6 +321,8 @@ describe('ProductssController (e2e)', () => {
           baseUnit: '1Kg',
           available: 5,
           image: 'https://image.png',
+          category,
+          farmer,
         })
         .expect(201)
         .expect(response => {
