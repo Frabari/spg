@@ -26,7 +26,7 @@ import { useUser } from '../hooks/useUser';
 function OutlinedCard() {
   const [passwordCheck, setPasswordCheck] = useState('');
   const { pending, setPending } = usePendingState();
-  const { upsertUser, error } = useUser(null);
+  const { upsertUser } = useUser(null);
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const form = useFormik({
@@ -37,14 +37,14 @@ function OutlinedCard() {
       password: '',
     } as Partial<User>,
     onSubmit: (values: Partial<User>, { setErrors }) => {
-      return upsertUser(values)
+      upsertUser(values)
         .then(u => {
           setPending(true);
           toast.success(`Welcome ${values.name}!`);
           navigate('/login');
         })
         .catch(e => {
-          setErrors(e.data.constraints);
+          setErrors(e.data?.constraints);
         });
     },
   });
