@@ -1,9 +1,10 @@
 import { addDays } from 'date-fns';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
-import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import { DesktopDatePicker, TimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import {
@@ -26,7 +27,6 @@ import { Order, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
-import {DesktopDatePicker, TimePicker} from "@mui/lab";
 
 export enum DeliveryOption {
   PICKUP = 'pickup',
@@ -37,8 +37,8 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { basket, updateBasket, pending } = useBasket();
   const { profile } = useProfile();
-  const [date, setDate] = useState<Date | null>(new Date())
-  const [time, setTime] = useState<Date | null>(new Date())
+  const [date, setDate] = useState<Date | null>(new Date());
+  const [time, setTime] = useState<Date | null>(new Date());
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
   );
@@ -428,7 +428,8 @@ export default function Checkout() {
               />
             </LocalizationProvider>
           </Card>
-          {deliveryOption === 'delivery' ? (<Button
+          {deliveryOption === 'delivery' ? (
+            <Button
               type="submit"
               sx={{
                 minWidth: 0,
@@ -436,17 +437,17 @@ export default function Checkout() {
               }}
               variant="contained"
               onClick={form.submitForm}
-          >
-            <AddShoppingCartIcon />
-            <Typography
+            >
+              <AddShoppingCartIcon />
+              <Typography
                 sx={{
                   textTransform: 'none',
                   marginLeft: 1,
                 }}
-            >
-              {'Save basket'}
-            </Typography>
-          </Button>
+              >
+                {'Save basket'}
+              </Typography>
+            </Button>
           ) : (
             ''
           )}

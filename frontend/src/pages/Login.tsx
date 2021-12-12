@@ -23,7 +23,7 @@ import { Logo } from '../components/Logo';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 
-function OutlinedCard(props: any) {
+function OutlinedCard() {
   const { load } = useProfile();
   const [show, setShow] = useState(false);
   const { pending, setPending } = usePendingState();
@@ -32,7 +32,7 @@ function OutlinedCard(props: any) {
       email: null,
       password: null,
     } as Partial<User>,
-    onSubmit: (values: Partial<User>, { setErrors }) => {
+    onSubmit: (values: Partial<User>, { setErrors }) =>
       login(values.email, values.password)
         .then(p => {
           setPending(true);
@@ -40,8 +40,7 @@ function OutlinedCard(props: any) {
         })
         .catch(e => {
           setErrors(e.data?.constraints);
-        });
-    },
+        }),
   });
 
   const handleClickShowPassword = () => {

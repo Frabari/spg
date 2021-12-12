@@ -306,27 +306,29 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
               </Grid>
             </Grid>
             <Grid container display="grid" marginTop="32px">
-                <Grid item>
-                  <FormControl
-                      variant="outlined"
-                      fullWidth
-                      required
-                      error={!!form.errors?.description}
-                  >
-                    <InputLabel htmlFor="product-description">Description</InputLabel>
-                    <OutlinedInput
-                        multiline
-                        id="product-description"
-                        type="text"
-                        name="description"
-                        onChange={form.handleChange}
-                        label="Description"
-                        value={form.values?.description ?? ''}
-                    />
-                    <FormHelperText>{form.errors?.description}</FormHelperText>
-                  </FormControl>
-                </Grid>
+              <Grid item>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.description}
+                >
+                  <InputLabel htmlFor="product-description">
+                    Description
+                  </InputLabel>
+                  <OutlinedInput
+                    multiline
+                    id="product-description"
+                    type="text"
+                    name="description"
+                    onChange={form.handleChange}
+                    label="Description"
+                    value={form.values?.description ?? ''}
+                  />
+                  <FormHelperText>{form.errors?.description}</FormHelperText>
+                </FormControl>
               </Grid>
+            </Grid>
           </div>
         </Paper>
       </Box>

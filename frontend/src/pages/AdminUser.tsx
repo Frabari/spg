@@ -116,21 +116,21 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
           Users / {user ? `${user.name} ${user.surname}` : 'New'}
         </Typography>
         <IconButton
-		  type="submit"
+          type="submit"
           sx={{ display: { xs: 'flex', md: 'none' } }}
           className="save-icon-button"
-		  onClick={form.submitForm}
+          onClick={form.submitForm}
           disabled={pending}
         >
           <Save />
         </IconButton>
         <Button
-		  type="submit"
+          type="submit"
           sx={{
             display: { xs: 'none', md: 'flex' },
           }}
           variant="contained"
-		  onClick={form.submitForm}
+          onClick={form.submitForm}
           disabled={pending}
           startIcon={<Save />}
         >
