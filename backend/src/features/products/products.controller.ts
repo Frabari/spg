@@ -120,6 +120,7 @@ export class ProductsController implements CrudController<Product> {
     @Request() request,
     @ParsedBody() dto: CreateProductDto,
   ) {
+    crudRequest.parsed.join = [{ field: 'category' }];
     const product = await this.service.checkProduct(dto, request.user);
     return this.base.createOneBase(crudRequest, product as Product);
   }
