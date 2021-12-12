@@ -135,7 +135,6 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
       insufficientBalance: false,
     } as Partial<Order>,
     onSubmit: (values: Partial<Order>, { setErrors }) => {
-      console.log('values1: ', values);
       return upsertOrder(values)
         .then(newOrder => {
           console.log(newOrder);
@@ -374,10 +373,24 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               value={deliveryOption}
               exclusive
               onChange={(event, value) => {
+                value === DeliveryOption.PICKUP
+                  ? setCheck(false)
+                  : setCheck(true);
                 setDeliveryOption(value);
-                value === 'delivery'
-                  ? form.setFieldValue('deliveryLocation', user.address)
-                  : form.setFieldValue('deliveryLocation', null);
+                form.setFieldValue(
+                  'deliveryLocation',
+                  value === DeliveryOption.PICKUP
+                    ? null
+                    : order.deliveryLocation ?? {
+                        name: (user as User).name,
+                        surname: (user as User).surname,
+                        address: (user as User)?.address.address,
+                        zipCode: (user as User)?.address.zipCode,
+                        city: (user as User)?.address.city,
+                        province: (user as User)?.address.province,
+                        region: (user as User)?.address.region,
+                      },
+                );
               }}
               aria-label="delivery"
               sx={{ mt: 2, borderRadius: '16px' }}
@@ -393,7 +406,17 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   control={
                     <IOSSwitch
                       sx={{ m: 1, marginLeft: 10 }}
-                      setCheck={setCheck}
+                      setCheck={() => {
+                        if (!check) {
+                          form.setFieldValue(
+                            'deliveryLocation',
+                            (user as User).address,
+                          );
+                        } else {
+                          form.setFieldValue('deliveryLocation', null);
+                        }
+                        setCheck(!check);
+                      }}
                     />
                   }
                   label="Default address"
@@ -422,9 +445,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       id="outlined-adornment-name"
                       name="deliveryLocation.name"
                       disabled={check}
-                      value={
-                        (check && form.values?.deliveryLocation?.name) || ''
-                      }
+                      value={form.values?.deliveryLocation?.name ?? ''}
                       label="Name"
                       onChange={form.handleChange}
                     />
@@ -447,9 +468,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       id="outlined-adornment-surname"
                       name="deliveryLocation.surname"
                       disabled={check}
-                      value={
-                        (check && form.values?.deliveryLocation?.surname) || ''
-                      }
+                      value={form.values?.deliveryLocation?.surname ?? ''}
                       label="Surname"
                       onChange={form.handleChange}
                     />
@@ -472,9 +491,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       id="outlined-adornment-address"
                       name="deliveryLocation.address"
                       disabled={check}
-                      value={
-                        (check && form.values?.deliveryLocation?.address) || ''
-                      }
+                      value={form.values?.deliveryLocation?.address ?? ''}
                       label="Address"
                       onChange={form.handleChange}
                     />
@@ -498,9 +515,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       label="Zip code"
                       name="deliveryLocation.zipCode"
                       disabled={check}
-                      value={
-                        (check && form.values?.deliveryLocation?.zipCode) || ''
-                      }
+                      value={form.values?.deliveryLocation?.zipCode ?? ''}
                       onChange={form.handleChange}
                     />
                   </FormControl>
@@ -523,9 +538,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       label="City"
                       name="deliveryLocation.city"
                       disabled={check}
-                      value={
-                        (check && form.values?.deliveryLocation?.city) || ''
-                      }
+                      value={form.values?.deliveryLocation?.city ?? ''}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
@@ -548,9 +561,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       label="Province"
                       name="deliveryLocation.province"
                       disabled={check}
-                      value={
-                        (check && form.values?.deliveryLocation?.province) || ''
-                      }
+                      value={form.values?.deliveryLocation?.province ?? ''}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
@@ -573,9 +584,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       label="Region"
                       name="deliveryLocation.region"
                       disabled={check}
-                      value={
-                        (check && form.values?.deliveryLocation?.region) || ''
-                      }
+                      value={form.values?.deliveryLocation?.region ?? ''}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
