@@ -22,6 +22,9 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  Switch,
+  styled,
+  FormControlLabel,
 } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import { Order, User } from '../api/BasilApi';
@@ -34,10 +37,70 @@ export enum DeliveryOption {
   DELIVERY = 'delivery',
 }
 
+const IOSSwitch = styled((props: any) => (
+    <Switch
+        focusVisibleClassName=".Mui-focusVisible"
+        defaultChecked
+        disableRipple
+        {...props}
+        onChange={p => {
+          props.setCheck(p.target.checked);
+        }}
+    />
+))(({ theme }) => ({
+  width: 42,
+  height: 26,
+  padding: 0,
+  '& .MuiSwitch-switchBase': {
+    padding: 0,
+    margin: 2,
+    transitionDuration: '300ms',
+    '&.Mui-checked': {
+      transform: 'translateX(16px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#65C466',
+        opacity: 1,
+        border: 0,
+      },
+      '&.Mui-disabled + .MuiSwitch-track': {
+        opacity: 0.5,
+      },
+    },
+    '&.Mui-focusVisible .MuiSwitch-thumb': {
+      color: '#33cf4d',
+      border: '6px solid #fff',
+    },
+    '&.Mui-disabled .MuiSwitch-thumb': {
+      color:
+          theme.palette.mode === 'light'
+              ? theme.palette.grey[100]
+              : theme.palette.grey[600],
+    },
+    '&.Mui-disabled + .MuiSwitch-track': {
+      opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    boxSizing: 'border-box',
+    width: 22,
+    height: 22,
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 26 / 2,
+    backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+    opacity: 1,
+    transition: theme.transitions.create(['background-color'], {
+      duration: 500,
+    }),
+  },
+}));
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { basket, updateBasket, pending } = useBasket();
   const { profile } = useProfile();
+  const [check, setCheck] = useState(true);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
   );
@@ -237,6 +300,17 @@ export default function Checkout() {
                 Deliver it
               </ToggleButton>
             </ToggleButtonGroup>
+            {deliveryOption === DeliveryOption.DELIVERY && (
+                <FormControlLabel
+                    control={
+                      <IOSSwitch
+                          sx={{ m: 1, marginLeft: 10 }}
+                          setCheck={setCheck}
+                      />
+                    }
+                    label="Default address"
+                />
+            )}
             {form.values?.deliveryLocation != null && (
               <Grid
                 container
@@ -258,7 +332,8 @@ export default function Checkout() {
                     <OutlinedInput
                       id="outlined-adornment-name"
                       name="deliveryLocation.name"
-                      value={form.values?.deliveryLocation?.name ?? ''}
+                      disabled={check}
+                      defaultValue={form.values?.deliveryLocation?.name}
                       label="Name"
                       onChange={form.handleChange}
                     />
@@ -280,7 +355,8 @@ export default function Checkout() {
                     <OutlinedInput
                       id="outlined-adornment-surname"
                       name="deliveryLocation.surname"
-                      value={form.values?.deliveryLocation?.surname ?? ''}
+                      disabled={check}
+                      defaultValue={form.values?.deliveryLocation?.surname}
                       label="Surname"
                       onChange={form.handleChange}
                     />
@@ -302,8 +378,9 @@ export default function Checkout() {
                     <OutlinedInput
                       id="outlined-adornment-address"
                       name="deliveryLocation.address"
-                      value={form.values?.deliveryLocation?.address ?? ''}
+                      value={form.values?.deliveryLocation?.address}
                       label="Address"
+                      disabled={check}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
@@ -325,7 +402,8 @@ export default function Checkout() {
                       id="outlined-adornment-zipcode"
                       label="Zip code"
                       name="deliveryLocation.zipCode"
-                      value={form.values?.deliveryLocation?.zipCode ?? ''}
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.zipCode}
                       onChange={form.handleChange}
                     />
                   </FormControl>
@@ -347,7 +425,8 @@ export default function Checkout() {
                       id="outlined-adornment-city"
                       label="City"
                       name="deliveryLocation.city"
-                      value={form.values?.deliveryLocation?.city ?? ''}
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.city}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
@@ -369,7 +448,8 @@ export default function Checkout() {
                       id="outlined-adornment-province"
                       label="Province"
                       name="deliveryLocation.province"
-                      value={form.values?.deliveryLocation?.province ?? ''}
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.province}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
@@ -391,7 +471,8 @@ export default function Checkout() {
                       id="outlined-adornment-region"
                       label="Region"
                       name="deliveryLocation.region"
-                      value={form.values?.deliveryLocation?.region ?? ''}
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.region}
                       onChange={form.handleChange}
                     />
                     <FormHelperText>
