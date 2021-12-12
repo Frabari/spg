@@ -31,6 +31,7 @@ export const useProduct = (id?: ProductId) => {
         })
         .catch(e => {
           setError(e);
+          throw e;
         })
         .finally(() => setPending(false));
     }
@@ -41,7 +42,7 @@ export const useProduct = (id?: ProductId) => {
       })
       .catch(e => {
         setError(e);
-        toast.error(e.message);
+        throw e;
       })
       .finally(() => setPending(false));
   };
@@ -54,6 +55,7 @@ export const useProduct = (id?: ProductId) => {
         .catch(e => {
           setError(e);
           toast.error(e.message);
+          throw e;
         })
         .finally(() => setPending(false));
     }

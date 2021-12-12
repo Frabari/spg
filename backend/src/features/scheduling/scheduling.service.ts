@@ -12,40 +12,41 @@ export class SchedulingService {
   ) {}
 
   @Cron('0 23 * * 0')
-  closeWeeklySales(controlled = false) {
-    return Promise.all([
-      this.productsService.resetProductsAvailability(),
-      this.ordersService.lockBaskets(),
-    ]).then(() => {
-      if (controlled) {
-        const now = DateTime.now();
-        let daysToSynday = 7 - now.weekday;
-        if (daysToSynday === 0) {
-          if (now.hour >= 23 && now.millisecond >= 0) {
-            daysToSynday = 7;
-          }
+  async closeWeeklySales(controlled = false) {
+    await this.productsService.resetProductsAvailability();
+    await this.ordersService.lockBaskets();
+    if (controlled) {
+      const now = DateTime.now();
+      let daysToSynday = 7 - now.weekday;
+      if (daysToSynday === 0) {
+        if (now.hour >= 23 && now.millisecond >= 0) {
+          daysToSynday = 7;
         }
-        const date = now
-          .plus({
-            days: daysToSynday,
-          })
-          .set({
-            hour: 23,
-            minute: 0,
-            second: 0,
-            millisecond: 0,
-          })
-          .toString();
-        process.env.FAKETIME = date;
       }
-    });
+      const date = now
+        .plus({
+          days: daysToSynday,
+        })
+        .set({
+          hour: 23,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        })
+        .toString();
+      process.env.FAKETIME = date;
+    }
   }
 
   @Cron('0 9 * * 1')
-  closeBaskets() {
-    return Promise.all([
-      this.ordersService.deleteDraftOrderEntries(),
-      this.ordersService.closeBaskets(),
-    ]);
+  async closeBaskets() {
+    await this.ordersService.deleteDraftOrderEntries();
+    await this.ordersService.closeBaskets();
+    await this.ordersService.payBaskets();
+  }
+
+  @Cron('0 18 * * 1')
+  payPendingBaskets() {
+    return this.ordersService.payBaskets(true);
   }
 }

@@ -59,7 +59,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     return dto;
   }
 
-  async checkProductsUpdate(id: ProductId, dto: Product, user: User) {
+  async checkProductsUpdate(id: ProductId, dto: CreateProductDto, user: User) {
     const product = await this.productsRepository.findOne(id, {
       relations: ['farmer'],
     });

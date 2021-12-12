@@ -11,4 +11,9 @@ export class SchedulingController {
   endService() {
     return this.schedulingService.closeWeeklySales(true);
   }
+
+  @Get('paybaskets')
+  paybaskets() {
+    return this.schedulingService.closeBaskets();
+  }
 }

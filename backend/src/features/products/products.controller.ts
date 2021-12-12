@@ -26,6 +26,7 @@ import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
 import { ADMINS, Role } from '../users/roles.enum';
 import { CreateProductDto } from './dtos/create-product.dto';
+import { UpdateProductDto } from './dtos/update-product.dto';
 import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
 
@@ -35,6 +36,7 @@ import { ProductsService } from './products.service';
   },
   dto: {
     create: CreateProductDto,
+    update: UpdateProductDto,
   },
   query: {
     join: {
@@ -128,7 +130,7 @@ export class ProductsController implements CrudController<Product> {
   async updateOne(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,
-    @Body() dto: Product,
+    @Body() dto: UpdateProductDto,
     @Param('id') id: number,
   ) {
     const product = await this.service.checkProductsUpdate(

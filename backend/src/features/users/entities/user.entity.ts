@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import {
   Allow,
   IsEmail,
@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  ValidateNested,
 } from 'class-validator';
 import {
   Column,
@@ -128,5 +129,7 @@ export class User {
   })
   @JoinColumn()
   @Allow()
+  @Type(() => DeliveryLocation)
+  @ValidateNested()
   address: DeliveryLocation;
 }

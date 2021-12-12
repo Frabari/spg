@@ -41,7 +41,7 @@ export class TransactionsController implements CrudController<Transaction> {
     @ParsedRequest() request: CrudRequest,
     @ParsedBody() dto: CreateTransactionDto,
   ) {
-    const transaction = await this.service.checkTransaction(dto);
+    const transaction = await this.service.validateTransactionCreateDto(dto);
     return this.base.createOneBase(request, transaction as Transaction);
   }
 }

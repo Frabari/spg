@@ -1,8 +1,12 @@
+import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FormikErrors, useFormik } from 'formik';
 import { Add, Save } from '@mui/icons-material';
+import { DateTimePicker } from '@mui/lab';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import {
   Avatar,
   Box,
@@ -19,32 +23,114 @@ import {
   ListItemAvatar,
   ListItemText,
   MenuItem,
+  OutlinedInput,
   Paper,
   Select,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { Order, OrderEntry, OrderStatus, Product } from '../api/BasilApi';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import { styled } from '@mui/material/styles';
+import {
+  getUser,
+  Order,
+  OrderEntry,
+  OrderStatus,
+  Product,
+  User,
+} from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
 import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
 import { useUsers } from '../hooks/useUsers';
+import { DeliveryOption } from './Checkout';
 
 const statuses = Object.values(orderStatuses);
+
+const IOSSwitch = styled((props: any) => (
+  <Switch
+    focusVisibleClassName=".Mui-focusVisible"
+    defaultChecked
+    disableRipple
+    {...props}
+    onChange={p => {
+      props.setCheck(p.target.checked);
+    }}
+  />
+))(({ theme }) => ({
+  width: 42,
+  height: 26,
+  padding: 0,
+  '& .MuiSwitch-switchBase': {
+    padding: 0,
+    margin: 2,
+    transitionDuration: '300ms',
+    '&.Mui-checked': {
+      transform: 'translateX(16px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#65C466',
+        opacity: 1,
+        border: 0,
+      },
+      '&.Mui-disabled + .MuiSwitch-track': {
+        opacity: 0.5,
+      },
+    },
+    '&.Mui-focusVisible .MuiSwitch-thumb': {
+      color: '#33cf4d',
+      border: '6px solid #fff',
+    },
+    '&.Mui-disabled .MuiSwitch-thumb': {
+      color:
+        theme.palette.mode === 'light'
+          ? theme.palette.grey[100]
+          : theme.palette.grey[600],
+    },
+    '&.Mui-disabled + .MuiSwitch-track': {
+      opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    boxSizing: 'border-box',
+    width: 22,
+    height: 22,
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 26 / 2,
+    backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+    opacity: 1,
+    transition: theme.transitions.create(['background-color'], {
+      duration: 500,
+    }),
+  },
+}));
 
 export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
+  const [check, setCheck] = useState(true);
   const id = idParam === 'new' ? null : +idParam;
   const { order, upsertOrder, pending } = useOrder(id);
   const { users } = useUsers();
+  const [user, setUser] = useState<User>();
   const [selectingProduct, setSelectingProduct] = useState(false);
+  const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
+    DeliveryOption.PICKUP,
+  );
   const form = useFormik({
     initialValues: {
       user: { id: null },
       status: OrderStatus.DRAFT,
       entries: [],
+      deliverAt: null,
+      deliveryLocation: null,
+      total: 0,
+      insufficientBalance: false,
     } as Partial<Order>,
     onSubmit: (values: Partial<Order>, { setErrors }) =>
       upsertOrder(values)
@@ -59,6 +145,15 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
           setErrors(e.data?.constraints);
         }),
   });
+
+  useEffect(() => {
+    if (form.values.user.id !== null) {
+      getUser(form.values.user.id).then(u => {
+        setUser(u);
+        form.setFieldValue('deliveryLocation', u.address);
+      });
+    }
+  }, [form.values.user.id]);
 
   useEffect(() => {
     if (order) {
@@ -104,6 +199,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         </Typography>
         <Button
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
+          type="submit"
           variant="contained"
           disabled={pending}
           onClick={form.submitForm}
@@ -120,7 +216,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         </Button>
       </AdminAppBar>
       <Box
-        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+        sx={{
+          p: { xs: 2, sm: 3 },
+          pt: { sm: 0 },
+          flexGrow: 1,
+        }}
       >
         <Paper sx={{ py: { xs: 2, sm: 4 } }}>
           <Container>
@@ -232,7 +332,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       </ListItemAvatar>
                       <ListItemText
                         primary={e.product.name}
-                        secondary={`€ ${e.product.price}/${e.product.unitOfMeasure}`}
+                        secondary={`€ ${e.product.price}/${e.product.baseUnit}`}
                       />
                     </ListItem>
                     <Divider />
@@ -253,6 +353,242 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               Delivery/pickup
             </Typography>
             <Divider />
+            <ToggleButtonGroup
+              disabled={form.values.user.id === null}
+              value={deliveryOption}
+              exclusive
+              onChange={(event, value) => {
+                setDeliveryOption(value);
+                form.setFieldValue('deliveryLocation', user.address);
+              }}
+              aria-label="delivery"
+              sx={{ mt: 2, borderRadius: '16px' }}
+            >
+              <ToggleButton value={DeliveryOption.PICKUP}>
+                I'll pick it up
+              </ToggleButton>
+              <ToggleButton value={DeliveryOption.DELIVERY}>
+                Deliver it
+              </ToggleButton>
+              {deliveryOption === DeliveryOption.DELIVERY && (
+                <FormControlLabel
+                  control={
+                    <IOSSwitch
+                      sx={{ m: 1, marginLeft: 10 }}
+                      setCheck={setCheck}
+                    />
+                  }
+                  label="Default address"
+                />
+              )}
+            </ToggleButtonGroup>
+            {deliveryOption === DeliveryOption.DELIVERY && (
+              <Grid
+                container
+                direction="row"
+                spacing={2}
+                gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
+                sx={{ pt: 3 }}
+              >
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.name}
+                  >
+                    <InputLabel htmlFor="outlined-adornment-address">
+                      Name
+                    </InputLabel>
+                    <OutlinedInput
+                      id="outlined-adornment-name"
+                      name="deliveryLocation.name"
+                      disabled={check}
+                      value={
+                        (check && form.values?.deliveryLocation?.name) || ''
+                      }
+                      label="Name"
+                      onChange={form.handleChange}
+                    />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.name}
+                    </FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.surname}
+                  >
+                    <InputLabel htmlFor="outlined-adornment-address">
+                      Surname
+                    </InputLabel>
+                    <OutlinedInput
+                      id="outlined-adornment-surname"
+                      name="deliveryLocation.surname"
+                      disabled={check}
+                      value={
+                        (check && form.values?.deliveryLocation?.surname) || ''
+                      }
+                      label="Surname"
+                      onChange={form.handleChange}
+                    />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.surname}
+                    </FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.address}
+                  >
+                    <InputLabel htmlFor="outlined-adornment-address">
+                      Address
+                    </InputLabel>
+                    <OutlinedInput
+                      id="outlined-adornment-address"
+                      name="deliveryLocation.address"
+                      disabled={check}
+                      value={
+                        (check && form.values?.deliveryLocation?.address) || ''
+                      }
+                      label="Address"
+                      onChange={form.handleChange}
+                    />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.address}
+                    </FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.zipCode}
+                  >
+                    <InputLabel htmlFor="outlined-adornment-zipcode">
+                      Zip code
+                    </InputLabel>
+                    <OutlinedInput
+                      id="outlined-adornment-zipcode"
+                      label="Zip code"
+                      name="deliveryLocation.zipCode"
+                      disabled={check}
+                      value={
+                        (check && form.values?.deliveryLocation?.zipCode) || ''
+                      }
+                      onChange={form.handleChange}
+                    />
+                  </FormControl>
+                  <FormHelperText>
+                    {form.errors?.deliveryLocation?.zipCode}
+                  </FormHelperText>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.city}
+                  >
+                    <InputLabel htmlFor="outlined-adornment-city">
+                      City
+                    </InputLabel>
+                    <OutlinedInput
+                      id="outlined-adornment-city"
+                      label="City"
+                      name="deliveryLocation.city"
+                      disabled={check}
+                      value={
+                        (check && form.values?.deliveryLocation?.city) || ''
+                      }
+                      onChange={form.handleChange}
+                    />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.city}
+                    </FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.province}
+                  >
+                    <InputLabel htmlFor="outlined-adornment-province">
+                      Province
+                    </InputLabel>
+                    <OutlinedInput
+                      id="outlined-adornment-province"
+                      label="Province"
+                      name="deliveryLocation.province"
+                      disabled={check}
+                      value={
+                        (check && form.values?.deliveryLocation?.province) || ''
+                      }
+                      onChange={form.handleChange}
+                    />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.province}
+                    </FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.region}
+                  >
+                    <InputLabel htmlFor="outlined-adornment-region">
+                      Region
+                    </InputLabel>
+                    <OutlinedInput
+                      id="outlined-adornment-region"
+                      label="Region"
+                      name="deliveryLocation.region"
+                      disabled={check}
+                      value={
+                        (check && form.values?.deliveryLocation?.region) || ''
+                      }
+                      onChange={form.handleChange}
+                    />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.region}
+                    </FormHelperText>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            )}
+            <Grid item xs={12}>
+              <Typography component="div" sx={{ py: 3, fontSize: '15px' }}>
+                Delivery date:
+              </Typography>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DateTimePicker
+                  label="Delivery date and time"
+                  value={form.values?.deliverAt}
+                  onChange={date => form.setFieldValue('deliverAt', date)}
+                  renderInput={(params: any) => (
+                    <TextField
+                      sx={{ mr: 8 }}
+                      {...params}
+                      name="deliverAt"
+                      disabled={pending}
+                      error={form.errors?.deliverAt}
+                      helperText={form.errors?.deliverAt}
+                    />
+                  )}
+                />
+              </LocalizationProvider>
+            </Grid>
           </Container>
         </Paper>
       </Box>

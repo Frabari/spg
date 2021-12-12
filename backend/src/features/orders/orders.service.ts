@@ -8,7 +8,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
+import {
+  NotificationPriority,
+  NotificationType,
+} from '../notifications/entities/notification.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ProductsService } from '../products/products.service';
+import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
 import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
@@ -26,6 +32,8 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     @InjectRepository(OrderEntry)
     private readonly ordersEntryRepository: Repository<OrderEntry>,
     private readonly productsService: ProductsService,
+    private readonly notificationsService: NotificationsService,
+    private readonly transactionsService: TransactionsService,
   ) {
     super(ordersRepository);
   }
@@ -300,14 +308,92 @@ export class OrdersService extends TypeOrmCrudService<Order> {
    * Closes the baskets: sets the status to
    * pending payment
    */
-  closeBaskets() {
-    return this.ordersRepository.update(
-      {
+  async closeBaskets() {
+    const baskets = await this.ordersRepository.find({
+      where: {
         status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
       },
-      {
+      relations: ['entries', 'entries.product', 'user'],
+    });
+    for (const basket of baskets) {
+      if (basket.entries?.length) {
+        await this.ordersRepository.update(basket.id, {
+          status: OrderStatus.PENDING_PAYMENT,
+        });
+      } else {
+        await this.ordersRepository.update(basket.id, {
+          status: OrderStatus.CANCELED,
+        });
+        await this.notificationsService.sendNotification(
+          {
+            type: NotificationType.ERROR,
+            title: 'Order cancelled',
+            message: `Your order #${basket.id} was cancelled because none of its entries was confirmed by the producers`,
+            priority: NotificationPriority.CRITICAL,
+          },
+          { id: basket.user.id },
+        );
+      }
+    }
+  }
+
+  /**
+   * Creates a payment transaction when the user balance
+   * is enough to pay the active basket
+   */
+  async payBaskets(cancelOnInsufficientBalance = false) {
+    const baskets = await this.ordersRepository.find({
+      where: {
         status: OrderStatus.PENDING_PAYMENT,
       },
-    );
+      relations: ['entries', 'entries.product', 'user'],
+    });
+    for (const basket of baskets) {
+      if (basket.entries?.length) {
+        if (basket.user.balance >= basket.total) {
+          await this.transactionsService.createTransaction({
+            user: basket.user,
+            amount: -basket.total,
+          });
+          await this.notificationsService.sendNotification(
+            {
+              type: NotificationType.SUCCESS,
+              title: 'Order paid successfully',
+              message: `The payment for your order #${basket.id} was successful.\n\nTotal: € ${basket.total}`,
+              priority: NotificationPriority.CRITICAL,
+            },
+            { id: basket.user.id },
+          );
+          await this.ordersRepository.update(basket.id, {
+            status: OrderStatus.PAID,
+          });
+        } else {
+          if (cancelOnInsufficientBalance) {
+            await this.ordersRepository.update(basket, {
+              status: OrderStatus.CANCELED,
+            });
+            await this.notificationsService.sendNotification(
+              {
+                type: NotificationType.ERROR,
+                title: 'Basket cancelled',
+                message: `Your active basket was cancelled because your balance was insufficient`,
+                priority: NotificationPriority.CRITICAL,
+              },
+              { id: basket.user.id },
+            );
+          } else {
+            await this.notificationsService.sendNotification(
+              {
+                type: NotificationType.ERROR,
+                title: 'Insufficient balance',
+                message: `Your active basket cannot be paid because your balance is insufficient. Top up your wallet by today at 6pm or your basket will be cancelled`,
+                priority: NotificationPriority.CRITICAL,
+              },
+              { id: basket.user.id },
+            );
+          }
+        }
+      }
+    }
   }
 }

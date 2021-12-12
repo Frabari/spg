@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useSearchParams,
+} from 'react-router-dom';
 import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
@@ -17,6 +23,7 @@ import {
   ListItemText,
   Toolbar,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import { logout, Role, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
@@ -54,9 +61,12 @@ export const Admin = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { profile, load } = useProfile();
   const { pending, setPending } = usePendingState();
-
+  const [queryParams] = useSearchParams();
+  const isMobile = useMediaQuery('(max-width:760px)');
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    if (isMobile) {
+      setMobileOpen(!mobileOpen);
+    }
   };
 
   const handleLogout = async () => {
@@ -177,7 +187,10 @@ export const Admin = () => {
             path="/users"
             element={
               <ProtectedRoute>
-                <AdminUsers handleDrawerToggle={handleDrawerToggle} />
+                <AdminUsers
+                  handleDrawerToggle={handleDrawerToggle}
+                  role={queryParams.get('role')}
+                />
               </ProtectedRoute>
             }
           />
@@ -193,7 +206,14 @@ export const Admin = () => {
             path="/products"
             element={
               <ProtectedRoute>
-                <AdminProducts handleDrawerToggle={handleDrawerToggle} />
+                <AdminProducts
+                  handleDrawerToggle={handleDrawerToggle}
+                  farmer={
+                    typeof profile === 'object' && profile.role === Role.FARMER
+                  }
+                  category={queryParams.get('category')}
+                  farmers={queryParams.get('farmer')}
+                />
               </ProtectedRoute>
             }
           />
@@ -209,7 +229,11 @@ export const Admin = () => {
             path="/orders"
             element={
               <ProtectedRoute>
-                <AdminOrders handleDrawerToggle={handleDrawerToggle} />
+                <AdminOrders
+                  handleDrawerToggle={handleDrawerToggle}
+                  status={queryParams.get('status')}
+                  week={queryParams.get('week')}
+                />
               </ProtectedRoute>
             }
           />

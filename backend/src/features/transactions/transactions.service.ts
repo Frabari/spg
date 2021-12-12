@@ -20,7 +20,7 @@ export class TransactionsService extends TypeOrmCrudService<Transaction> {
     super(transactionsRepository);
   }
 
-  async checkTransaction(dto: CreateTransactionDto) {
+  async validateTransactionCreateDto(dto: CreateTransactionDto) {
     const user = await this.usersService.findOne(dto.user.id);
     if (!user) {
       throw new NotFoundException(
@@ -36,5 +36,10 @@ export class TransactionsService extends TypeOrmCrudService<Transaction> {
     }
     await this.usersService.updateBalance(user, dto.amount);
     return dto;
+  }
+
+  async createTransaction(dto: CreateTransactionDto) {
+    dto = await this.validateTransactionCreateDto(dto);
+    return this.transactionsRepository.save(dto);
   }
 }
