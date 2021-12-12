@@ -381,7 +381,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   'deliveryLocation',
                   value === DeliveryOption.PICKUP
                     ? null
-                    : order.deliveryLocation ?? {
+                    : order?.deliveryLocation ?? {
                         name: (user as User).name,
                         surname: (user as User).surname,
                         address: (user as User)?.address.address,
