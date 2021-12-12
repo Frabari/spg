@@ -147,7 +147,7 @@ export default function ProductInfo(props: any) {
                             fontSize: 20,
                             py: 3,
                           }}
-                          label={`${product?.available} ${product.baseUnit} left!`}
+                          label={`${product?.available} left!`}
                         />
                       </Grid>
                     </Grid>

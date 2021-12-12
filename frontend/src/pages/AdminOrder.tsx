@@ -132,18 +132,19 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
       total: 0,
       insufficientBalance: false,
     } as Partial<Order>,
-    onSubmit: (values: Partial<Order>, { setErrors }) =>
-      upsertOrder(values)
-        .then(newOrder => {
-          const creating = id == null;
-          toast.success(`Order ${creating ? 'created' : 'updated'}`);
-          if (creating) {
-            navigate(`/admin/orders/${(newOrder as Order).id}`);
-          }
-        })
-        .catch(e => {
-          setErrors(e.data?.constraints);
-        }),
+    onSubmit: (values: Partial<Order>, { setErrors }) => {
+      return upsertOrder(values)
+          .then(newOrder => {
+            const creating = id == null;
+            toast.success(`Order ${creating ? 'created' : 'updated'}`);
+            if (creating) {
+              navigate(`/admin/orders/${(newOrder as Order).id}`);
+            } else navigate('/admin/orders')
+          })
+          .catch(e => {
+            setErrors(e.data?.constraints);
+          })
+    },
   });
 
   useEffect(() => {

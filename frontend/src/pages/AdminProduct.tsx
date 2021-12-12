@@ -43,13 +43,14 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
       baseUnit: null,
     } as Partial<Product>,
     onSubmit: (values: Partial<Product>, { setErrors }) => {
-      upsertProduct(values)
+      return upsertProduct(values)
         .then(newProduct => {
           const creating = id == null;
           toast.success(`Product ${creating ? 'created' : 'updated'}`);
           if (creating) {
             navigate(`/admin/products/${(newProduct as Product).id}`);
           }
+          else navigate('/admin/products')
         })
         .catch(e => {
           setErrors(e.data?.constraints);
