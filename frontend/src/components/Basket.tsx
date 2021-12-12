@@ -85,7 +85,7 @@ function ProductCard(props: any) {
                       component="div"
                       textAlign="center"
                     >
-                      (€ {props.price} /{props.product.baseUnit})
+                      ({props.product.baseUnit})
                     </Typography>
                   </CardContent>
                 </Box>
