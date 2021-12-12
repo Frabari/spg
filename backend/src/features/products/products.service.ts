@@ -9,8 +9,7 @@ import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/roles.enum';
 import { CreateProductDto } from './dtos/create-product.dto';
-import { Product } from './entities/product.entity';
-import { ProductId } from './entities/product.entity';
+import { Product, ProductId } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService extends TypeOrmCrudService<Product> {

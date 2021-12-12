@@ -233,6 +233,7 @@ export const Admin = () => {
                   handleDrawerToggle={handleDrawerToggle}
                   status={queryParams.get('status')}
                   week={queryParams.get('week')}
+                  delivery={queryParams.get('delivery')}
                 />
               </ProtectedRoute>
             }

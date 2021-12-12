@@ -49,8 +49,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
           toast.success(`Product ${creating ? 'created' : 'updated'}`);
           if (creating) {
             navigate(`/admin/products/${(newProduct as Product).id}`);
-          }
-          else navigate('/admin/products')
+          } else navigate('/admin/products');
         })
         .catch(e => {
           setErrors(e.data?.constraints);
@@ -290,9 +289,11 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                     select={(profile as User)?.role !== Role.FARMER}
                     id="farmer"
                     value={
-                      form.values?.farmer?.name +
-                      ' ' +
-                      form.values?.farmer?.surname
+                      form.values?.farmer
+                        ? form.values?.farmer?.name +
+                          ' ' +
+                          form.values?.farmer?.surname
+                        : ''
                     }
                     onChange={e => handleChangeFarmer(e.target.value)}
                   >

@@ -135,6 +135,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
       insufficientBalance: false,
     } as Partial<Order>,
     onSubmit: (values: Partial<Order>, { setErrors }) => {
+      console.log('values1: ', values);
       return upsertOrder(values)
         .then(newOrder => {
           console.log(newOrder);
@@ -154,10 +155,17 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
     if (form.values.user.id !== null) {
       getUser(form.values.user.id).then(u => {
         setUser(u);
-        form.setFieldValue('deliveryLocation', u.address);
       });
     }
   }, [form.values.user.id]);
+
+  useEffect(() => {
+    if (deliveryOption === 'delivery') {
+      getUser(form.values.user.id).then(u => {
+        form.setFieldValue('deliveryLocation', u.address);
+      });
+    }
+  }, [deliveryOption]);
 
   useEffect(() => {
     if (order) {
@@ -367,7 +375,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               exclusive
               onChange={(event, value) => {
                 setDeliveryOption(value);
-                form.setFieldValue('deliveryLocation', user.address);
+                value === 'delivery'
+                  ? form.setFieldValue('deliveryLocation', user.address)
+                  : form.setFieldValue('deliveryLocation', null);
               }}
               aria-label="delivery"
               sx={{ mt: 2, borderRadius: '16px' }}

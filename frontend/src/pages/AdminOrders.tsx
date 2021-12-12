@@ -129,11 +129,13 @@ export const AdminOrders = (props: {
   handleDrawerToggle: () => void;
   status: string;
   week: string;
+  delivery: string;
 }) => {
   const navigate = useNavigate();
   const { orders } = useOrders();
-  const [orderstatus, setOrderStatus] = useState(props.status);
-  const [weekfilter, setWeekFilter] = useState(props.week);
+  const [orderStatus, setOrderStatus] = useState(props.status);
+  const [weekFilter, setWeekFilter] = useState(props.week);
+  const [deliveryFilter, setDeliveryFilter] = useState(props.delivery);
   const [sortedOrders, setSortedOrders] = useState<Order[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Order;
@@ -161,13 +163,22 @@ export const AdminOrders = (props: {
   }, [orders, sorting]);
 
   const handleFilterByStatus = (s: string) => {
-    navigate(`/admin/orders?status=${s}&week=${weekfilter}`);
+    navigate(
+      `/admin/orders?status=${s}&week=${weekFilter}&delivery=${deliveryFilter}`,
+    );
     setOrderStatus(s);
   };
 
   const handleFilterByWeek = (s: string) => {
-    navigate(`/admin/orders?week=${s}&status=${orderstatus}`);
+    navigate(
+      `/admin/orders?week=${s}&status=${orderStatus}&delivery=${deliveryFilter}`,
+    );
     setWeekFilter(s);
+  };
+
+  const handleFilterByDelivery = (s: string) => {
+    navigate(`/admin/orders?delivery=${s}&week=${s}&status=${orderStatus}`);
+    setDeliveryFilter(s);
   };
 
   const toggleSorting = (byKey: keyof Order) => () => {
@@ -274,10 +285,10 @@ export const AdminOrders = (props: {
                           <TextField
                             id="outlined-select-role"
                             select
-                            value={orderstatus}
+                            value={orderStatus}
                             size="small"
                             label="Filter by status"
-                            sx={{ width: '150px' }}
+                            sx={{ width: '175px' }}
                             onChange={e => handleFilterByStatus(e.target.value)}
                           >
                             {statusFilters.map(option => (
@@ -290,10 +301,10 @@ export const AdminOrders = (props: {
                           <TextField
                             id="outlined-select-role"
                             select
-                            value={weekfilter}
+                            value={weekFilter}
                             size="small"
                             label="Filter by week"
-                            sx={{ width: '150px' }}
+                            sx={{ width: '175px' }}
                             onChange={e => handleFilterByWeek(e.target.value)}
                           >
                             {week.map(option => (
@@ -304,14 +315,19 @@ export const AdminOrders = (props: {
                           </TextField>
                         ) : c.key === 'deliverAt' ? (
                           <TextField
-                            id="outlined-select-role"
+                            id="outlined-select-deliver"
                             select
-                            // value
+                            value={deliveryFilter}
                             size="small"
                             label="Filter by delivery option"
-                            sx={{ width: '150px' }}
-                            // onChange
+                            sx={{ width: '175px' }}
+                            onChange={e =>
+                              handleFilterByDelivery(e.target.value)
+                            }
                           >
+                            <MenuItem key="all" value="all">
+                              all
+                            </MenuItem>
                             <MenuItem
                               key={DeliveryOption.PICKUP}
                               value={DeliveryOption.PICKUP}
@@ -338,23 +354,33 @@ export const AdminOrders = (props: {
               {sortedOrders
                 ?.filter(
                   order =>
-                    weekfilter === 'all' ||
-                    weekfilter === null ||
-                    weekfilter === 'null' ||
-                    (weekfilter === 'thisWeek' &&
+                    weekFilter === 'all' ||
+                    weekFilter === null ||
+                    weekFilter === 'null' ||
+                    (weekFilter === 'thisWeek' &&
                       new Date(order.createdAt).getDay() <= data.getDay() &&
                       dateDiffInDays(data, new Date(order.createdAt)) < 7) ||
-                    (weekfilter === 'pastWeek' &&
+                    (weekFilter === 'pastWeek' &&
                       new Date(order.createdAt).getDay() <= data.getDay() &&
                       dateDiffInDays(data, new Date(order.createdAt)) >= 7 &&
                       dateDiffInDays(data, new Date(order.createdAt)) < 14),
                 )
                 ?.filter(
                   order =>
-                    orderstatus === 'all' ||
-                    orderstatus === null ||
-                    orderstatus === 'null' ||
-                    order.status === orderstatus,
+                    orderStatus === 'all' ||
+                    orderStatus === null ||
+                    orderStatus === 'null' ||
+                    order.status === orderStatus,
+                )
+                ?.filter(
+                  order =>
+                    deliveryFilter === null ||
+                    deliveryFilter === 'all' ||
+                    deliveryFilter === 'null' ||
+                    (deliveryFilter === 'pickup' &&
+                      order.deliveryLocation === null) ||
+                    (deliveryFilter === 'delivery' &&
+                      order.deliveryLocation !== null),
                 )
                 .map(order => {
                   const {

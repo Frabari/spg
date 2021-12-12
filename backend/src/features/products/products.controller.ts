@@ -103,6 +103,7 @@ export class ProductsController implements CrudController<Product> {
     ];
     return this.base.getOneBase(crudReq).then(p => {
       if (user.role === Role.CUSTOMER && !p.public) {
+        console.log('ok');
         throw new NotFoundException(`Product ${p.id} not found`);
       }
       return p;

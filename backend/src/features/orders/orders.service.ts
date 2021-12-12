@@ -207,6 +207,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         }
         const product = await this.productsService.findOne(entry.product?.id);
         if (!product) {
+          console.log('ok');
           throw new BadRequestException({
             constraints: {
               entries: {
