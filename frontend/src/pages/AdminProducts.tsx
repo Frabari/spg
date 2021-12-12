@@ -303,7 +303,7 @@ export const AdminProducts = (props: {
                               }
                             >
                               <MenuItem key="all" value="all">
-                                All
+                                {'All'}
                               </MenuItem>
                               {farmers?.map((option: User) => (
                                 <MenuItem key={option.id} value={option.email}>
@@ -371,57 +371,54 @@ export const AdminProducts = (props: {
                     </TableCell>
                   ),
                 )}
-                {props.farmer ? <TableCell>Notes</TableCell> : <></>}
+                {props.farmer ? <TableCell>{'Notes'}</TableCell> : <></>}
               </TableRow>
             </TableHead>
             <TableBody>
-              {props.farmer ? (
-                <>
-                  {sortedProducts
-                    ?.filter(
-                      p =>
-                        !sortOption ||
-                        sortOption === 'all' ||
-                        p.category.slug === sortOption,
-                    )
-                    ?.filter(p => p.farmer.id === dto.id)
-                    ?.map(product => (
-                      <TableRow
-                        hover
-                        key={product.id}
-                        sx={{
-                          '&:last-child td, &:last-child th': { border: 0 },
-                          cursor: 'pointer',
+              {sortedProducts
+                ?.filter(
+                  p =>
+                    !sortOption ||
+                    sortOption === 'all' ||
+                    p.category.slug === sortOption,
+                )
+                ?.map(product => (
+                  <TableRow
+                    hover
+                    key={product.id}
+                    sx={{
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/admin/products/${product.id}`)}
+                  >
+                    <TableCell sx={{ py: 0 }}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: '50%',
+                          objectFit: 'cover',
                         }}
-                        onClick={() =>
-                          navigate(`/admin/products/${product.id}`)
-                        }
-                      >
-                        <TableCell sx={{ py: 0 }}>
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            style={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell
-                          component="th"
-                          scope="row"
-                          align="left"
-                          sx={{ pr: 0 }}
-                        >
-                          {product.name}
-                        </TableCell>
-                        <TableCell sx={{ pr: 0 }}>
-                          <Description>{product.description}</Description>
-                        </TableCell>
-                        <TableCell>{product.price}</TableCell>
-                        <TableCell>{product.category.name}</TableCell>
+                      />
+                    </TableCell>
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      align="left"
+                      sx={{ pr: 0 }}
+                    >
+                      {product.name}
+                    </TableCell>
+                    <TableCell sx={{ pr: 0 }}>
+                      <Description>{product.description}</Description>
+                    </TableCell>
+                    <TableCell>{product.price}</TableCell>
+                    <TableCell>{product.category.name}</TableCell>
+                    {props.farmer ? (
+                      <>
                         <TableCell>
                           {product.available === 0 && (
                             <Alert severity="warning">
@@ -429,62 +426,14 @@ export const AdminProducts = (props: {
                             </Alert>
                           )}
                         </TableCell>
-                      </TableRow>
-                    ))}
-                </>
-              ) : (
-                <>
-                  {sortedProducts
-                    ?.filter(
-                      p =>
-                        !sortOption ||
-                        sortOption === 'all' ||
-                        p.category.slug === sortOption,
-                    )
-                    ?.map(product => (
-                      <TableRow
-                        hover
-                        key={product.id}
-                        sx={{
-                          '&:last-child td, &:last-child th': { border: 0 },
-                          cursor: 'pointer',
-                        }}
-                        onClick={() =>
-                          navigate(`/admin/products/${product.id}`)
-                        }
-                      >
-                        <TableCell sx={{ py: 0 }}>
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            style={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell
-                          component="th"
-                          scope="row"
-                          align="left"
-                          sx={{ pr: 0 }}
-                        >
-                          {product.name}
-                        </TableCell>
-                        <TableCell sx={{ pr: 0 }}>
-                          <Description>{product.description}</Description>
-                        </TableCell>
-                        <TableCell>{product.price}</TableCell>
-                        <TableCell>{product.category.name}</TableCell>
-                        <TableCell>
-                          {product.farmer.name + ' ' + product.farmer.surname}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </>
-              )}
+                      </>
+                    ) : (
+                      <TableCell>
+                        {product.farmer.name + ' ' + product.farmer.surname}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
