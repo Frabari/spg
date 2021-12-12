@@ -17,7 +17,7 @@ import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
 import { checkKeys } from './utils';
 
-describe('ProductssController (e2e)', () => {
+describe('ProductsController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -338,6 +338,7 @@ describe('ProductssController (e2e)', () => {
               'available',
               'farmer',
               'image',
+              'category',
             ],
             [],
           );

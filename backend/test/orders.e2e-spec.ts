@@ -2,6 +2,7 @@ import { hash } from 'bcrypt';
 import { DateTime, Settings } from 'luxon';
 import * as request from 'supertest';
 import { EntityManager } from 'typeorm';
+import { MailerService } from '@nestjs-modules/mailer';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -47,6 +48,14 @@ describe('OrdersController (e2e)', () => {
         TransactionsModule,
         OrdersModule,
         NotificationsModule,
+      ],
+      providers: [
+        {
+          provide: MailerService,
+          useValue: {
+            sendMail: () => Promise.resolve(),
+          },
+        },
       ],
     }).compile();
     app = moduleFixture.createNestApplication();
