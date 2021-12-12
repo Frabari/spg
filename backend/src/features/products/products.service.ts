@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
+import { UpdateOrderEntryDto } from '../orders/dtos/update-order-entry.dto';
+import { OrdersService } from '../orders/orders.service';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/roles.enum';
 import { CreateProductDto } from './dtos/create-product.dto';
@@ -17,6 +19,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
   constructor(
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
+    private readonly ordersService: OrdersService,
   ) {
     super(productsRepository);
   }
@@ -78,6 +81,31 @@ export class ProductsService extends TypeOrmCrudService<Product> {
       delete dto.reserved;
       delete dto.sold;
       delete dto.public;
+    }
+
+    if (dto.reserved < product.reserved) {
+      const diff = product.reserved - dto.reserved;
+      const entries =
+        this.ordersService.getOrderEntriesContainingProduct(product);
+      console.log(entries);
+      let deletedEntries = 0;
+      let entryIndex = 0;
+      while (deletedEntries < diff) {
+        const toDelete = diff - deletedEntries;
+        if (toDelete < entries[entryIndex].quantity) {
+          // update quantity
+          const newQuantity = entries[entryIndex].quantity - toDelete;
+          await this.ordersService.updateOrderEntry(entries[entryIndex].id, {
+            quantity: newQuantity,
+          } as UpdateOrderEntryDto);
+          break;
+        } else {
+          // delete entry
+          deletedEntries = entries[entryIndex].quantity;
+          await this.ordersService.deleteOrderEntry(entries[entryIndex].id);
+          entryIndex++;
+        }
+      }
     }
 
     return dto;

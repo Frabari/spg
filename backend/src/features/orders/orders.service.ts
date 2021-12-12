@@ -13,11 +13,13 @@ import {
   NotificationType,
 } from '../notifications/entities/notification.entity';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Product } from '../products/entities/product.entity';
 import { ProductsService } from '../products/products.service';
 import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
 import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { UpdateOrderEntryDto } from './dtos/update-order-entry.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
@@ -395,5 +397,36 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         }
       }
     }
+  }
+
+  /**
+   * Find entries that contain a certain product
+   */
+  async getOrderEntriesContainingProduct(product: Product) {
+    const entries = await this.ordersEntryRepository.find({
+      where: {
+        product: {
+          id: product.id,
+        },
+      },
+      relations: ['order'],
+    });
+    return entries.sort((a, b) => +b.order.createdAt - +a.order.createdAt);
+  }
+
+  /**
+   * update entries with a gived product's quantity
+   */
+  async updateOrderEntry(id: number, dto: UpdateOrderEntryDto) {
+    await this.ordersEntryRepository.update({ id: id }, dto);
+  }
+
+  /**
+   * Deletes an order entry with a given id
+   */
+  deleteOrderEntry(id: number) {
+    return this.ordersEntryRepository.delete({
+      id: id,
+    });
   }
 }
