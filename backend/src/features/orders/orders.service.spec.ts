@@ -14,7 +14,7 @@ import { Role } from '../users/roles.enum';
 import { UsersModule } from '../users/users.module';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
-import { OrderEntry } from './entities/order-entry.entity';
+import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
 import { Order, OrderStatus } from './entities/order.entity';
 import { OrdersModule } from './orders.module';
 import { OrdersService } from './orders.service';
@@ -594,6 +594,54 @@ describe('OrdersService', () => {
 
       const finalProduct = await entityManager.findOne(Product, product.id);
       expect(finalProduct.available).toEqual(5);
+    });
+
+    it('farmer should not modify OrderEntryStatus to delivered status', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 5,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      return expect(
+        service.validateUpdateDto(
+          order.id,
+          {
+            entries: [
+              {
+                status: OrderEntryStatus.DELIVERED,
+                product: {
+                  id: product.id,
+                },
+              },
+            ],
+          } as UpdateOrderDto,
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
     });
   });
 
