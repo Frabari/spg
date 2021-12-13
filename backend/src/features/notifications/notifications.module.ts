@@ -12,7 +12,7 @@ import { NotificationsService } from './notifications.service';
     TypeOrmModule.forFeature([Notification]),
     MailerModule.forRoot({
       transport: {
-        host: 'localhost',
+        host: '127.0.0.1',
         port: 1025,
         tls: {
           rejectUnauthorized: false,

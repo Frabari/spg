@@ -193,8 +193,81 @@ function NavBar(props: any) {
             <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
               Basil
             </Typography>
+            <Box display={props.onProducts ? 'block' : 'none'}>
+              <StyledAutocomplete
+                id="free-solo-2-demo"
+                disableClearable
+                freeSolo
+                options={
+                  props.farmer
+                    ? list.filter(
+                        option => option.farmer?.email === props.farmer?.email,
+                      )
+                    : list
+                }
+                groupBy={(option: any) => option?.type}
+                getOptionLabel={(option: any) =>
+                  option?.type === 'Farmers'
+                    ? option?.name + ' ' + option?.surname
+                    : option?.name
+                }
+                onChange={(event, value: any) => {
+                  if (value.type === 'Farmers') {
+                    props.setFarmer(value);
+                  } else {
+                    props.handleSearch(value.name);
+                  }
+                }}
+                renderOption={(props, option: any) => (
+                  <Box
+                    key={option.id}
+                    component="li"
+                    sx={{
+                      '& > img': { mr: 2, flexShrink: 0 },
+                    }}
+                    {...props}
+                  >
+                    <Avatar
+                      sx={{ m: 1 }}
+                      src={
+                        option?.type === 'Farmers'
+                          ? option?.avatar
+                          : option?.image
+                      }
+                    />
+                    {option?.type === 'Farmers'
+                      ? option?.name + ' ' + option?.surname
+                      : option?.name}
+                  </Box>
+                )}
+                autoHighlight
+                renderInput={params => (
+                  <TextField
+                    onChange={e => props.handleSearch(e.target.value)}
+                    placeholder="Search..."
+                    sx={{ padding: 0 }}
+                    {...params}
+                    InputProps={{
+                      ...params.InputProps,
+                      autoComplete: 'new-password',
+                      startAdornment: (
+                        <InputAdornment position="start" sx={{ marginLeft: 1 }}>
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </Box>
             {!profile ? (
-              <Box sx={{ position: 'absolute', right: 0 }}>
+              <Box
+                sx={{
+                  display: { md: 'flex' },
+                  ml: 'auto',
+                  alignItems: 'center',
+                }}
+              >
                 <Button
                   component={Link}
                   to={'/login'}
@@ -213,78 +286,6 @@ function NavBar(props: any) {
               </Box>
             ) : (
               <>
-                <Box display={props.onProducts ? 'block' : 'none'}>
-                  <StyledAutocomplete
-                    id="free-solo-2-demo"
-                    disableClearable
-                    freeSolo
-                    options={
-                      props.farmer
-                        ? list.filter(
-                            option =>
-                              option.farmer?.email === props.farmer?.email,
-                          )
-                        : list
-                    }
-                    groupBy={(option: any) => option?.type}
-                    getOptionLabel={(option: any) =>
-                      option?.type === 'Farmers'
-                        ? option?.name + ' ' + option?.surname
-                        : option?.name
-                    }
-                    onChange={(event, value: any) => {
-                      if (value.type === 'Farmers') {
-                        props.setFarmer(value);
-                      } else {
-                        props.handleSearch(value.name);
-                      }
-                    }}
-                    renderOption={(props, option: any) => (
-                      <Box
-                        key={option.id}
-                        component="li"
-                        sx={{
-                          '& > img': { mr: 2, flexShrink: 0 },
-                        }}
-                        {...props}
-                      >
-                        <Avatar
-                          sx={{ m: 1 }}
-                          src={
-                            option?.type === 'Farmers'
-                              ? option?.avatar
-                              : option?.image
-                          }
-                        />
-                        {option?.type === 'Farmers'
-                          ? option?.name + ' ' + option?.surname
-                          : option?.name}
-                      </Box>
-                    )}
-                    autoHighlight
-                    renderInput={params => (
-                      <TextField
-                        onChange={e => props.handleSearch(e.target.value)}
-                        placeholder="Search..."
-                        sx={{ padding: 0 }}
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          autoComplete: 'new-password',
-                          startAdornment: (
-                            <InputAdornment
-                              position="start"
-                              sx={{ marginLeft: 1 }}
-                            >
-                              <SearchIcon />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-
                 <Box
                   sx={{
                     display: { md: 'flex' },

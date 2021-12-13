@@ -3,8 +3,10 @@ import { EntityManager } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { NotificationsService } from '../notifications/notifications.service';
 import { OrdersModule } from '../orders/orders.module';
 import { ProductsModule } from '../products/products.module';
 import { User } from '../users/entities/user.entity';
@@ -33,7 +35,10 @@ describe('TransactionsService', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
 
     service = module.get<TransactionsService>(TransactionsService);
   });
