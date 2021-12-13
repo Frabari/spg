@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from '../categories/categories.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { Order, OrderStatus } from '../orders/entities/order.entity';
 import { OrdersModule } from '../orders/orders.module';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { User } from '../users/entities/user.entity';
@@ -225,6 +226,78 @@ describe('ProductsService', () => {
         user,
       );
       expect(result.reserved).toBeUndefined();
+    });
+    it('Should delete the entries of the last order created', async () => {
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user1 = await entityManager.save(User, {
+        email: 'test@example.com',
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      const user2 = await entityManager.save(User, {
+        email: 'test@example1.com',
+        password: await hash(password, 10),
+        name: 'Rose',
+        surname: 'Gold',
+        role: Role.CUSTOMER,
+      });
+      const user3 = await entityManager.save(User, {
+        email: 'test@example2.com',
+        password: await hash(password, 10),
+        name: 'Rose',
+        surname: 'Gold',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 15,
+        reserved: 15,
+        farmer: user3,
+      });
+      const order1 = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user1.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 10,
+          },
+        ],
+      });
+      await new Promise(r => setTimeout(r, 1000));
+
+      const order2 = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user2.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      await service.checkProductsUpdate(
+        product.id,
+        {
+          ...product,
+          reserved: 10,
+        },
+        user3 as User,
+      );
+      const finalOrder = await entityManager.findOne(Order, order2.id, {
+        relations: ['entries'],
+      });
+      expect(finalOrder.entries.length).toEqual(0);
     });
   });
 

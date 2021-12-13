@@ -1,6 +1,8 @@
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,6 +13,7 @@ import { OrdersService } from '../orders/orders.service';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/roles.enum';
 import { CreateProductDto } from './dtos/create-product.dto';
+import { UpdateProductDto } from './dtos/update-product.dto';
 import { Product } from './entities/product.entity';
 import { ProductId } from './entities/product.entity';
 
@@ -19,6 +22,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
   constructor(
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
+    @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
   ) {
     super(productsRepository);
@@ -63,7 +67,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     return dto;
   }
 
-  async checkProductsUpdate(id: ProductId, dto: CreateProductDto, user: User) {
+  async checkProductsUpdate(id: ProductId, dto: UpdateProductDto, user: User) {
     const product = await this.productsRepository.findOne(id, {
       relations: ['farmer'],
     });
@@ -78,16 +82,14 @@ export class ProductsService extends TypeOrmCrudService<Product> {
           `The product not belongs to this farmer`,
         );
       }
-      delete dto.reserved;
-      delete dto.sold;
       delete dto.public;
     }
 
     if (dto.reserved < product.reserved) {
       const diff = product.reserved - dto.reserved;
-      const entries =
-        this.ordersService.getOrderEntriesContainingProduct(product);
-      console.log(entries);
+      const entries = await this.ordersService.getOrderEntriesContainingProduct(
+        product,
+      );
       let deletedEntries = 0;
       let entryIndex = 0;
       while (deletedEntries < diff) {
@@ -101,7 +103,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
           break;
         } else {
           // delete entry
-          deletedEntries = entries[entryIndex].quantity;
+          deletedEntries += entries[entryIndex].quantity;
           await this.ordersService.deleteOrderEntry(entries[entryIndex].id);
           entryIndex++;
         }

@@ -3,6 +3,8 @@ import { In, Repository } from 'typeorm';
 import {
   BadRequestException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -21,7 +23,11 @@ import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderEntryDto } from './dtos/update-order-entry.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
-import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
+import {
+  OrderEntry,
+  OrderEntryId,
+  OrderEntryStatus,
+} from './entities/order-entry.entity';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
 
 const statuses = Object.values(OrderStatus);
@@ -33,6 +39,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     private readonly ordersRepository: Repository<Order>,
     @InjectRepository(OrderEntry)
     private readonly ordersEntryRepository: Repository<OrderEntry>,
+    @Inject(forwardRef(() => ProductsService))
     private readonly productsService: ProductsService,
     private readonly notificationsService: NotificationsService,
     private readonly transactionsService: TransactionsService,
@@ -431,16 +438,14 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   /**
    * update entries with a gived product's quantity
    */
-  async updateOrderEntry(id: number, dto: UpdateOrderEntryDto) {
-    await this.ordersEntryRepository.update({ id: id }, dto);
+  updateOrderEntry(id: OrderEntryId, dto: UpdateOrderEntryDto) {
+    return this.ordersEntryRepository.update(id, dto);
   }
 
   /**
    * Deletes an order entry with a given id
    */
-  deleteOrderEntry(id: number) {
-    return this.ordersEntryRepository.delete({
-      id: id,
-    });
+  deleteOrderEntry(id: OrderEntryId) {
+    return this.ordersEntryRepository.delete(id);
   }
 }
