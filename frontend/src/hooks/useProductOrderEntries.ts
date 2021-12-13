@@ -7,7 +7,7 @@ import {
 } from '../api/BasilApi';
 
 export const useProductOrderEntries = (id: ProductId) => {
-  const [entries, _setEntries] = useState([]);
+  const [entries, _setEntries] = useState<OrderEntry[]>([]);
   const setEntries = (dto: Partial<OrderEntry>) => {
     updateProductOrderEntries(id, dto)
       .then(e => {
@@ -28,5 +28,8 @@ export const useProductOrderEntries = (id: ProductId) => {
       });
   }, [id]);
 
-  return [entries, setEntries];
+  return [entries, setEntries] as [
+    OrderEntry[],
+    (dto: Partial<OrderEntry>) => void,
+  ];
 };
