@@ -208,9 +208,7 @@ export const Admin = () => {
               <ProtectedRoute>
                 <AdminProducts
                   handleDrawerToggle={handleDrawerToggle}
-                  farmer={
-                    typeof profile === 'object' && profile.role === Role.FARMER
-                  }
+                  profile={typeof profile === 'object' ? profile : null}
                   category={queryParams.get('category')}
                   farmers={queryParams.get('farmer')}
                 />
