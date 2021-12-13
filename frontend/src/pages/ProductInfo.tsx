@@ -18,6 +18,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { useBasket } from '../hooks/useBasket';
 import { useProduct } from '../hooks/useProduct';
+import { useProfile } from '../hooks/useProfile';
 
 const { DateTime } = require('luxon');
 
@@ -32,6 +33,7 @@ export default function ProductInfo(props: any) {
   const [counter, setCounter] = useState(1);
   const { id } = useParams();
   const navigate = useNavigate();
+  const { profile } = useProfile();
   const { product } = useProduct(+id);
   const { upsertEntry } = useBasket();
   const [ready, setReady] = useState(false);
@@ -206,7 +208,7 @@ export default function ProductInfo(props: any) {
                         /unit
                       </Typography>
                     </Grid>
-                    <Grid item>
+                    <Grid item display={!profile && 'none'}>
                       <Grid
                         container
                         direction="row"
