@@ -28,5 +28,8 @@ export const useProductOrderEntries = (id: ProductId) => {
       });
   }, [id]);
 
-  return [entries, setEntries];
+  return [entries, setEntries] as [
+    OrderEntry[],
+    (dto: Partial<OrderEntry>) => void,
+  ];
 };
