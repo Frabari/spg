@@ -272,7 +272,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                       <Grid item>
                         {c.key === 'status' ? (
                           <TextField
-                            id="outlined-select-role"
+                            id="outlined-select-status"
                             select
                             value={searchParams.get('status')}
                             size="small"
@@ -284,7 +284,8 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                           >
                             {statusFilters.map(option => (
                               <MenuItem key={option} value={option}>
-                                {option}
+                                {option.charAt(0).toUpperCase() +
+                                  option.slice(1)}
                               </MenuItem>
                             ))}
                           </TextField>
@@ -301,19 +302,21 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                             }
                           >
                             <MenuItem key="all" value="all">
-                              all
+                              All
                             </MenuItem>
                             <MenuItem
                               key={DeliveryOption.PICKUP}
                               value={DeliveryOption.PICKUP}
                             >
-                              {DeliveryOption.PICKUP}
+                              {DeliveryOption.PICKUP.charAt(0).toUpperCase() +
+                                DeliveryOption.PICKUP.slice(1)}
                             </MenuItem>
                             <MenuItem
                               key={DeliveryOption.DELIVERY}
                               value={DeliveryOption.DELIVERY}
                             >
-                              {DeliveryOption.DELIVERY}
+                              {DeliveryOption.DELIVERY.charAt(0).toUpperCase() +
+                                DeliveryOption.DELIVERY.slice(1)}
                             </MenuItem>
                           </TextField>
                         ) : (

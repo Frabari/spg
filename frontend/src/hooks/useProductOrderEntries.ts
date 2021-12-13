@@ -11,7 +11,7 @@ export const useProductOrderEntries = (id: ProductId) => {
   const setEntries = (dto: Partial<OrderEntry>) => {
     updateProductOrderEntries(id, dto)
       .then(e => {
-        _setEntries(e);
+        _setEntries(prevEntries => [...prevEntries, e]);
       })
       .catch(() => {
         // noop
