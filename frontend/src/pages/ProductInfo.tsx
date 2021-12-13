@@ -32,7 +32,7 @@ export default function ProductInfo(props: any) {
   const location = useLocation();
   const navigate = useNavigate();
   const product = location.state.product;
-  const farmer = product.farmer;
+  const farmer = product?.farmer;
   const { basket, upsertEntry } = useBasket();
   let quantity = [];
 

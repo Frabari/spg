@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FormikErrors, useFormik } from 'formik';
-import { Add, Save } from '@mui/icons-material';
+import { Save } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -26,7 +26,6 @@ import {
   OutlinedInput,
   Paper,
   Step,
-  StepContent,
   StepLabel,
   Stepper,
   TextField,
@@ -113,35 +112,53 @@ const IOSSwitch = styled((props: any) => (
   },
 }));
 
-const steps = [
+const steps = (status?: OrderStatus) => [
   {
-    label: 'Paid',
-    description: `Your order is paid.`,
+    label: 'Locked',
+    status: OrderStatus.LOCKED,
+    description: `Your order has been created.`,
   },
   {
     label: 'Pending Payment',
-    description: 'Your order is pending payment.',
+    status: OrderStatus.PENDING_PAYMENT,
+    description: 'Your order is in pending payment.',
   },
   {
-    label: 'Delivering',
-    description: `Your order is delivering.`,
-  },
-  {
-    label: 'Completed',
-    description: `Your order is completed.`,
-  },
-  {
-    label: 'Pending Cancellation',
-    description: `Your order is pending cancellation.`,
-  },
-  {
-    label: 'Canceled',
-    description: `Your order is canceled.`,
+    label: 'Paid',
+    status: OrderStatus.PAID,
+    description: `Your order has been paid.`,
   },
   {
     label: 'Prepared',
-    description: `Your order is prepared.`,
+    status: OrderStatus.PREPARED,
+    description: `Your order has been prepared.`,
   },
+  {
+    label: 'Delivering',
+    status: OrderStatus.DELIVERING,
+    description: `Your order is delivering.`,
+  },
+  ...(status === OrderStatus.PENDING_CANCELLATION ||
+  status === OrderStatus.CANCELED
+    ? [
+        {
+          label: 'Pending Cancellation',
+          status: OrderStatus.PENDING_CANCELLATION,
+          description: `Your order is in pending cancellation.`,
+        },
+        {
+          label: 'Cancelled',
+          status: OrderStatus.CANCELED,
+          description: `Your order has been canceled.`,
+        },
+      ]
+    : [
+        {
+          label: 'Completed',
+          status: OrderStatus.COMPLETED,
+          description: `Your order is completed.`,
+        },
+      ]),
 ];
 
 export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
@@ -184,6 +201,8 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
     },
   });
 
+  const statuses = steps(order?.status);
+
   useEffect(() => {}, [order]);
 
   useEffect(() => {
@@ -205,9 +224,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
   useEffect(() => {
     if (order) {
       form.setValues(order);
-      setActiveStep(
-        steps.findIndex(step => step.label.toLowerCase() === order?.status),
-      );
+      setActiveStep(statuses.findIndex(step => step.status === order?.status));
     }
   }, [order]);
 
@@ -282,29 +299,35 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
               Status
             </Typography>
             <Divider sx={{ my: 2 }} />
-
-            <Grid container spacing={2}>
-              <Grid item>
-                <Stepper activeStep={activeStep} orientation="vertical">
-                  {steps.map((step, index) => (
-                    <Step key={step.label}>
-                      <StepLabel
-                        optional={
-                          index === 6 ? (
-                            <Typography variant="caption">Last step</Typography>
-                          ) : null
-                        }
-                      >
-                        {step.label}
-                      </StepLabel>
-                      <StepContent>
-                        <Typography>{step.description}</Typography>
-                      </StepContent>
-                    </Step>
-                  ))}
-                </Stepper>
-              </Grid>
-            </Grid>
+            <Stepper activeStep={activeStep}>
+              {statuses.map((step, index) => (
+                <Step key={step.label}>
+                  <StepLabel
+                    error={
+                      step.status === OrderStatus.PENDING_CANCELLATION ||
+                      step.status === OrderStatus.CANCELED
+                    }
+                    optional={
+                      index === activeStep ? (
+                        <Typography
+                          color={
+                            step.status === OrderStatus.PENDING_CANCELLATION ||
+                            step.status === OrderStatus.CANCELED
+                              ? 'error'
+                              : 'success'
+                          }
+                          variant="caption"
+                        >
+                          {step.description}
+                        </Typography>
+                      ) : null
+                    }
+                  >
+                    {step.label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
 
             <Typography
               variant="h5"
@@ -330,6 +353,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                           type="number"
                           size="small"
                           label="Quantity"
+                          disabled
                           value={e.quantity ?? ''}
                           name={entryField}
                           onChange={event => {
@@ -362,10 +386,6 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                 );
               })}
             </List>
-            <Button variant="text" onClick={() => setSelectingProduct(true)}>
-              <Add />
-              Add product
-            </Button>
 
             <Typography
               variant="h5"
