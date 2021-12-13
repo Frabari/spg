@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -93,13 +93,11 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export const AdminUsers = (props: {
-  handleDrawerToggle: () => void;
-  role: string;
-}) => {
+export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { users } = useUsers();
   const [sortedUsers, setSortedUsers] = useState<User[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams({ role: 'all' });
   const [sorting, setSorting] = useState<{
     by: keyof User;
     dir: 'asc' | 'desc';
@@ -138,7 +136,6 @@ export const AdminUsers = (props: {
     );
   };
 
-  const [sortOption, setSortOption] = useState(props.role);
   const sort = [
     'all',
     'customer',
@@ -150,15 +147,8 @@ export const AdminUsers = (props: {
     'manager',
   ];
 
-  const handleFilterByRole = (s: string) => {
-    setSortOption(s);
-    if (s === 'all') {
-      navigate(`/admin/users?role=${s}`);
-      setSortedUsers(users);
-    } else {
-      setSortedUsers(users.filter(u => u.role === s));
-      navigate(`/admin/users?role=${s}`);
-    }
+  const handleRoleSearchParams = (role: string) => {
+    setSearchParams({ role: role });
   };
 
   return (
@@ -238,11 +228,13 @@ export const AdminUsers = (props: {
                           <TextField
                             id="outlined-select-role"
                             select
-                            value={sortOption}
+                            value={searchParams.get('role')}
                             label="Filter by role"
                             size="small"
                             sx={{ width: '175px' }}
-                            onChange={e => handleFilterByRole(e.target.value)}
+                            onChange={e =>
+                              handleRoleSearchParams(e.target.value)
+                            }
                           >
                             {sort.map(option => (
                               <MenuItem key={option} value={option}>
@@ -263,9 +255,9 @@ export const AdminUsers = (props: {
               {sortedUsers
                 ?.filter(
                   u =>
-                    !sortOption ||
-                    sortOption === 'all' ||
-                    u.role === sortOption,
+                    !searchParams.get('role') ||
+                    searchParams.get('role') === 'all' ||
+                    u.role === searchParams.get('role'),
                 )
                 ?.map(user => (
                   <TableRow

@@ -187,10 +187,7 @@ export const Admin = () => {
             path="/users"
             element={
               <ProtectedRoute>
-                <AdminUsers
-                  handleDrawerToggle={handleDrawerToggle}
-                  role={queryParams.get('role')}
-                />
+                <AdminUsers handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
           />
@@ -209,8 +206,6 @@ export const Admin = () => {
                 <AdminProducts
                   handleDrawerToggle={handleDrawerToggle}
                   profile={typeof profile === 'object' ? profile : null}
-                  category={queryParams.get('category')}
-                  farmers={queryParams.get('farmer')}
                 />
               </ProtectedRoute>
             }
@@ -227,12 +222,7 @@ export const Admin = () => {
             path="/orders"
             element={
               <ProtectedRoute>
-                <AdminOrders
-                  handleDrawerToggle={handleDrawerToggle}
-                  status={queryParams.get('status')}
-                  week={queryParams.get('week')}
-                  delivery={queryParams.get('delivery')}
-                />
+                <AdminOrders handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
           />
