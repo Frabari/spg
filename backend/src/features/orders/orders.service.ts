@@ -207,6 +207,20 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             },
           });
         }
+        if (
+          entry.status === OrderEntryStatus.DELIVERED &&
+          !ADMINS.includes(user.role)
+        ) {
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  status: `You cannot edit this field since you are not a manager `,
+                },
+              },
+            },
+          });
+        }
         const product = await this.productsService.findOne(entry.product?.id);
         if (!product) {
           throw new BadRequestException({
