@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import moment from 'moment';
 import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -28,6 +29,8 @@ import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
+
+const { DateTime } = require('luxon');
 
 const columns: {
   key: keyof Product;
@@ -200,6 +203,13 @@ export const AdminProducts = (props: {
       setSortedProducts(products.filter(p => p.category.slug === s));
     }
   };
+
+  if (
+    DateTime.now() >= moment().day('sunday').hour(23) &&
+    DateTime.now() <= moment().day('monday').hour(9)
+  ) {
+    console.log('ciao');
+  }
 
   const handleFilterByFarmer = (f: string) => {
     const farmer = farmers.find((fa: User) => fa.email === f);
@@ -420,11 +430,14 @@ export const AdminProducts = (props: {
                     {props.farmer ? (
                       <>
                         <TableCell>
-                          {product.available === 0 && (
-                            <Alert severity="warning">
-                              {'Remember to update the availability field'}
-                            </Alert>
-                          )}
+                          {product.available === 0 &&
+                            DateTime.now() >= moment().day('sunday').hour(23) &&
+                            DateTime.now() <=
+                              moment().day('monday').hour(9).minutes(0) && (
+                              <Alert severity="warning">
+                                {'Remember to update the availability field'}
+                              </Alert>
+                            )}
                         </TableCell>
                       </>
                     ) : (
