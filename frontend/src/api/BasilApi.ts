@@ -189,6 +189,14 @@ export const createProduct = (product: Partial<Product>) =>
 export const updateProduct = (id: ProductId, product: Partial<Product>) =>
   client.patch<Product>(`/products/${id}`, product);
 
+export const getProductOrderEntries = (id: ProductId) =>
+  client.get<OrderEntry[]>(`/products/${id}/order-entries`);
+
+export const updateProductOrderEntries = (
+  id: ProductId,
+  dto: Partial<OrderEntry>,
+) => client.patch<Product>(`/products/${id}/order-entries`, dto);
+
 export const getCategories = () => client.get<Category[]>('/categories');
 
 export const getOrders = () => client.get<Order[]>('/orders');
