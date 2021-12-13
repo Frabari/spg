@@ -13,6 +13,7 @@ import { User } from '../users/entities/user.entity';
 import { Role } from '../users/roles.enum';
 import { UsersModule } from '../users/users.module';
 import { CreateProductDto } from './dtos/create-product.dto';
+import { UpdateProductDto } from './dtos/update-product.dto';
 import { Product } from './entities/product.entity';
 import { ProductsModule } from './products.module';
 import { ProductsService } from './products.service';
@@ -313,7 +314,15 @@ describe('ProductsService', () => {
         ),
       ).toMatchObject({ reserved: 20 });
     });
-    it('Should delete the entries of the last order created', async () => {
+
+    it('Should delete and update the entries of the last orders created', async () => {
+      const salesDay = DateTime.now()
+        .set({
+          weekday: 1,
+          hour: 6,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
       const password = 'testpwd';
       const entityManager = module.get(EntityManager);
       const user1 = await entityManager.save(User, {
@@ -335,7 +344,7 @@ describe('ProductsService', () => {
         password: await hash(password, 10),
         name: 'Rose',
         surname: 'Gold',
-        role: Role.FARMER,
+        role: Role.EMPLOYEE,
       });
       const product = await entityManager.save(Product, {
         name: 'onions',
@@ -368,22 +377,27 @@ describe('ProductsService', () => {
             product: {
               id: product.id,
             },
-            quantity: 5,
+            quantity: 2,
           },
         ],
       });
       await service.checkProductsUpdate(
         product.id,
         {
-          ...product,
-          reserved: 10,
-        },
+          reserved: 12,
+        } as UpdateProductDto,
         user3 as User,
       );
-      const finalOrder = await entityManager.findOne(Order, order2.id, {
+
+      const finalOrder1 = await entityManager.findOne(Order, order1.id, {
         relations: ['entries'],
       });
-      expect(finalOrder.entries.length).toEqual(0);
+      expect(finalOrder1.entries[0].quantity).toEqual(9);
+
+      const finalOrder2 = await entityManager.findOne(Order, order2.id, {
+        relations: ['entries'],
+      });
+      expect(finalOrder2.entries.length).toEqual(0);
     });
   });
 

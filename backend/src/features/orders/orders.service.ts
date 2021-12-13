@@ -38,9 +38,8 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
     @InjectRepository(OrderEntry)
-    private readonly ordersEntryRepository: Repository<OrderEntry>,
-    @Inject(forwardRef(() => ProductsService))
     private readonly orderEntriesRepository: Repository<OrderEntry>,
+    @Inject(forwardRef(() => ProductsService))
     private readonly productsService: ProductsService,
     private readonly notificationsService: NotificationsService,
     private readonly transactionsService: TransactionsService,
@@ -317,12 +316,13 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       relations: ['order', 'order.user'],
     });
     const users = new Set();
+
     await this.orderEntriesRepository.remove(orderEntriesDraft).then(result => {
       result.forEach(element => {
         users.add(element.order.user);
       });
     });
-    await this.notificationsService.sendNotification(
+    /*await this.notificationsService.sendNotification(
       {
         type: NotificationType.ERROR,
         title: 'Order modified',
@@ -330,7 +330,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         priority: NotificationPriority.CRITICAL,
       },
       { id: In([...users].map((element: User) => element.id)) },
-    );
+    );*/
   }
 
   /**
@@ -443,7 +443,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
    * Find entries that contain a certain product
    */
   async getOrderEntriesContainingProduct(productId: ProductId) {
-    const entries = await this.ordersEntryRepository.find({
+    const entries = await this.orderEntriesRepository.find({
       where: {
         product: {
           id: productId,
@@ -455,17 +455,17 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * update entries with a gived product's quantity
+   * update entries with a given product's quantity
    */
   updateOrderEntry(id: OrderEntryId, dto: UpdateOrderEntryDto) {
-    return this.ordersEntryRepository.update(id, dto);
+    return this.orderEntriesRepository.update(id, dto);
   }
 
   /**
    * Deletes an order entry with a given id
    */
   deleteOrderEntry(id: OrderEntryId) {
-    return this.ordersEntryRepository.delete(id);
+    return this.orderEntriesRepository.delete(id);
   }
 
   /**
