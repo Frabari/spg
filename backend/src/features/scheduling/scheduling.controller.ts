@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { SetDateDto } from './dtos/change-date.dto';
 import { SchedulingService } from './scheduling.service';
 
 @Controller('scheduling')
@@ -7,13 +8,13 @@ import { SchedulingService } from './scheduling.service';
 export class SchedulingController {
   constructor(private readonly schedulingService: SchedulingService) {}
 
-  @Get('close-weekly-sales')
-  endService() {
-    return this.schedulingService.closeWeeklySales(true);
+  @Get('date')
+  getDate() {
+    return this.schedulingService.getDate();
   }
 
-  @Get('paybaskets')
-  paybaskets() {
-    return this.schedulingService.closeBaskets();
+  @Patch('date')
+  setDate(@Body() dto: SetDateDto) {
+    return this.schedulingService.setDate(dto.date);
   }
 }

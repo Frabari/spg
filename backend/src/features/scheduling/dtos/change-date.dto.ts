@@ -1,7 +1,7 @@
 import { IsDateString, IsNotEmpty } from 'class-validator';
 
-export class ChangeDateDto {
-  @IsDateString({})
+export class SetDateDto {
+  @IsDateString()
   @IsNotEmpty()
   date: string;
 }
