@@ -13,11 +13,13 @@ import {
   NotificationType,
 } from '../notifications/entities/notification.entity';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ProductId } from '../products/entities/product.entity';
 import { ProductsService } from '../products/products.service';
 import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
 import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { UpdateOrderEntryDto } from './dtos/update-order-entry.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
@@ -30,7 +32,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
     @InjectRepository(OrderEntry)
-    private readonly ordersEntryRepository: Repository<OrderEntry>,
+    private readonly orderEntriesRepository: Repository<OrderEntry>,
     private readonly productsService: ProductsService,
     private readonly notificationsService: NotificationsService,
     private readonly transactionsService: TransactionsService,
@@ -286,14 +288,14 @@ export class OrdersService extends TypeOrmCrudService<Order> {
    * Removes all the draft (unconfirmed) order entries
    */
   async removeDraftOrderEntries() {
-    const orderEntriesDraft = await this.ordersEntryRepository.find({
+    const orderEntriesDraft = await this.orderEntriesRepository.find({
       where: {
         status: OrderEntryStatus.DRAFT,
       },
       relations: ['order', 'order.user'],
     });
     const users = new Set();
-    await this.ordersEntryRepository.remove(orderEntriesDraft).then(result => {
+    await this.orderEntriesRepository.remove(orderEntriesDraft).then(result => {
       result.forEach(element => {
         users.add(element.order.user);
       });
@@ -413,5 +415,35 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         }
       }
     }
+  }
+
+  /**
+   * Gets all the order entries containing a product
+   */
+  getProductOrderEntries(productId: ProductId) {
+    return this.orderEntriesRepository.find({
+      product: {
+        id: productId,
+      },
+    });
+  }
+
+  /**
+   * Updates all order entries containing a product
+   */
+  async updateProductOrderEntries(
+    productId: ProductId,
+    dto: UpdateOrderEntryDto,
+  ) {
+    const entries = await this.orderEntriesRepository.find({
+      product: { id: productId },
+    });
+    if (!entries?.length) return;
+    return this.orderEntriesRepository.save(
+      entries.map(e => ({
+        ...e,
+        ...dto,
+      })),
+    );
   }
 }
