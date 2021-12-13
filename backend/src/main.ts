@@ -1,3 +1,4 @@
+import { DateTime, Settings } from 'luxon';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -10,6 +11,13 @@ import { Product } from './features/products/entities/product.entity';
 import { Transaction } from './features/transactions/entities/transaction.entity';
 import { User } from './features/users/entities/user.entity';
 
+const salesDay = DateTime.now()
+  .set({
+    weekday: 6,
+    hour: 10,
+  })
+  .toMillis();
+Settings.now = () => salesDay;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe(validation));

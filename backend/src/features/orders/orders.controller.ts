@@ -99,6 +99,7 @@ export class OrdersController implements CrudController<Order> {
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
+      { field: 'entries' },
     ];
     const order = await this.service.validateUpdateDto(
       basket.id,
