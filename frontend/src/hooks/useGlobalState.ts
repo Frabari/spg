@@ -9,6 +9,7 @@ const { useGlobalState } = createGlobalState({
   pending: false,
   notifications: [] as Notification[],
   newNotification: null as Notification,
+  date: new Date(),
 });
 
 export { useGlobalState };
