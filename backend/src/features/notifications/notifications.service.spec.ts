@@ -34,7 +34,6 @@ describe('NotificationsService', () => {
         NotificationsModule,
       ],
     }).compile();
-
     service = module.get<NotificationsService>(NotificationsService);
   });
 

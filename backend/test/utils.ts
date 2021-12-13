@@ -23,3 +23,10 @@ export const checkKeys = <T>(
     }),
   ).toBeFalsy();
 };
+
+export const mockNotificationsService = {
+  sendNotification() {
+    console.log('Mock');
+    return Promise.resolve();
+  },
+};

@@ -36,6 +36,11 @@ export class UpdateProductDto extends OmitType(Product, ['id'] as const) {
   @Min(0)
   available: number;
 
+  @IsInt()
+  @IsNotEmpty()
+  @Min(0)
+  reserved: number;
+
   @IsNotEmpty()
   @IsString()
   @IsUrl()

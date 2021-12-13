@@ -2,14 +2,19 @@ import { DateTime } from 'luxon';
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
+import { UpdateOrderEntryDto } from '../orders/dtos/update-order-entry.dto';
+import { OrdersService } from '../orders/orders.service';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/roles.enum';
 import { CreateProductDto } from './dtos/create-product.dto';
+import { UpdateProductDto } from './dtos/update-product.dto';
 import { Product } from './entities/product.entity';
 import { ProductId } from './entities/product.entity';
 
@@ -18,6 +23,8 @@ export class ProductsService extends TypeOrmCrudService<Product> {
   constructor(
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
+    @Inject(forwardRef(() => OrdersService))
+    private readonly ordersService: OrdersService,
   ) {
     super(productsRepository);
   }
@@ -68,7 +75,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     return dto;
   }
 
-  async checkProductsUpdate(id: ProductId, dto: CreateProductDto, user: User) {
+  async checkProductsUpdate(id: ProductId, dto: UpdateProductDto, user: User) {
     const product = await this.productsRepository.findOne(id, {
       relations: ['farmer'],
     });
@@ -138,6 +145,31 @@ export class ProductsService extends TypeOrmCrudService<Product> {
             available: 'Cannot edit available count now',
           },
         });
+      }
+    }
+
+    if (dto.reserved < product.reserved) {
+      const diff = product.reserved - dto.reserved;
+      const entries = await this.ordersService.getOrderEntriesContainingProduct(
+        product.id,
+      );
+      let deletedEntries = 0;
+      let entryIndex = 0;
+      while (deletedEntries < diff) {
+        const toDelete = diff - deletedEntries;
+        if (toDelete < entries[entryIndex].quantity) {
+          // update quantity
+          const newQuantity = entries[entryIndex].quantity - toDelete;
+          await this.ordersService.updateOrderEntry(entries[entryIndex].id, {
+            quantity: newQuantity,
+          } as UpdateOrderEntryDto);
+          break;
+        } else {
+          // delete entry
+          deletedEntries += entries[entryIndex].quantity;
+          await this.ordersService.deleteOrderEntry(entries[entryIndex].id);
+          entryIndex++;
+        }
       }
     }
 
