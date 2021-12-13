@@ -333,8 +333,8 @@ function NavBar(props: any) {
                         <AdminPanelSettingsIcon sx={{ mr: 2 }} /> Admin
                       </MenuItem>
                     )}
-                    <MenuItem onClick={() => navigate('/profile')}>
-                      <Person sx={{ mr: 2 }} /> Profile
+                    <MenuItem onClick={() => navigate('/account')}>
+                      <Person sx={{ mr: 2 }} /> Account
                     </MenuItem>
                     <MenuItem>
                       <AccountBalanceWalletIcon sx={{ mr: 2 }} />{' '}

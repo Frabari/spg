@@ -49,7 +49,7 @@ function ProductCard({
   const handleSelect = (product: Product) => {
     if (
       DateTime.now() >= moment().day('saturday').hour(9) ||
-      DateTime.now() <= moment().day('sunday').hour(23).minutes(0)
+      DateTime.now() <= moment().day('monday').hour(23).minutes(0)
     ) {
       if (onSelect) {
         onSelect(product);
