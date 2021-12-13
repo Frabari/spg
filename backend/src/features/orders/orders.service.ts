@@ -3,6 +3,8 @@ import { In, Repository } from 'typeorm';
 import {
   BadRequestException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,13 +15,19 @@ import {
   NotificationType,
 } from '../notifications/entities/notification.entity';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ProductId } from '../products/entities/product.entity';
 import { ProductsService } from '../products/products.service';
 import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
 import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { UpdateOrderEntryDto } from './dtos/update-order-entry.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
-import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
+import {
+  OrderEntry,
+  OrderEntryId,
+  OrderEntryStatus,
+} from './entities/order-entry.entity';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
 
 const statuses = Object.values(OrderStatus);
@@ -30,7 +38,8 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
     @InjectRepository(OrderEntry)
-    private readonly ordersEntryRepository: Repository<OrderEntry>,
+    private readonly orderEntriesRepository: Repository<OrderEntry>,
+    @Inject(forwardRef(() => ProductsService))
     private readonly productsService: ProductsService,
     private readonly notificationsService: NotificationsService,
     private readonly transactionsService: TransactionsService,
@@ -205,6 +214,20 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             },
           });
         }
+        if (
+          entry.status === OrderEntryStatus.DELIVERED &&
+          !ADMINS.includes(user.role)
+        ) {
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  status: `You cannot edit this field since you are not a manager `,
+                },
+              },
+            },
+          });
+        }
         const product = await this.productsService.findOne(entry.product?.id);
         if (!product) {
           throw new BadRequestException({
@@ -286,14 +309,14 @@ export class OrdersService extends TypeOrmCrudService<Order> {
    * Removes all the draft (unconfirmed) order entries
    */
   async removeDraftOrderEntries() {
-    const orderEntriesDraft = await this.ordersEntryRepository.find({
+    const orderEntriesDraft = await this.orderEntriesRepository.find({
       where: {
         status: OrderEntryStatus.DRAFT,
       },
       relations: ['order', 'order.user'],
     });
     const users = new Set();
-    await this.ordersEntryRepository.remove(orderEntriesDraft).then(result => {
+    await this.orderEntriesRepository.remove(orderEntriesDraft).then(result => {
       result.forEach(element => {
         users.add(element.order.user);
       });
@@ -413,5 +436,53 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         }
       }
     }
+  }
+
+  /**
+   * Find entries that contain a certain product
+   */
+  async getOrderEntriesContainingProduct(productId: ProductId) {
+    const entries = await this.orderEntriesRepository.find({
+      where: {
+        product: {
+          id: productId,
+        },
+      },
+      relations: ['order'],
+    });
+    return entries.sort((a, b) => +b.order.createdAt - +a.order.createdAt);
+  }
+
+  /**
+   * update entries with a given product's quantity
+   */
+  updateOrderEntry(id: OrderEntryId, dto: UpdateOrderEntryDto) {
+    return this.orderEntriesRepository.update(id, dto);
+  }
+
+  /**
+   * Deletes an order entry with a given id
+   */
+  deleteOrderEntry(id: OrderEntryId) {
+    return this.orderEntriesRepository.delete(id);
+  }
+
+  /**
+   * Updates all order entries containing a product
+   */
+  async updateProductOrderEntries(
+    productId: ProductId,
+    dto: UpdateOrderEntryDto,
+  ) {
+    const entries = await this.orderEntriesRepository.find({
+      product: { id: productId },
+    });
+    if (!entries?.length) return;
+    return this.orderEntriesRepository.save(
+      entries.map(e => ({
+        ...e,
+        ...dto,
+      })),
+    );
   }
 }
