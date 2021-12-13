@@ -204,13 +204,6 @@ export const AdminProducts = (props: {
     }
   };
 
-  if (
-    DateTime.now() >= moment().day('sunday').hour(23) &&
-    DateTime.now() <= moment().day('monday').hour(9)
-  ) {
-    console.log('ciao');
-  }
-
   const handleFilterByFarmer = (f: string) => {
     const farmer = farmers.find((fa: User) => fa.email === f);
     setFarmerFilter(f);

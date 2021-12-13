@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
+import moment from 'moment';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
   Avatar,
@@ -16,6 +17,8 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useBasket } from '../hooks/useBasket';
+
+const { DateTime } = require('luxon');
 
 const Img = styled('img')({
   margin: 'auto',
@@ -52,10 +55,19 @@ export default function ProductInfo(props: any) {
   };
 
   const handleClick = () => {
-    upsertEntry(product, counter).then(o => {
-      toast.success(`${product.name} successfully added!`);
-      navigate('/products');
-    });
+    if (
+      DateTime.now() >= moment().day('saturday').hour(9) &&
+      DateTime.now() <= moment().day('sunday').hour(23).minutes(0)
+    ) {
+      upsertEntry(product, counter).then(o => {
+        toast.success(`${product.name} successfully added!`);
+        navigate('/products');
+      });
+    } else {
+      toast.error(
+        `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
+      );
+    }
   };
 
   return (

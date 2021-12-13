@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import moment from 'moment';
 import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
@@ -18,6 +19,8 @@ import {
 import { Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
+
+const { DateTime } = require('luxon');
 
 function ProductCard({
   product,
@@ -44,13 +47,22 @@ function ProductCard({
   };
 
   const handleSelect = (product: Product) => {
-    if (onSelect) {
-      onSelect(product);
+    if (
+      DateTime.now() >= moment().day('saturday').hour(9) &&
+      DateTime.now() <= moment().day('sunday').hour(23).minutes(0)
+    ) {
+      if (onSelect) {
+        onSelect(product);
+      } else {
+        upsertEntry(product, 1).then(o => {
+          setBasketListener(true);
+          toast.success(`${product.name} successfully added!`);
+        });
+      }
     } else {
-      upsertEntry(product, 1).then(o => {
-        setBasketListener(true);
-        toast.success(`${product.name} successfully added!`);
-      });
+      toast.error(
+        `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
+      );
     }
     if (setBalanceWarning) setBalanceWarning(basket.insufficientBalance);
   };
