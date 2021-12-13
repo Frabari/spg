@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { DateTime, Settings } from 'luxon';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { OrdersService } from '../orders/orders.service';
@@ -48,5 +48,15 @@ export class SchedulingService {
   @Cron('0 18 * * 1')
   payPendingBaskets() {
     return this.ordersService.payBaskets(true);
+  }
+
+  getDate() {
+    return DateTime.now().toString();
+  }
+
+  setDate(date: string) {
+    const newDate = new Date(date);
+    Settings.now = () => newDate.getTime();
+    return newDate.toString();
   }
 }

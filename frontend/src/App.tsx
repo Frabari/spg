@@ -8,10 +8,10 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { usePendingState } from './hooks/usePendingState';
 import { Admin } from './pages/Admin';
 import Checkout from './pages/Checkout';
+import { Customer } from './pages/Customer';
 import Homepage from './pages/Homepage';
 import Login from './pages/Login';
 import Products from './pages/Products';
-import Profile from './pages/Profile';
 import SignUp from './pages/SignUp';
 
 function App() {
@@ -38,7 +38,14 @@ function App() {
               }
             />
 
-            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/account/*"
+              element={
+                <ProtectedRoute>
+                  <Customer />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path="/admin/*"
@@ -49,14 +56,7 @@ function App() {
               }
             />
 
-            <Route
-              path="/products/*"
-              element={
-                <ProtectedRoute>
-                  <Products />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/products/*" element={<Products />} />
           </Routes>
         </BrowserRouter>
         {showLoadingIndicator && (

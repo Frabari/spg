@@ -216,3 +216,8 @@ export const getBasket = () => client.get<Order>('/orders/basket');
 
 export const updateBasket = (basket: Partial<Order>) =>
   client.patch<Order>('/orders/basket', basket);
+
+export const getDate = () => client.get<string>('scheduling/date');
+
+export const setDate = (dto: { date: string }) =>
+  client.patch<string>('scheduling/date', dto);

@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FormikErrors, useFormik } from 'formik';
-import { Add, Save } from '@mui/icons-material';
+import { Save } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -23,10 +23,11 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  MenuItem,
   OutlinedInput,
   Paper,
-  Select,
+  Step,
+  StepLabel,
+  Stepper,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -111,7 +112,56 @@ const IOSSwitch = styled((props: any) => (
   },
 }));
 
-export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
+const steps = (status?: OrderStatus) => [
+  {
+    label: 'Locked',
+    status: OrderStatus.LOCKED,
+    description: `Your order has been created.`,
+  },
+  {
+    label: 'Pending Payment',
+    status: OrderStatus.PENDING_PAYMENT,
+    description: 'Your order is in pending payment.',
+  },
+  {
+    label: 'Paid',
+    status: OrderStatus.PAID,
+    description: `Your order has been paid.`,
+  },
+  {
+    label: 'Prepared',
+    status: OrderStatus.PREPARED,
+    description: `Your order has been prepared.`,
+  },
+  {
+    label: 'Delivering',
+    status: OrderStatus.DELIVERING,
+    description: `Your order is delivering.`,
+  },
+  ...(status === OrderStatus.PENDING_CANCELLATION ||
+  status === OrderStatus.CANCELED
+    ? [
+        {
+          label: 'Pending Cancellation',
+          status: OrderStatus.PENDING_CANCELLATION,
+          description: `Your order is in pending cancellation.`,
+        },
+        {
+          label: 'Cancelled',
+          status: OrderStatus.CANCELED,
+          description: `Your order has been canceled.`,
+        },
+      ]
+    : [
+        {
+          label: 'Completed',
+          status: OrderStatus.COMPLETED,
+          description: `Your order is completed.`,
+        },
+      ]),
+];
+
+export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
   const [check, setCheck] = useState(true);
@@ -119,6 +169,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const { order, upsertOrder, pending } = useOrder(id);
   const { users } = useUsers();
   const [user, setUser] = useState<User>();
+  const [activeStep, setActiveStep] = useState(0);
   const [date, setDate] = useState<Date | null>(new Date());
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
@@ -150,6 +201,10 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
     },
   });
 
+  const statuses = steps(order?.status);
+
+  useEffect(() => {}, [order]);
+
   useEffect(() => {
     if (form.values.user.id !== null) {
       getUser(form.values.user.id).then(u => {
@@ -169,6 +224,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   useEffect(() => {
     if (order) {
       form.setValues(order);
+      setActiveStep(statuses.findIndex(step => step.status === order?.status));
     }
   }, [order]);
 
@@ -240,64 +296,38 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         <Paper sx={{ py: { xs: 2, sm: 4 } }}>
           <Container>
             <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold' }}>
-              Main options
+              Status
             </Typography>
             <Divider sx={{ my: 2 }} />
-
-            <Grid container spacing={2}>
-              <Grid item>
-                <FormControl
-                  sx={{ width: 250 }}
-                  error={!!form.errors?.user}
-                  disabled={pending}
-                >
-                  <InputLabel id="order-user">User</InputLabel>
-                  <Select
-                    labelId="order-user"
-                    label="User"
-                    required
-                    value={
-                      users?.length && form.values?.user
-                        ? form.values?.user?.id
-                        : ''
+            <Stepper activeStep={activeStep}>
+              {statuses.map((step, index) => (
+                <Step key={step.label}>
+                  <StepLabel
+                    error={
+                      step.status === OrderStatus.PENDING_CANCELLATION ||
+                      step.status === OrderStatus.CANCELED
                     }
-                    name="user.id"
-                    onChange={form.handleChange}
+                    optional={
+                      index === activeStep ? (
+                        <Typography
+                          color={
+                            step.status === OrderStatus.PENDING_CANCELLATION ||
+                            step.status === OrderStatus.CANCELED
+                              ? 'error'
+                              : 'success'
+                          }
+                          variant="caption"
+                        >
+                          {step.description}
+                        </Typography>
+                      ) : null
+                    }
                   >
-                    <MenuItem value="">Select a user</MenuItem>
-                    {users?.map(u => (
-                      <MenuItem key={u.id} value={u.id}>
-                        {u.name} {u.surname}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText>{form.errors?.user}</FormHelperText>
-                </FormControl>
-              </Grid>
-              <Grid item>
-                <FormControl
-                  sx={{ width: 250 }}
-                  error={!!form.errors?.status}
-                  disabled={id == null || pending}
-                >
-                  <InputLabel id="order-status">Status</InputLabel>
-                  <Select
-                    labelId="order-status"
-                    label="Status"
-                    name="status"
-                    value={id == null ? 'draft' : form.values?.status ?? ''}
-                    onChange={form.handleChange}
-                  >
-                    {statuses.map(s => (
-                      <MenuItem key={s.key} value={s.key}>
-                        {s.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText>{form.errors?.status}</FormHelperText>
-                </FormControl>
-              </Grid>
-            </Grid>
+                    {step.label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
 
             <Typography
               variant="h5"
@@ -323,6 +353,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                           type="number"
                           size="small"
                           label="Quantity"
+                          disabled
                           value={e.quantity ?? ''}
                           name={entryField}
                           onChange={event => {
@@ -355,15 +386,6 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                 );
               })}
             </List>
-            <Button
-              variant="text"
-              onClick={() => {
-                setSelectingProduct(true);
-              }}
-            >
-              <Add />
-              Add product
-            </Button>
 
             <Typography
               variant="h5"

@@ -1,16 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Add } from '@mui/icons-material';
-import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Button,
   Chip,
   Grid,
-  IconButton,
-  InputBase,
   MenuItem,
-  styled,
   TableSortLabel,
   TextField,
   Typography,
@@ -22,10 +16,11 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Order } from '../api/BasilApi';
+import { Order, User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { orderStatuses } from '../constants';
 import { useOrders } from '../hooks/useOrders';
+import { useProfile } from '../hooks/useProfile';
 import { DeliveryOption } from './Checkout';
 
 const statusFilters = [
@@ -40,18 +35,14 @@ const statusFilters = [
   'prepared',
 ];
 
+const week = ['all', 'thisWeek', 'pastWeek'];
+
 const columns: {
   key: keyof Order;
   title: string;
   sortable: boolean;
   value?: (order: Order) => any;
 }[] = [
-  {
-    key: 'user',
-    title: 'User',
-    sortable: true,
-    value: (i: Order) => i.user.email,
-  },
   {
     key: 'status',
     title: 'Status',
@@ -75,46 +66,6 @@ const columns: {
   },
 ];
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: '16px',
-  backgroundColor: '#ffffff',
-  '&:hover': {
-    backgroundColor: '#f7f7f7',
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
-    },
-  },
-}));
-
 const _MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 const dateDiffInDays = (a: Date, b: Date) => {
@@ -123,13 +74,18 @@ const dateDiffInDays = (a: Date, b: Date) => {
   return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 };
 
-export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
+export const CustomerOrders = (props: {
+  handleDrawerToggle: () => void;
+  status: string;
+  week: string;
+  delivery: string;
+}) => {
   const navigate = useNavigate();
-  const { orders } = useOrders();
-  const [searchParams, setSearchParams] = useSearchParams({
-    status: 'all',
-    delivery: 'all',
-  });
+  let { orders } = useOrders();
+  const { profile } = useProfile();
+  const [orderStatus, setOrderStatus] = useState(props.status);
+  const [weekFilter, setWeekFilter] = useState(props.week);
+  const [deliveryFilter, setDeliveryFilter] = useState(props.delivery);
   const [sortedOrders, setSortedOrders] = useState<Order[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Order;
@@ -139,7 +95,11 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   var data = new Date();
 
   useEffect(() => {
-    console.log(orders);
+    const ord = orders.filter(o => o.user.id === (profile as User).id);
+    orders = ord;
+  }, [orders]);
+
+  useEffect(() => {
     if (orders?.length) {
       const { by, dir, value } = sorting;
       if (by != null) {
@@ -156,18 +116,23 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
     }
   }, [orders, sorting]);
 
-  const handleStatusSearchParams = (status: string) => {
-    setSearchParams({
-      ...Object.fromEntries(searchParams.entries()),
-      status: status,
-    });
+  const handleFilterByStatus = (s: string) => {
+    navigate(
+      `/account/orders?status=${s}&week=${weekFilter}&delivery=${deliveryFilter}`,
+    );
+    setOrderStatus(s);
   };
 
-  const handleDeliverySearchParams = (delivery: string) => {
-    setSearchParams({
-      ...Object.fromEntries(searchParams.entries()),
-      delivery: delivery,
-    });
+  const handleFilterByWeek = (s: string) => {
+    navigate(
+      `/account/orders?week=${s}&status=${orderStatus}&delivery=${deliveryFilter}`,
+    );
+    setWeekFilter(s);
+  };
+
+  const handleFilterByDelivery = (s: string) => {
+    navigate(`/account/orders?delivery=${s}&week=${s}&status=${orderStatus}`);
+    setDeliveryFilter(s);
   };
 
   const toggleSorting = (byKey: keyof Order) => () => {
@@ -208,35 +173,6 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
         >
           Orders
         </Typography>
-        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase
-            placeholder="Search…"
-            inputProps={{ 'aria-label': 'search' }}
-            onChange={e => handleChange(e.target.value)}
-          />
-        </Search>
-        <IconButton
-          sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
-          className="add-icon-button"
-          href="/admin/orders/new"
-        >
-          <Add />
-        </IconButton>
-        <Button
-          sx={{
-            display: { xs: 'none', md: 'flex' },
-          }}
-          variant="contained"
-          href="/admin/orders/new"
-          startIcon={<Add />}
-        >
-          <Typography display="inline" sx={{ textTransform: 'none' }}>
-            Create order
-          </Typography>
-        </Button>
       </AdminAppBar>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
@@ -274,15 +210,29 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                           <TextField
                             id="outlined-select-role"
                             select
-                            value={searchParams.get('status')}
+                            value={orderStatus}
                             size="small"
                             label="Filter by status"
                             sx={{ width: '175px' }}
-                            onChange={e =>
-                              handleStatusSearchParams(e.target.value)
-                            }
+                            onChange={e => handleFilterByStatus(e.target.value)}
                           >
                             {statusFilters.map(option => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : c.key === 'createdAt' ? (
+                          <TextField
+                            id="outlined-select-role"
+                            select
+                            value={weekFilter}
+                            size="small"
+                            label="Filter by week"
+                            sx={{ width: '175px' }}
+                            onChange={e => handleFilterByWeek(e.target.value)}
+                          >
+                            {week.map(option => (
                               <MenuItem key={option} value={option}>
                                 {option}
                               </MenuItem>
@@ -292,12 +242,12 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                           <TextField
                             id="outlined-select-deliver"
                             select
-                            value={searchParams.get('delivery')}
+                            value={deliveryFilter}
                             size="small"
                             label="Filter by delivery option"
                             sx={{ width: '175px' }}
                             onChange={e =>
-                              handleDeliverySearchParams(e.target.value)
+                              handleFilterByDelivery(e.target.value)
                             }
                           >
                             <MenuItem key="all" value="all">
@@ -329,19 +279,32 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
               {sortedOrders
                 ?.filter(
                   order =>
-                    searchParams.get('status') === 'all' ||
-                    searchParams.get('status') === null ||
-                    searchParams.get('status') === 'null' ||
-                    order.status === searchParams.get('status'),
+                    weekFilter === 'all' ||
+                    weekFilter === null ||
+                    weekFilter === 'null' ||
+                    (weekFilter === 'thisWeek' &&
+                      new Date(order.createdAt).getDay() <= data.getDay() &&
+                      dateDiffInDays(data, new Date(order.createdAt)) < 7) ||
+                    (weekFilter === 'pastWeek' &&
+                      new Date(order.createdAt).getDay() <= data.getDay() &&
+                      dateDiffInDays(data, new Date(order.createdAt)) >= 7 &&
+                      dateDiffInDays(data, new Date(order.createdAt)) < 14),
                 )
                 ?.filter(
                   order =>
-                    searchParams.get('delivery') === null ||
-                    searchParams.get('delivery') === 'all' ||
-                    searchParams.get('delivery') === 'null' ||
-                    (searchParams.get('delivery') === 'pickup' &&
+                    orderStatus === 'all' ||
+                    orderStatus === null ||
+                    orderStatus === 'null' ||
+                    order.status === orderStatus,
+                )
+                ?.filter(
+                  order =>
+                    deliveryFilter === null ||
+                    deliveryFilter === 'all' ||
+                    deliveryFilter === 'null' ||
+                    (deliveryFilter === 'pickup' &&
                       order.deliveryLocation === null) ||
-                    (searchParams.get('delivery') === 'delivery' &&
+                    (deliveryFilter === 'delivery' &&
                       order.deliveryLocation !== null),
                 )
                 .map(order => {
@@ -358,11 +321,8 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                         '&:last-child td, &:last-child th': { border: 0 },
                         cursor: 'pointer',
                       }}
-                      onClick={() => navigate(`/admin/orders/${order.id}`)}
+                      onClick={() => navigate(`/account/orders/${order.id}`)}
                     >
-                      <TableCell component="th" scope="row">
-                        {order.user.email}
-                      </TableCell>
                       <TableCell>
                         <Chip
                           icon={
