@@ -193,22 +193,22 @@ export const AdminProducts = (props: {
   }, [users]);
 
   const handleCategorySearchParams = (category: string) => {
-    const _farmer = searchParams.get('farmer');
-    setSearchParams({ category: category, farmer: _farmer });
-    console.log(searchParams.get('farmer'));
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      category: category,
+    });
   };
 
   const handleFarmerSearchParams = (f: string) => {
-    const _category = searchParams.get('category');
     if (f === 'all') {
       setSearchParams({
-        category: _category,
+        ...Object.fromEntries(searchParams.entries()),
         farmer: f,
       });
     } else {
       const farmer = farmers.find((fa: User) => fa.email === f);
       setSearchParams({
-        category: _category,
+        ...Object.fromEntries(searchParams.entries()),
         farmer: farmer.name + ' ' + farmer.surname,
       });
     }

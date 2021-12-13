@@ -157,13 +157,17 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   }, [orders, sorting]);
 
   const handleStatusSearchParams = (status: string) => {
-    const _delivery = searchParams.get('delivery');
-    setSearchParams({ status: status, delivery: _delivery });
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      status: status,
+    });
   };
 
   const handleDeliverySearchParams = (delivery: string) => {
-    const _status = searchParams.get('status');
-    setSearchParams({ status: _status, delivery: delivery });
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      delivery: delivery,
+    });
   };
 
   const toggleSorting = (byKey: keyof Order) => () => {

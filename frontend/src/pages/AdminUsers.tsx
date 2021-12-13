@@ -148,7 +148,10 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
   ];
 
   const handleRoleSearchParams = (role: string) => {
-    setSearchParams({ role: role });
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      role: role,
+    });
   };
 
   return (
