@@ -55,10 +55,9 @@ import { ProductsService } from './products.service';
   filter: (req: ExpressRequest & { user: User }) => {
     const filters: any = {};
     if (
-      req.user.role === Role.CUSTOMER ||
+      req.user?.role === Role.CUSTOMER ||
       !('stock' in req.query) ||
-      req.query.stock === 'false' ||
-      !req.user
+      req.query.stock === 'false'
     ) {
       filters.public = true;
       filters.available = {
