@@ -316,13 +316,12 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       relations: ['order', 'order.user'],
     });
     const users = new Set();
-
     await this.orderEntriesRepository.remove(orderEntriesDraft).then(result => {
       result.forEach(element => {
         users.add(element.order.user);
       });
     });
-    /*await this.notificationsService.sendNotification(
+    await this.notificationsService.sendNotification(
       {
         type: NotificationType.ERROR,
         title: 'Order modified',
@@ -330,7 +329,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         priority: NotificationPriority.CRITICAL,
       },
       { id: In([...users].map((element: User) => element.id)) },
-    );*/
+    );
   }
 
   /**
