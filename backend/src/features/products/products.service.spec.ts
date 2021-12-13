@@ -4,14 +4,17 @@ import { EntityManager, Not } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { NotificationsService } from '../notifications/notifications.service';
+import { Order, OrderStatus } from '../orders/entities/order.entity';
 import { OrdersModule } from '../orders/orders.module';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/roles.enum';
 import { UsersModule } from '../users/users.module';
 import { CreateProductDto } from './dtos/create-product.dto';
+import { UpdateProductDto } from './dtos/update-product.dto';
 import { Product } from './entities/product.entity';
 import { ProductsModule } from './products.module';
 import { ProductsService } from './products.service';
@@ -35,10 +38,11 @@ describe('ProductsService', () => {
         CategoriesModule,
         TransactionsModule,
         OrdersModule,
-        NotificationsModule,
       ],
-    }).compile();
-
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
     service = module.get<ProductsService>(ProductsService);
   });
 
@@ -311,6 +315,91 @@ describe('ProductsService', () => {
           user,
         ),
       ).toMatchObject({ reserved: 20 });
+    });
+
+    it('Should delete and update the entries of the last orders created', async () => {
+      const salesDay = DateTime.now()
+        .set({
+          weekday: 1,
+          hour: 6,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user1 = await entityManager.save(User, {
+        email: 'test@example.com',
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      const user2 = await entityManager.save(User, {
+        email: 'test@example1.com',
+        password: await hash(password, 10),
+        name: 'Rose',
+        surname: 'Gold',
+        role: Role.CUSTOMER,
+      });
+      const user3 = await entityManager.save(User, {
+        email: 'test@example2.com',
+        password: await hash(password, 10),
+        name: 'Rose',
+        surname: 'Gold',
+        role: Role.EMPLOYEE,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 15,
+        reserved: 15,
+        farmer: user3,
+      });
+      const order1 = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user1.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 10,
+          },
+        ],
+      });
+      await new Promise(r => setTimeout(r, 1000));
+
+      const order2 = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user2.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 2,
+          },
+        ],
+      });
+      await service.checkProductsUpdate(
+        product.id,
+        {
+          reserved: 12,
+        } as UpdateProductDto,
+        user3 as User,
+      );
+
+      const finalOrder1 = await entityManager.findOne(Order, order1.id, {
+        relations: ['entries'],
+      });
+      expect(finalOrder1.entries[0].quantity).toEqual(9);
+
+      const finalOrder2 = await entityManager.findOne(Order, order2.id, {
+        relations: ['entries'],
+      });
+      expect(finalOrder2.entries.length).toEqual(0);
     });
   });
 

@@ -1,12 +1,12 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
-  UseGuards,
-  Request,
   Patch,
+  Request,
+  UseGuards,
   UseInterceptors,
-  Body,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
@@ -130,7 +130,7 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  @Roles(...ADMINS)
+  @Roles(...ADMINS, Role.FARMER)
   async updateOne(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,

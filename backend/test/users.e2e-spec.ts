@@ -7,13 +7,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
 import { NotificationsModule } from '../src/features/notifications/notifications.module';
+import { NotificationsService } from '../src/features/notifications/notifications.service';
 import { OrdersModule } from '../src/features/orders/orders.module';
 import { ProductsModule } from '../src/features/products/products.module';
 import { TransactionsModule } from '../src/features/transactions/transactions.module';
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
-import { checkKeys } from './utils';
+import { checkKeys, mockNotificationsService } from './utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -35,7 +36,10 @@ describe('UsersController (e2e)', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe(validation));
     await app.init();

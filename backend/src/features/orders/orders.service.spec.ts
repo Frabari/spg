@@ -4,8 +4,10 @@ import { EntityManager } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { NotificationsService } from '../notifications/notifications.service';
 import { Product } from '../products/entities/product.entity';
 import { ProductsModule } from '../products/products.module';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -48,7 +50,10 @@ describe('OrdersService', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
 
     service = module.get<OrdersService>(OrdersService);
   });
@@ -594,6 +599,54 @@ describe('OrdersService', () => {
 
       const finalProduct = await entityManager.findOne(Product, product.id);
       expect(finalProduct.available).toEqual(5);
+    });
+
+    it('farmer should not modify OrderEntryStatus to delivered status', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 5,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      return expect(
+        service.validateUpdateDto(
+          order.id,
+          {
+            entries: [
+              {
+                status: OrderEntryStatus.DELIVERED,
+                product: {
+                  id: product.id,
+                },
+              },
+            ],
+          } as UpdateOrderDto,
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
     });
   });
 
