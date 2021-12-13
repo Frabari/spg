@@ -56,14 +56,7 @@ function App() {
               }
             />
 
-            <Route
-              path="/products/*"
-              element={
-                <ProtectedRoute>
-                  <Products />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/products/*" element={<Products />} />
           </Routes>
         </BrowserRouter>
         {showLoadingIndicator && (

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Person,
   ShoppingCart,
@@ -177,24 +177,23 @@ function NavBar(props: any) {
       await logout();
       setPending(true);
       load();
+      navigate('/');
     } catch (e) {
       toast.error((e as ApiException).message);
     }
   };
-  return profile === null ? null : profile === false ? (
-    <Navigate to="/login" />
-  ) : (
+  return (
     <>
       <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
         <Container>
           <Toolbar sx={{ px: '0!important' }}>
-            <IconButton href={'/'}>
+            <IconButton onClick={() => navigate('/products')}>
               <Logo />
             </IconButton>
             <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
               Basil
             </Typography>
-            {props.loggedIn === 0 ? (
+            {!profile ? (
               <Box sx={{ position: 'absolute', right: 0 }}>
                 <Button
                   component={Link}
@@ -328,7 +327,7 @@ function NavBar(props: any) {
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
-                    {profile.role !== Role.CUSTOMER && (
+                    {profile && profile.role !== Role.CUSTOMER && (
                       <MenuItem onClick={() => navigate('/admin')}>
                         <AdminPanelSettingsIcon sx={{ mr: 2 }} /> Admin
                       </MenuItem>
@@ -338,13 +337,14 @@ function NavBar(props: any) {
                     </MenuItem>
                     <MenuItem>
                       <AccountBalanceWalletIcon sx={{ mr: 2 }} />{' '}
-                      {profile.balance} €
+                      {profile && profile.balance} €
                     </MenuItem>
                     <MenuItem onClick={handleLogout}>
                       <LogoutIcon sx={{ mr: 2 }} /> Logout
                     </MenuItem>
                   </Menu>
                   <IconButton
+                    sx={{ display: !profile && 'none' }}
                     size="large"
                     aria-label="show notifications"
                     onClick={handleMenuNotifications}
@@ -432,6 +432,7 @@ function NavBar(props: any) {
                     </List>
                   </Menu>
                   <IconButton
+                    sx={{ display: !profile && 'none' }}
                     size="large"
                     aria-label="show cart"
                     onClick={() => setShowBasket(true)}
@@ -440,8 +441,12 @@ function NavBar(props: any) {
                       <ShoppingCart />
                     </Badge>
                   </IconButton>
-                  <IconButton size="large" onClick={handleMenu}>
-                    <Avatar src={profile?.avatar} />
+                  <IconButton
+                    sx={{ display: !profile && 'none' }}
+                    size="large"
+                    onClick={handleMenu}
+                  >
+                    <Avatar src={profile && profile.avatar} />
                   </IconButton>
                 </Box>
               </>

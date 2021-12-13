@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
+import { Route, Routes, useSearchParams } from 'react-router-dom';
 import { Container } from '@mui/material';
 import ProductsGrid from '../components/ProductsGrid';
 import { useProfile } from '../hooks/useProfile';
@@ -13,9 +13,6 @@ export default function Products() {
   const [queryParams] = useSearchParams();
   const [farmer, setFarmer] = useState(null);
   const [balanceWarning, setBalanceWarning] = useState(false);
-  if (!profile) {
-    return <Navigate to="/" />;
-  }
 
   const handleSearch = (value: any) => {
     setSearch(value);

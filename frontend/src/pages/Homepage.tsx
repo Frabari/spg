@@ -1,15 +1,16 @@
-import { Navigate } from 'react-router-dom';
-import { Container, Grid, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Button, Container, Grid, Typography } from '@mui/material';
 import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
 import { ReactComponent as ImageHome } from './images/image-home.svg';
 
 export default function Homepage() {
   const { profile } = useProfile();
+  const navigate = useNavigate();
 
-  return profile === null ? null : profile === false ? (
+  return (
     <>
-      <NavigationBox.NavBar loggedIn={0} />
+      <NavigationBox.NavBar />
       <Container>
         <Grid
           container
@@ -17,7 +18,7 @@ export default function Homepage() {
           alignItems="center"
           justifyItems="center"
           spacing={3}
-          paddingTop="10rem"
+          marginTop="6rem"
         >
           <Grid item xs={12}>
             <ImageHome width="300" height="400" />
@@ -30,10 +31,13 @@ export default function Homepage() {
               group at your fingertips
             </Typography>
           </Grid>
+          <Grid item>
+            <Button variant="contained" onClick={() => navigate('/products')}>
+              Take a look to our products!
+            </Button>
+          </Grid>
         </Grid>
       </Container>
     </>
-  ) : (
-    <Navigate to="/products" />
   );
 }
