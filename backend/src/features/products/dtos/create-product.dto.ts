@@ -9,6 +9,7 @@ import {
   Min,
 } from 'class-validator';
 import { OmitType } from '@nestjs/swagger';
+import { Category } from '../../categories/entities/category.entity';
 import { Product } from '../entities/product.entity';
 
 export class CreateProductDto extends OmitType(Product, ['id'] as const) {
@@ -47,4 +48,7 @@ export class CreateProductDto extends OmitType(Product, ['id'] as const) {
   @IsString()
   @IsUrl()
   image: string;
+
+  @IsDefined()
+  category: Category;
 }

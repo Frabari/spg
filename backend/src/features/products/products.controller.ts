@@ -21,6 +21,7 @@ import { Crud } from '../../core/decorators/crud.decorator';
 import { ParseBoolFlagPipe } from '../../core/pipes/parse-bool-flag.pipe';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../users/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
 import { ADMINS, Role } from '../users/roles.enum';
@@ -52,7 +53,8 @@ import { ProductsService } from './products.service';
     if (
       req.user.role === Role.CUSTOMER ||
       !('stock' in req.query) ||
-      req.query.stock === 'false'
+      req.query.stock === 'false' ||
+      !req.user
     ) {
       filters.public = true;
       filters.available = {
@@ -70,7 +72,6 @@ import { ProductsService } from './products.service';
 @ApiTags(Product.name)
 @ApiBearerAuth()
 @Controller('products')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductsController implements CrudController<Product> {
   constructor(public readonly service: ProductsService) {}
 
@@ -79,6 +80,7 @@ export class ProductsController implements CrudController<Product> {
   }
 
   @Override()
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiQuery({
     name: 'stock',
     type: Boolean,
@@ -95,6 +97,7 @@ export class ProductsController implements CrudController<Product> {
   }
 
   @Override()
+  @UseGuards(OptionalJwtAuthGuard)
   getOne(@ParsedRequest() crudReq: CrudRequest, @Request() req) {
     const user = req.user as User;
     crudReq.parsed.join = [
@@ -110,17 +113,20 @@ export class ProductsController implements CrudController<Product> {
   }
 
   @Override()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...ADMINS, Role.FARMER)
   async createOne(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,
     @ParsedBody() dto: CreateProductDto,
   ) {
+    crudRequest.parsed.join = [{ field: 'category' }];
     const product = await this.service.checkProduct(dto, request.user);
     return this.base.createOneBase(crudRequest, product as Product);
   }
 
   @Override()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...ADMINS, Role.FARMER)
   async updateOne(
     @ParsedRequest() crudRequest: CrudRequest,

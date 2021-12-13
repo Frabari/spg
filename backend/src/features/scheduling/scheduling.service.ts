@@ -40,7 +40,7 @@ export class SchedulingService {
 
   @Cron('0 9 * * 1')
   async closeBaskets() {
-    await this.ordersService.deleteDraftOrderEntries();
+    await this.ordersService.removeDraftOrderEntries();
     await this.ordersService.closeBaskets();
     await this.ordersService.payBaskets();
   }
