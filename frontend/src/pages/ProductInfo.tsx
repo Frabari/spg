@@ -37,14 +37,10 @@ export default function ProductInfo(props: any) {
   const { product } = useProduct(+id);
   const { upsertEntry } = useBasket();
   const [ready, setReady] = useState(false);
-  let quantity: number[] = [];
 
   useEffect(() => {
     if (product?.id) {
       setReady(true);
-      for (let i = 1; i <= product.available; i++) {
-        quantity.push(i);
-      }
     }
   }, [ready, product]);
 
@@ -227,7 +223,10 @@ export default function ProductInfo(props: any) {
                             }
                             helperText="Select the desired quantity"
                           >
-                            {quantity.map(option => (
+                            {Array.from(
+                              { length: product.available },
+                              (v, k) => k + 1,
+                            ).map(option => (
                               <MenuItem key={option} value={option}>
                                 {option}
                               </MenuItem>
