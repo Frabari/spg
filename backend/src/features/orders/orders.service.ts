@@ -283,12 +283,30 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * Deletes all the draft (unconfirmed) order entries
+   * Removes all the draft (unconfirmed) order entries
    */
-  deleteDraftOrderEntries() {
-    return this.ordersEntryRepository.delete({
-      status: OrderEntryStatus.DRAFT,
+  async removeDraftOrderEntries() {
+    const orderEntriesDraft = await this.ordersEntryRepository.find({
+      where: {
+        status: OrderEntryStatus.DRAFT,
+      },
+      relations: ['order', 'order.user'],
     });
+    const users = new Set();
+    await this.ordersEntryRepository.remove(orderEntriesDraft).then(result => {
+      result.forEach(element => {
+        users.add(element.order.user);
+      });
+    });
+    await this.notificationsService.sendNotification(
+      {
+        type: NotificationType.ERROR,
+        title: 'Order modified',
+        message: `Pay attention some entries of your order are deleted`,
+        priority: NotificationPriority.CRITICAL,
+      },
+      { id: In([...users].map((element: User) => element.id)) },
+    );
   }
 
   /**

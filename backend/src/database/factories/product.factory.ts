@@ -8,7 +8,7 @@ const products = [
     img: 'https://images.unsplash.com/photo-1582281298055-e25b84a30b0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258MXxJdlV2VDl4LTNFNHx8fHx8Mnx8MTYzNjY1MDA0Mw&ixlib=rb-1.2.1&q=80&w=1080',
     description:
       'Daytona is an early maturing All Sweet type F1 hybrid watermelon, with excellent yield potential. Fruit are uniform, short oblong in shape, and weigh 10 – 12 kg. The medium-thick rind is tough, making it highly suitable for long-distance shipping. Rind colour is dark green with thin lighter green stripes. Daytona’s flesh is bright red, firm, crispy, juicy, and has an excellent taste and a high Brix level of about 11 – 12 %. Daytona tends to resist sunburn and has a high resistance to Anthracnose (Co).',
-    baseUnit: 'A unit corresponds to 10 Kg',
+    baseUnit: 'One unit corresponds to 10 Kg',
   },
   {
     name: 'Shelled Walnuts',
@@ -344,14 +344,14 @@ const products = [
     img: 'https://images.unsplash.com/photo-1615486171815-2611a6e3cd02?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258NDl8SXZVdlQ5eC0zRTR8fHx8fDJ8fDE2MzY2NTAyNTU&ixlib=rb-1.2.1&q=80&w=1080',
     description:
       '7-9 ounce beefsteak type shaped like a heart. Meaty, deep pink/red flesh and few seeds. Real tomato taste. The tomato all our Italian grandfathers grew. For fresh eating or sauce. Indeterminate. 70+ days. Very large vigorous growing plant; these are quite productive and relatively early.',
-    baseUnit: 'A unit corresponds to 500 g',
+    baseUnit: 'One unit corresponds to 500 g',
   },
   {
     name: 'Red Radishes',
     img: 'https://images.unsplash.com/photo-1615486171756-90eed2c26961?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258NTB8SXZVdlQ5eC0zRTR8fHx8fDJ8fDE2MzY2NTAyNTU&ixlib=rb-1.2.1&q=80&w=1080',
     description:
       'Small round salad radish with a red neck and white base. Slow to go woody.',
-    baseUnit: 'A unit corresponds to 500 g',
+    baseUnit: 'One unit corresponds to 500 g',
   },
 ];
 
