@@ -54,7 +54,7 @@ export class NotificationsService {
       notification.priority = NotificationPriority.INFO;
     }
     this.notificationsGateway.server
-      .in(loggedUsers.map(u => u.id.toString()))
+      ?.in(loggedUsers.map(u => u.id.toString()))
       .emit('notification', notification);
     notification.deliveredTo = users;
     if (notification.priority === NotificationPriority.CRITICAL) {

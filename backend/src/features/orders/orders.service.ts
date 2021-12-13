@@ -15,7 +15,7 @@ import {
   NotificationType,
 } from '../notifications/entities/notification.entity';
 import { NotificationsService } from '../notifications/notifications.service';
-import { Product } from '../products/entities/product.entity';
+import { ProductId } from '../products/entities/product.entity';
 import { ProductsService } from '../products/products.service';
 import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
@@ -40,6 +40,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     @InjectRepository(OrderEntry)
     private readonly ordersEntryRepository: Repository<OrderEntry>,
     @Inject(forwardRef(() => ProductsService))
+    private readonly orderEntriesRepository: Repository<OrderEntry>,
     private readonly productsService: ProductsService,
     private readonly notificationsService: NotificationsService,
     private readonly transactionsService: TransactionsService,
@@ -306,12 +307,30 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * Deletes all the draft (unconfirmed) order entries
+   * Removes all the draft (unconfirmed) order entries
    */
-  deleteDraftOrderEntries() {
-    return this.ordersEntryRepository.delete({
-      status: OrderEntryStatus.DRAFT,
+  async removeDraftOrderEntries() {
+    const orderEntriesDraft = await this.orderEntriesRepository.find({
+      where: {
+        status: OrderEntryStatus.DRAFT,
+      },
+      relations: ['order', 'order.user'],
     });
+    const users = new Set();
+    await this.orderEntriesRepository.remove(orderEntriesDraft).then(result => {
+      result.forEach(element => {
+        users.add(element.order.user);
+      });
+    });
+    await this.notificationsService.sendNotification(
+      {
+        type: NotificationType.ERROR,
+        title: 'Order modified',
+        message: `Pay attention some entries of your order are deleted`,
+        priority: NotificationPriority.CRITICAL,
+      },
+      { id: In([...users].map((element: User) => element.id)) },
+    );
   }
 
   /**
@@ -423,11 +442,11 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   /**
    * Find entries that contain a certain product
    */
-  async getOrderEntriesContainingProduct(product: Product) {
+  async getOrderEntriesContainingProduct(productId: ProductId) {
     const entries = await this.ordersEntryRepository.find({
       where: {
         product: {
-          id: product.id,
+          id: productId,
         },
       },
       relations: ['order'],
@@ -447,5 +466,24 @@ export class OrdersService extends TypeOrmCrudService<Order> {
    */
   deleteOrderEntry(id: OrderEntryId) {
     return this.ordersEntryRepository.delete(id);
+  }
+
+  /**
+   * Updates all order entries containing a product
+   */
+  async updateProductOrderEntries(
+    productId: ProductId,
+    dto: UpdateOrderEntryDto,
+  ) {
+    const entries = await this.orderEntriesRepository.find({
+      product: { id: productId },
+    });
+    if (!entries?.length) return;
+    return this.orderEntriesRepository.save(
+      entries.map(e => ({
+        ...e,
+        ...dto,
+      })),
+    );
   }
 }

@@ -1,4 +1,5 @@
 import { hash } from 'bcrypt';
+import { DateTime, Settings } from 'luxon';
 import { EntityManager, Not } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -49,7 +50,6 @@ describe('ProductsService', () => {
       const products = await entityManager.find(Product, {
         available: Not(0),
         reserved: Not(0),
-        sold: Not(0),
       });
       expect(products.length > 0).toBe(false);
     });
@@ -84,7 +84,7 @@ describe('ProductsService', () => {
       } as CreateProductDto;
       const result = await service.checkProduct(dto, {
         id: 1,
-        role: Role.EMPLOYEE,
+        role: Role.FARMER,
       } as User);
       expect(result).toBeDefined();
     });
@@ -107,6 +107,13 @@ describe('ProductsService', () => {
 
   describe('checkProductsUpdate', () => {
     it('should validate a product update dto', async () => {
+      const salesDay = DateTime.now()
+        .set({
+          weekday: 2,
+          hour: 10,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = module.get(EntityManager);
@@ -216,16 +223,95 @@ describe('ProductsService', () => {
         description: 'very good onions',
         baseUnit: '1Kg',
         price: 10,
-        available: 10,
-        reserved: 5,
         farmer: user,
       });
-      const result = await service.checkProductsUpdate(
+      const updatedProduct = await service.checkProductsUpdate(
         product.id,
-        product,
+        {
+          ...product,
+          reserved: 20,
+        },
         user,
       );
-      expect(result.reserved).toBeUndefined();
+      expect(updatedProduct.reserved).toBeUndefined();
+    });
+
+    it('should modify available field', async () => {
+      const salesDay = DateTime.now()
+        .set({
+          weekday: 3,
+          hour: 8,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
+
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 5,
+        available: 10,
+        farmer: user,
+      });
+      return expect(
+        await service.checkProductsUpdate(
+          product.id,
+          {
+            ...product,
+            available: 5,
+          },
+          user,
+        ),
+      ).toMatchObject({ available: 5 });
+    });
+
+    it('should modify reserved field', async () => {
+      const salesDay = DateTime.now()
+        .plus({ weeks: 1 })
+        .set({
+          weekday: 1,
+          hour: 7,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
+
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.MANAGER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 5,
+        farmer: user,
+      });
+      expect(
+        await service.checkProductsUpdate(
+          product.id,
+          {
+            ...product,
+            reserved: 20,
+          },
+          user,
+        ),
+      ).toMatchObject({ reserved: 20 });
     });
     it('Should delete the entries of the last order created', async () => {
       const password = 'testpwd';

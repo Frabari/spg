@@ -87,7 +87,7 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('checkOrder', () => {
+  describe('validateCreateDto', () => {
     it('should fail if the quantity of the order is higher than its product', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
@@ -191,7 +191,7 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('checkOrderUpdate', () => {
+  describe('validateUpdateDto', () => {
     it('should change the status of the order with a following one', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
@@ -730,6 +730,60 @@ describe('OrdersService', () => {
 
      expect(order.total).toBeGreaterThan(user.balance);
    });*/
+  });
+
+  describe('removeDraftOrderEntries', () => {
+    it('should remove order entries with status DRAFT', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.EMPLOYEE,
+      });
+      const product1 = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+      });
+      const product2 = await entityManager.save(Product, {
+        name: 'apples',
+        description: 'very good apples',
+        baseUnit: '2Kg',
+        price: 5,
+        available: 20,
+      });
+      let order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product1.id,
+            },
+            quantity: 5,
+            status: OrderEntryStatus.DRAFT,
+          },
+          {
+            product: {
+              id: product2.id,
+            },
+            quantity: 2,
+            status: OrderEntryStatus.DELIVERED,
+          },
+        ],
+      });
+      await service.removeDraftOrderEntries();
+      order = await entityManager.findOne(Order, order.id, {
+        relations: ['entries'],
+      });
+      expect(order.entries.length).toEqual(1);
+    });
   });
 
   afterEach(() => {

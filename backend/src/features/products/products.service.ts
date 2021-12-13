@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
@@ -52,7 +53,6 @@ export class ProductsService extends TypeOrmCrudService<Product> {
       {
         available: 0,
         reserved: 0,
-        sold: 0,
       },
     );
   }
@@ -62,7 +62,15 @@ export class ProductsService extends TypeOrmCrudService<Product> {
       dto.farmer = user;
       dto.public = false;
       delete dto.reserved;
-      delete dto.sold;
+    }
+    if (user.role !== Role.FARMER) {
+      if (!dto.farmer) {
+        throw new BadRequestException({
+          constraints: {
+            farmer: `The product must contains farmer`,
+          },
+        });
+      }
     }
     return dto;
   }
@@ -83,12 +91,67 @@ export class ProductsService extends TypeOrmCrudService<Product> {
         );
       }
       delete dto.public;
+      delete dto.reserved;
+    }
+    if (dto.reserved) {
+      const now = DateTime.now();
+      const from =
+        now.weekday === 1 && now.hour <= 9
+          ? now
+              .set({
+                weekday: 7,
+                hour: 23,
+                minute: 0,
+                second: 0,
+                millisecond: 0,
+              })
+              .minus({ weeks: 1 })
+          : now.set({
+              weekday: 7,
+              hour: 23,
+              minute: 0,
+              second: 0,
+              millisecond: 0,
+            });
+      const to = from.plus({ hours: 10 });
+      if (now < from || now > to) {
+        throw new BadRequestException({
+          constraints: {
+            reserved: 'Cannot edit reserved count now',
+          },
+        });
+      }
+    }
+
+    if (dto.available) {
+      const now = DateTime.now();
+      const from = now.set({
+        weekday: 1,
+        hour: 18,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+      });
+      const to = now.set({
+        weekday: 6,
+        hour: 9,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+      });
+      if (now < from || now > to) {
+        throw new BadRequestException({
+          constraints: {
+            available: 'Cannot edit available count now',
+          },
+        });
+      }
     }
 
     if (dto.reserved < product.reserved) {
       const diff = product.reserved - dto.reserved;
       const entries = await this.ordersService.getOrderEntriesContainingProduct(
-        product,
+        product.id,
       );
       let deletedEntries = 0;
       let entryIndex = 0;
