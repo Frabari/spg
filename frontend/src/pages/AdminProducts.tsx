@@ -125,7 +125,7 @@ const Description = styled(Box)({
 
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
-  farmer: boolean;
+  profile: User;
   category: string;
   farmers: string;
 }) => {
@@ -270,7 +270,7 @@ export const AdminProducts = (props: {
             <TableHead>
               <TableRow>
                 {columns.map(c =>
-                  c.key === 'farmer' && !props.farmer ? (
+                  c.key === 'farmer' && !(props.profile.role === 'farmer') ? (
                     <TableCell
                       key={c.key}
                       sortDirection={sorting.by === c.key ? sorting.dir : false}
@@ -320,7 +320,9 @@ export const AdminProducts = (props: {
                         </Grid>
                       </Grid>
                     </TableCell>
-                  ) : c.key === 'farmer' && props.farmer ? (
+                  ) : (c.key === 'farmer' && props.profile.role === 'farmer') ||
+                    (c.key === 'description' &&
+                      props.profile.role === 'warehouse_manager') ? (
                     <></>
                   ) : (
                     <TableCell
@@ -374,7 +376,16 @@ export const AdminProducts = (props: {
                     </TableCell>
                   ),
                 )}
-                {props.farmer ? <TableCell>{'Notes'}</TableCell> : <></>}
+                {props.profile.role === 'farmer' ? (
+                  <TableCell>{'Notes'}</TableCell>
+                ) : (
+                  <></>
+                )}
+                {props.profile.role === 'warehouse_manager' ? (
+                  <TableCell>{'Actions'}</TableCell>
+                ) : (
+                  <></>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -415,12 +426,14 @@ export const AdminProducts = (props: {
                     >
                       {product.name}
                     </TableCell>
-                    <TableCell sx={{ pr: 0 }}>
-                      <Description>{product.description}</Description>
-                    </TableCell>
+                    {!(props.profile.role === 'warehouse_manager') && (
+                      <TableCell sx={{ pr: 0 }}>
+                        <Description>{product.description}</Description>
+                      </TableCell>
+                    )}
                     <TableCell>{product.price}</TableCell>
                     <TableCell>{product.category.name}</TableCell>
-                    {props.farmer ? (
+                    {props.profile.role === 'farmer' ? (
                       <>
                         <TableCell>
                           {product.available === 0 &&
@@ -434,9 +447,15 @@ export const AdminProducts = (props: {
                         </TableCell>
                       </>
                     ) : (
-                      <TableCell>
-                        {product.farmer.name + ' ' + product.farmer.surname}
-                      </TableCell>
+                      <>
+                        <TableCell>
+                          {product.farmer.name + ' ' + product.farmer.surname}
+                        </TableCell>
+
+                        {props.profile.role === 'warehouse_manager' && (
+                          <TableCell>azioni da implementare</TableCell>
+                        )}
+                      </>
                     )}
                   </TableRow>
                 ))}
