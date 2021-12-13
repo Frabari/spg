@@ -83,20 +83,29 @@ describe('OrdersController (e2e)', () => {
         .auth(authToken, { type: 'bearer' })
         .expect(200);
     });
+  });
 
-    it('should fail if the role is CUSTOMER', async () => {
+  describe('GET /orders/:id', () => {
+    it(`should fail if a customer tries to access someone else's order`, async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
-      const user = await entityManager.save(User, {
+      const user1 = await entityManager.save(User, {
+        email: 'email1@example.com',
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      await entityManager.save(User, {
         email,
         password: await hash(password, 10),
         name: 'John',
         surname: 'Doe',
         role: Role.CUSTOMER,
       });
-      await entityManager.save(Order, {
-        user: { id: user.id },
+      const order = await entityManager.save(Order, {
+        user: { id: user1.id },
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -104,9 +113,9 @@ describe('OrdersController (e2e)', () => {
         .send({ username: email, password });
       const authToken = response.body.token;
       return request(server)
-        .get('/orders')
+        .get(`/orders/${order.id}`)
         .auth(authToken, { type: 'bearer' })
-        .expect(403);
+        .expect(404);
     });
   });
 

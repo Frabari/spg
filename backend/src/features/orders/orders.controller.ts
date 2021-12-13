@@ -1,3 +1,4 @@
+import { Request as ExpressRequest } from 'express';
 import {
   Controller,
   Get,
@@ -10,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
+  CrudAuth,
   CrudController,
   CrudRequest,
   CrudRequestInterceptor,
@@ -18,10 +20,11 @@ import {
   ParsedRequest,
 } from '@nestjsx/crud';
 import { Crud } from '../../core/decorators/crud.decorator';
+import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
-import { ADMINS, Role, STAFF } from '../users/roles.enum';
+import { ADMINS, Role } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -45,6 +48,15 @@ import { OrdersService } from './orders.service';
     },
   },
 })
+@CrudAuth({
+  filter: (req: ExpressRequest & { user: User }) => {
+    const filters: any = {};
+    if (req.user?.role === Role.CUSTOMER) {
+      filters['user.id'] = req.user.id;
+    }
+    return filters;
+  },
+})
 @ApiTags(Order.name)
 @ApiBearerAuth()
 @Controller('orders')
@@ -57,7 +69,6 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  @Roles(...STAFF)
   getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
     crudRequest.parsed.fields = ['id', 'status', 'createdAt', 'deliverAt'];
     return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
@@ -101,7 +112,6 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  @Roles(...STAFF)
   getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
