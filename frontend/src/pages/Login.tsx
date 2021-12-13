@@ -195,12 +195,23 @@ export default function Login(props: any) {
             marginBottom="2rem"
           >
             <Grid item>
-              <Logo />
-            </Grid>
-            <Grid item>
-              <Typography variant="h6" component="div" marginLeft="10px">
-                Basil
-              </Typography>
+              <Box component={Link} to="/" sx={{ textDecoration: 'none' }}>
+                <Grid container direction="row">
+                  <Grid item>
+                    <Logo />
+                  </Grid>
+                  <Grid item>
+                    <Typography
+                      display="inline"
+                      variant="h6"
+                      component="div"
+                      marginLeft="10px"
+                    >
+                      Basil
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
             </Grid>
           </Grid>
           <OutlinedCard />

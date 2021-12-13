@@ -6,6 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
+import { Category } from '../src/features/categories/entities/category.entity';
 import { NotificationsModule } from '../src/features/notifications/notifications.module';
 import { OrdersModule } from '../src/features/orders/orders.module';
 import { Product } from '../src/features/products/entities/product.entity';
@@ -16,7 +17,7 @@ import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
 import { checkKeys } from './utils';
 
-describe('ProductssController (e2e)', () => {
+describe('ProductsController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -43,8 +44,8 @@ describe('ProductssController (e2e)', () => {
   });
 
   describe('GET /products', () => {
-    it('should fail if the user is not authenticated', () => {
-      return request(app.getHttpServer()).get('/products').expect(401);
+    it('should work if the user is not authenticated', () => {
+      return request(app.getHttpServer()).get('/products').expect(200);
     });
 
     it('should not return unlisted products to customers', async () => {
@@ -148,7 +149,6 @@ describe('ProductssController (e2e)', () => {
               'baseUnit',
               'available',
               'reserved',
-              'sold',
               'category',
               'farmer',
               'image',
@@ -217,7 +217,6 @@ describe('ProductssController (e2e)', () => {
               'baseUnit',
               'available',
               'reserved',
-              'sold',
               'category',
               'farmer',
               'image',
@@ -273,7 +272,6 @@ describe('ProductssController (e2e)', () => {
               'baseUnit',
               'available',
               'reserved',
-              'sold',
               'farmer',
               'image',
             ],
@@ -296,6 +294,17 @@ describe('ProductssController (e2e)', () => {
         password: await hash(password, 10),
         role: Role.MANAGER,
       });
+      const category = await entityManager.save(Category, {
+        name: 'Test category',
+        slug: 'test-category',
+      });
+      const farmer = await entityManager.save(User, {
+        name: 'Test name',
+        surname: 'Test surname',
+        email: 'test@email.com',
+        password: await hash(password, 10),
+        role: Role.FARMER,
+      });
       const server = app.getHttpServer();
       const response = await request(server)
         .post('/users/login')
@@ -312,6 +321,8 @@ describe('ProductssController (e2e)', () => {
           baseUnit: '1Kg',
           available: 5,
           image: 'https://image.png',
+          category,
+          farmer,
         })
         .expect(201)
         .expect(response => {
@@ -327,6 +338,7 @@ describe('ProductssController (e2e)', () => {
               'available',
               'farmer',
               'image',
+              'category',
             ],
             [],
           );

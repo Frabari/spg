@@ -19,6 +19,7 @@ import {
 import { Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
+import { useProfile } from '../hooks/useProfile';
 
 const { DateTime } = require('luxon');
 
@@ -34,6 +35,7 @@ function ProductCard({
   onSelect: (product: Product) => void;
 }) {
   const { basket, upsertEntry } = useBasket();
+  const { profile } = useProfile();
   const navigate = useNavigate();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
@@ -105,7 +107,7 @@ function ProductCard({
             € {product.price}/unit
           </Typography>
         </CardContent>
-        <CardActions>
+        <CardActions sx={{ display: !profile && 'none' }}>
           <Box marginLeft="auto" padding="0.5rem">
             <IconButton onClick={() => handleSelect(product)}>
               <AddIcon />
