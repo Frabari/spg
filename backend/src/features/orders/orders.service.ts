@@ -19,7 +19,7 @@ import { ProductId } from '../products/entities/product.entity';
 import { ProductsService } from '../products/products.service';
 import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
-import { ADMINS } from '../users/roles.enum';
+import { ADMINS, Role, STAFF } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderEntryDto } from './dtos/update-order-entry.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
@@ -165,14 +165,18 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       (dto as Order).user = user;
     }
     if (dto.status) {
-      const oldStatusOrder = statuses.indexOf(order.status);
-      const newStatusOrder = statuses.indexOf(dto.status);
-      if (newStatusOrder < oldStatusOrder) {
-        throw new BadRequestException({
-          constraints: {
-            status: `Cannot revert an order's status change`,
-          },
-        });
+      if (!STAFF.includes(user.role)) {
+        delete dto.status;
+      } else {
+        const oldStatusOrder = statuses.indexOf(order.status);
+        const newStatusOrder = statuses.indexOf(dto.status);
+        if (newStatusOrder < oldStatusOrder && user.role !== Role.MANAGER) {
+          throw new BadRequestException({
+            constraints: {
+              status: `Cannot revert an order's status change`,
+            },
+          });
+        }
       }
     }
     if (!ADMINS.includes(user.role)) {

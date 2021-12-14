@@ -230,6 +230,7 @@ describe('OrdersService', () => {
         password: await hash(password, 10),
         name: 'John',
         surname: 'Doe',
+        role: Role.EMPLOYEE,
       });
 
       const order = await entityManager.save(Order, {
