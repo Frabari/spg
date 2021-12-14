@@ -13,25 +13,17 @@ import { Order } from './order.entity';
 export type OrderEntryId = number;
 
 export enum OrderEntryStatus {
-  /**
-   * The user has added this item to the basket
-   * but the farmer hasn't confirmed it yet
-   */
   DRAFT = 'draft',
-
-  /**
-   * The farmer has confirmed the availability of
-   * this product
-   */
   CONFIRMED = 'confirmed',
-
-  /**
-   * The farmer has physically delivered this
-   * item to the warehouse
-   */
   DELIVERED = 'delivered',
 }
 
+export interface OrderEntry {
+  id: OrderEntryId;
+  product: Product;
+  quantity: number;
+  status?: OrderEntryStatus;
+}
 @Entity()
 export class OrderEntry {
   @PrimaryGeneratedColumn()
@@ -66,5 +58,5 @@ export class OrderEntry {
   @Column({ default: OrderEntryStatus.DRAFT })
   @IsString()
   @IsIn(Object.values(OrderEntryStatus))
-  status: OrderEntryStatus;
+  status?: OrderEntryStatus;
 }

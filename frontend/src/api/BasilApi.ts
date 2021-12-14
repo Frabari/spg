@@ -13,6 +13,7 @@ export interface Category {
 export type OrderEntryId = number;
 
 export interface OrderEntry {
+  status?: string;
   id?: OrderEntryId;
   product: Product;
   quantity: number;
@@ -30,6 +31,12 @@ export enum OrderStatus {
   COMPLETED = 'completed',
   PENDING_CANCELLATION = 'pending_cancellation',
   CANCELED = 'canceled',
+}
+
+export enum OrderEntryStatus{
+  DRAFT = 'draft',
+  CONFIRMED = 'confirmed',
+  DELIVERED = 'delivered',
 }
 
 export interface DeliveryLocation {
