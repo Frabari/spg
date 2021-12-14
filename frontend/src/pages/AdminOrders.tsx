@@ -22,7 +22,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Order } from '../api/BasilApi';
+import { Order, OrderStatus } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { orderStatuses } from '../constants';
 import { useOrders } from '../hooks/useOrders';
@@ -240,6 +240,48 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
+        <Grid container direction="column">
+          <Grid item>
+            <Button
+              sx={{ mb: '16px' }}
+              onClick={() =>
+                setSearchParams({
+                  status: OrderStatus.PAID,
+                  delivery: DeliveryOption.PICKUP,
+                })
+              }
+            >
+              Show pick up schedule
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              sx={{ mb: '16px' }}
+              onClick={() =>
+                setSearchParams({
+                  status: OrderStatus.PENDING_CANCELLATION,
+                  delivery: 'all',
+                })
+              }
+            >
+              Show orders pending cancellation
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              sx={{ mb: '16px' }}
+              color="error"
+              onClick={() =>
+                setSearchParams({
+                  status: 'all',
+                  delivery: 'all',
+                })
+              }
+            >
+              Reset
+            </Button>
+          </Grid>
+        </Grid>
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}

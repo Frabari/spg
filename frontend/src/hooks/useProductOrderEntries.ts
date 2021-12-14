@@ -42,5 +42,5 @@ export const useProductOrderEntries = (id: ProductId) => {
     }
   }, [id, pending]);
 
-  return {entries, setEntries};
+  return { entries, setEntries };
 };
