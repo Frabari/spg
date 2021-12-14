@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as DbConfig from '../ormconfig.json';
 import { CategoriesModule } from './features/categories/categories.module';
@@ -24,7 +23,6 @@ const { entities, ...dbConfig } = DbConfig;
     CategoriesModule,
     OrdersModule,
     TransactionsModule,
-    ScheduleModule.forRoot(),
     SchedulingModule,
     NotificationsModule,
   ],

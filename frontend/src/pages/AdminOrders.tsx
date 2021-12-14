@@ -139,7 +139,6 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   var data = new Date();
 
   useEffect(() => {
-    console.log(orders);
     if (orders?.length) {
       const { by, dir, value } = sorting;
       if (by != null) {
