@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
-import moment from 'moment';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
   Avatar,
@@ -19,8 +18,7 @@ import { styled } from '@mui/material/styles';
 import { useBasket } from '../hooks/useBasket';
 import { useProduct } from '../hooks/useProduct';
 import { useProfile } from '../hooks/useProfile';
-
-const { DateTime } = require('luxon');
+import { useVirtualClock } from '../hooks/useVirtualClock';
 
 const Img = styled('img')({
   margin: 'auto',
@@ -37,6 +35,7 @@ export default function ProductInfo(props: any) {
   const { product } = useProduct(+id);
   const { upsertEntry } = useBasket();
   const [ready, setReady] = useState(false);
+  const [date] = useVirtualClock();
 
   useEffect(() => {
     if (product?.id) {
@@ -59,18 +58,24 @@ export default function ProductInfo(props: any) {
   };
 
   const handleClick = () => {
-    if (
-      DateTime.now() >= moment().day('saturday').hour(9) &&
-      DateTime.now() <= moment().day('sunday').hour(23).minutes(0)
-    ) {
+    const from = date.set({
+      weekday: 6,
+      hour: 9,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const to = from.plus({ hour: 38 });
+
+    if (date < from || date > to) {
+      toast.error(
+        `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
+      );
+    } else {
       upsertEntry(product, counter).then(o => {
         toast.success(`${product.name} successfully added!`);
         navigate('/products');
       });
-    } else {
-      toast.error(
-        `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
-      );
     }
   };
 

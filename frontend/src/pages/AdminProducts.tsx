@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import moment from 'moment';
 import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Alert,
   Box,
   Button,
+  ButtonGroup,
   Grid,
   IconButton,
   InputBase,
@@ -24,13 +24,14 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
 import { Product, Role, User } from '../api/BasilApi';
+import { OrderEntryStatus } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
+import { useProductOrderEntries } from '../hooks/useProductOrderEntries';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
-
-const { DateTime } = require('luxon');
+import { useVirtualClock } from '../hooks/useVirtualClock';
 
 const columns: {
   key: keyof Product;
@@ -164,6 +165,65 @@ export const AdminProducts = (props: {
     });
   };
 
+  const Actions = ({ productId }: { productId: number }) => {
+    const {entries, setEntries} = useProductOrderEntries(productId);
+
+    return (
+      entries.length > 0 && (
+        <Grid item sx={{ p: 2, pt: 0 }}>
+          <ButtonGroup variant="outlined" aria-label="outlined button group">
+            {(profile as User).role === Role.MANAGER && (
+              <Button
+                type="submit"
+                variant="outlined"
+                color="warning"
+                sx={{ px: 3 }}
+                onClick={ev => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  setEntries({ status: OrderEntryStatus.DRAFT });
+                }}
+              >
+                Draft
+              </Button>
+            )}
+            {((profile as User).role === Role.MANAGER ||
+              (profile as User).role === Role.FARMER) && (
+              <Button
+                type="submit"
+                variant="outlined"
+                color="error"
+                onClick={ev => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  setEntries({ status: OrderEntryStatus.CONFIRMED });
+                }}
+                sx={{ px: 3 }}
+              >
+                Confirm
+              </Button>
+            )}
+            {((profile as User).role === Role.MANAGER ||
+              (profile as User).role === Role.WAREHOUSE_MANAGER) && (
+              <Button
+                type="submit"
+                variant="outlined"
+                sx={{ px: 3 }}
+                onClick={ev => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  setEntries({ status: OrderEntryStatus.DELIVERED });
+                }}
+              >
+                Delivered
+              </Button>
+            )}
+          </ButtonGroup>
+        </Grid>
+      )
+    );
+  };
+
   const handleChange = (value: any) => {
     setSortedProducts(
       products.filter(
@@ -185,6 +245,7 @@ export const AdminProducts = (props: {
   const [farmers, setFarmers] = useState(null);
   const { users } = useUsers();
   const sort = useCategories();
+  const [date] = useVirtualClock();
 
   useEffect(() => {
     if (users) {
@@ -213,6 +274,41 @@ export const AdminProducts = (props: {
       });
     }
   };
+
+  const fromAvailability = date.set({
+    weekday: 1,
+    hour: 18,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const toAvailability = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+
+  const fromReserved =
+    date.weekday === 1 && date.hour <= 9
+      ? date
+          .set({
+            weekday: 7,
+            hour: 23,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          })
+          .minus({ weeks: 1 })
+      : date.set({
+          weekday: 7,
+          hour: 23,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        });
+  const toReserved = fromReserved.plus({ hours: 10 });
 
   return (
     <>
@@ -316,9 +412,9 @@ export const AdminProducts = (props: {
                         </Grid>
                       </Grid>
                     </TableCell>
-                  ) : (c.key === 'farmer' && props.profile.role === 'farmer') ||
-                    (c.key === 'description' &&
-                      props.profile.role === 'warehouse_manager') ? (
+                  ) : c.key === 'description' ? (
+                    <></>
+                  ) : c.key === 'farmer' && props.profile.role === 'farmer' ? (
                     <></>
                   ) : (
                     <TableCell
@@ -377,11 +473,7 @@ export const AdminProducts = (props: {
                 ) : (
                   <></>
                 )}
-                {props.profile.role === 'warehouse_manager' ? (
-                  <TableCell>{'Actions'}</TableCell>
-                ) : (
-                  <></>
-                )}
+                <TableCell>{'Actions'}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -407,7 +499,10 @@ export const AdminProducts = (props: {
                       '&:last-child td, &:last-child th': { border: 0 },
                       cursor: 'pointer',
                     }}
-                    onClick={() => navigate(`/admin/products/${product.id}`)}
+                    onClick={ev => {
+                      ev.preventDefault();
+                      navigate(`/admin/products/${product.id}`);
+                    }}
                   >
                     <TableCell sx={{ py: 0 }}>
                       <img
@@ -429,24 +524,23 @@ export const AdminProducts = (props: {
                     >
                       {product.name}
                     </TableCell>
-                    {!(props.profile.role === 'warehouse_manager') && (
-                      <TableCell sx={{ pr: 0 }}>
-                        <Description>{product.description}</Description>
-                      </TableCell>
-                    )}
                     <TableCell>{product.price}</TableCell>
                     <TableCell>{product.category.name}</TableCell>
                     {props.profile.role === 'farmer' ? (
                       <>
                         <TableCell>
                           {product.available === 0 &&
-                            DateTime.now() >= moment().day('sunday').hour(23) &&
-                            DateTime.now() <=
-                              moment().day('monday').hour(9).minutes(0) && (
+                            date >= fromAvailability &&
+                            date <= toAvailability && (
                               <Alert severity="warning">
                                 {'Remember to update the availability field'}
                               </Alert>
                             )}
+                          {date >= fromReserved && date <= toReserved && (
+                            <Alert severity="warning">
+                              {"Remember to confirm orders' booking"}
+                            </Alert>
+                          )}
                         </TableCell>
                       </>
                     ) : (
@@ -454,12 +548,9 @@ export const AdminProducts = (props: {
                         <TableCell>
                           {product.farmer.name + ' ' + product.farmer.surname}
                         </TableCell>
-
-                        {props.profile.role === 'warehouse_manager' && (
-                          <TableCell>azioni da implementare</TableCell>
-                        )}
                       </>
                     )}
+                    <TableCell>{<Actions productId={product.id} />}</TableCell>
                   </TableRow>
                 ))}
             </TableBody>

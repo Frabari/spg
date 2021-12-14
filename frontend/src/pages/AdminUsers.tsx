@@ -241,7 +241,8 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                           >
                             {sort.map(option => (
                               <MenuItem key={option} value={option}>
-                                {option}
+                                {option.charAt(0).toUpperCase() +
+                                  option.slice(1)}
                               </MenuItem>
                             ))}
                           </TextField>
@@ -277,7 +278,9 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                     </TableCell>
                     <TableCell>{user.surname}</TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.role}</TableCell>
+                    <TableCell>
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </TableCell>
                     <TableCell>€ {user.balance}</TableCell>
                   </TableRow>
                 ))}
