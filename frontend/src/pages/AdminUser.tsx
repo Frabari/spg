@@ -1,23 +1,28 @@
-import { useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useFormik } from 'formik';
 import { Save } from '@mui/icons-material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
   Box,
   Button,
+  FormControl,
+  FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
+  InputLabel,
+  OutlinedInput,
   Paper,
-  TextField,
-  ThemeProvider,
   Typography,
 } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
-import { createTheme } from '@mui/material/styles';
 import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { usePendingState } from '../hooks/usePendingState';
 import { useTransaction } from '../hooks/useTransaction';
 import { useUser } from '../hooks/useUser';
 import { Balance } from './Balance';
@@ -27,26 +32,52 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
   const { user, upsertUser, load } = useUser(id);
-  const [dto, setDto] = useState<Partial<User>>({});
   const [open, setOpen] = useState(false);
+  const [show, setShow] = useState(false);
   const { upsertTransaction } = useTransaction();
+  const { pending } = usePendingState();
+  const form = useFormik({
+    initialValues: {
+      name: '',
+      surname: '',
+      email: '',
+      password: '',
+      avatar: '',
+      address: null,
+    } as Partial<User>,
+    onSubmit: (values: Partial<User>, { setErrors }) => {
+      if (!values.password?.length) {
+        delete values.password;
+      }
+      return upsertUser(values)
+        .then(newUser => {
+          const creating = id == null;
+          toast.success(`User ${creating ? 'created' : 'updated'}`);
+          if (creating) {
+            navigate(`/admin/users/${(newUser as User).id}`);
+          } else {
+            navigate('/admin/users');
+          }
+        })
+        .catch(e => {
+          setErrors(e.data?.constraints);
+        });
+    },
+  });
 
-  const handleChange = (key: string, value: any) => {
-    setDto(_dto => ({
-      ..._dto,
-      [key]: value,
-    }));
+  useEffect(() => {
+    if (user) {
+      form.setValues(user);
+      form.values.password = '';
+    }
+  }, [user]);
+
+  const handleClickShowPassword = () => {
+    setShow(!show);
   };
 
-  const saveChanges = () => {
-    upsertUser(dto)
-      .then(newUser => {
-        toast.success('User created');
-        navigate(`/admin/users/${(newUser as User).id}`);
-      })
-      .catch(() => {
-        // noop
-      });
+  const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
   };
 
   const change = (add: boolean, amount: number) => {
@@ -70,14 +101,6 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
     }
   };
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  useEffect(() => {
-    setDto(user);
-  }, [user]);
-
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -92,20 +115,27 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
         >
           Users / {user ? `${user.name} ${user.surname}` : 'New'}
         </Typography>
-        <Button
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
-          onClick={saveChanges}
-          disabled={user != null}
+        <IconButton
+          type="submit"
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+          className="save-icon-button"
+          onClick={form.submitForm}
+          disabled={pending}
         >
           <Save />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Save changes
+        </IconButton>
+        <Button
+          type="submit"
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          onClick={form.submitForm}
+          disabled={pending}
+          startIcon={<Save />}
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Save Changes
           </Typography>
         </Button>
       </AdminAppBar>
@@ -114,100 +144,293 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
       >
         <Paper
           className="AdminUser"
-          sx={{ p: { xs: 2, sm: 3 }, py: { sm: 8 }, position: 'relative' }}
+          sx={{ p: { xs: 2, sm: 3 }, py: { sm: 4 }, position: 'relative' }}
         >
-          <ThemeProvider
-            theme={createTheme({
-              components: {
-                MuiTextField: {
-                  defaultProps: {
-                    fullWidth: true,
-                  },
-                },
-              },
-            })}
-          >
-            <div className="container relative">
-              <Avatar
-                src={user?.avatar}
-                alt="user avatar"
-                style={{
-                  width: '150px',
-                  height: '150px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  marginBottom: '40px',
-                }}
-              />
-              <Grid
-                container
-                display="grid"
-                gap={4}
-                gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
-              >
-                <Grid item>
-                  <TextField
+          <div className="container relative">
+            <Avatar
+              src={(user as User)?.avatar}
+              alt="profile avatar"
+              style={{
+                width: '150px',
+                height: '150px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                marginBottom: '40px',
+              }}
+            />
+            <Grid
+              container
+              direction="row"
+              columnSpacing={4}
+              rowSpacing={2}
+              gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
+            >
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.name}
+                  disabled={pending}
+                >
+                  <InputLabel htmlFor="name">Name</InputLabel>
+                  <OutlinedInput
+                    id="name"
+                    type="text"
+                    onChange={form.handleChange}
+                    value={form.values.name}
                     label="Name"
-                    value={dto?.name ?? ''}
-                    onChange={e => handleChange('name', e.target.value)}
+                    name="name"
                   />
-                </Grid>
-                <Grid item>
-                  <TextField
+                  <FormHelperText>{form.errors?.name}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.surname}
+                  disabled={pending}
+                >
+                  <InputLabel htmlFor="surname">Surname</InputLabel>
+                  <OutlinedInput
+                    id="surname"
+                    type="text"
+                    onChange={form.handleChange}
+                    value={form.values.surname}
                     label="Surname"
-                    value={dto?.surname ?? ''}
-                    onChange={e => handleChange('surname', e.target.value)}
+                    name="surname"
                   />
-                </Grid>
-                <Grid item>
-                  <TextField
+                  <FormHelperText>{form.errors?.surname}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.email}
+                  disabled={pending}
+                >
+                  <InputLabel htmlFor="email">Email</InputLabel>
+                  <OutlinedInput
+                    id="email"
+                    type="email"
+                    onChange={form.handleChange}
+                    value={form.values.email}
                     label="Email"
-                    value={dto?.email ?? ''}
-                    onChange={e => handleChange('email', e.target.value)}
+                    name="email"
                   />
-                </Grid>
-                <Grid item>
-                  <TextField
+                  <FormHelperText>{form.errors?.email}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.password}
+                  disabled={pending}
+                >
+                  <InputLabel htmlFor="password">Password</InputLabel>
+                  <OutlinedInput
+                    id="password"
+                    type={show ? 'text' : 'password'}
+                    onChange={form.handleChange}
+                    value={form.values.password ?? ''}
                     label="Password"
-                    value={dto?.password ?? ''}
-                    onChange={e => handleChange('password', e.target.value)}
+                    name="password"
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                          edge="end"
+                        >
+                          {show ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    }
                   />
-                </Grid>
-                <Grid item>
-                  <TextField
+                  <FormHelperText>{form.errors?.password}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.avatar}
+                  disabled={pending}
+                >
+                  <InputLabel htmlFor="avatar">Avatar</InputLabel>
+                  <OutlinedInput
+                    id="avatar"
+                    type="text"
+                    onChange={form.handleChange}
+                    value={form.values.avatar}
                     label="Avatar"
-                    value={dto?.avatar ?? ''}
-                    onChange={e => handleChange('avatar', e.target.value)}
+                    name="avatar"
                   />
-                </Grid>
-                <Grid item>
-                  <TextField
+                  <FormHelperText>{form.errors?.avatar}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.balance}
+                  disabled={pending}
+                >
+                  <InputLabel htmlFor="balance">Balance</InputLabel>
+                  <OutlinedInput
+                    disabled
                     label="Balance"
-                    value={user?.balance ?? ''}
-                    InputProps={{
-                      readOnly: true,
-                      startAdornment: (
-                        <InputAdornment position="start"> € </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            disabled={idParam === 'new'}
-                            aria-label="manage user wallet"
-                            color="success"
-                            edge="end"
-                            onClick={handleOpen}
-                          >
-                            <AccountBalanceWalletIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
+                    value={(user as User)?.balance ?? ''}
+                    readOnly={true}
+                    startAdornment={
+                      <InputAdornment position="start"> € </InputAdornment>
+                    }
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="manage profile wallet"
+                          color="success"
+                          edge="end"
+                          onClick={() => setOpen(true)}
+                        >
+                          <AccountBalanceWalletIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    }
                   />
+                  <FormHelperText>{form.errors?.balance}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction="row"
+                  columnSpacing={4}
+                  rowSpacing={2}
+                  gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
+                >
+                  <Grid item xs={12}>
+                    <Typography
+                      mt="24px"
+                      variant="h5"
+                      color="primary.main"
+                      sx={{ mb: 2, fontWeight: 'bold' }}
+                    >
+                      Delivery information
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      error={!!form.errors?.address?.address}
+                      disabled={pending}
+                    >
+                      <InputLabel htmlFor="address">Address</InputLabel>
+                      <OutlinedInput
+                        id="address"
+                        type="text"
+                        onChange={form.handleChange}
+                        value={form.values.address?.address ?? ''}
+                        label="Address"
+                        name="address.address"
+                      />
+                      <FormHelperText>
+                        {form.errors?.address?.address}
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      error={!!form.errors?.address?.zipCode}
+                      disabled={pending}
+                    >
+                      <InputLabel htmlFor="address">Zip Code</InputLabel>
+                      <OutlinedInput
+                        id="zipCode"
+                        type="text"
+                        onChange={form.handleChange}
+                        value={form.values.address?.zipCode ?? ''}
+                        label="Zip Code"
+                        name="address.zipCode"
+                      />
+                      <FormHelperText>
+                        {form.errors?.address?.zipCode}
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      error={!!form.errors?.address?.city}
+                      disabled={pending}
+                    >
+                      <InputLabel htmlFor="address">City</InputLabel>
+                      <OutlinedInput
+                        id="city"
+                        type="text"
+                        onChange={form.handleChange}
+                        value={form.values.address?.city ?? ''}
+                        label="City"
+                        name="address.city"
+                      />
+                      <FormHelperText>
+                        {form.errors?.address?.city}
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      error={!!form.errors?.address?.province}
+                      disabled={pending}
+                    >
+                      <InputLabel htmlFor="address">Province</InputLabel>
+                      <OutlinedInput
+                        id="province"
+                        type="text"
+                        onChange={form.handleChange}
+                        value={form.values.address?.province ?? ''}
+                        label="Province"
+                        name="address.province"
+                      />
+                      <FormHelperText>
+                        {form.errors?.address?.province}
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      error={!!form.errors?.address?.region}
+                      disabled={pending}
+                    >
+                      <InputLabel htmlFor="address">Region</InputLabel>
+                      <OutlinedInput
+                        id="region"
+                        type="text"
+                        onChange={form.handleChange}
+                        value={form.values.address?.region ?? ''}
+                        label="Region"
+                        name="address.region"
+                      />
+                      <FormHelperText>
+                        {form.errors?.address?.region}
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
                 </Grid>
               </Grid>
-            </div>
-          </ThemeProvider>
+            </Grid>
+          </div>
         </Paper>
       </Box>
     </>

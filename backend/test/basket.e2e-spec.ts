@@ -1,4 +1,5 @@
 import { hash } from 'bcrypt';
+import { DateTime, Settings } from 'luxon';
 import * as request from 'supertest';
 import { EntityManager } from 'typeorm';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -7,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
 import { NotificationsModule } from '../src/features/notifications/notifications.module';
+import { NotificationsService } from '../src/features/notifications/notifications.service';
 import { Order } from '../src/features/orders/entities/order.entity';
 import { OrdersModule } from '../src/features/orders/orders.module';
 import { Product } from '../src/features/products/entities/product.entity';
@@ -15,6 +17,15 @@ import { TransactionsModule } from '../src/features/transactions/transactions.mo
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
+import { mockNotificationsService } from './utils';
+
+const salesDay = DateTime.now()
+  .set({
+    weekday: 6,
+    hour: 10,
+  })
+  .toMillis();
+Settings.now = () => salesDay;
 
 describe('BasketController (e2e)', () => {
   let app: INestApplication;
@@ -36,7 +47,10 @@ describe('BasketController (e2e)', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe(validation));
     await app.init();
@@ -112,6 +126,7 @@ describe('BasketController (e2e)', () => {
     const product = await entityManager.save(Product, {
       name: 'onions',
       description: 'very good onions',
+      baseUnit: '1Kg',
       price: 10,
       available: 20,
     });
@@ -164,6 +179,7 @@ describe('BasketController (e2e)', () => {
     const product = await entityManager.save(Product, {
       name: 'onions',
       description: 'very good onions',
+      baseUnit: '1Kg',
       price: 10,
       available: 20,
     });

@@ -1,49 +1,88 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save } from '@mui/icons-material';
+import { useFormik } from 'formik';
+import { Inventory, Save } from '@mui/icons-material';
 import {
+  Avatar,
   Box,
   Button,
+  FormControl,
+  FormHelperText,
   Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
   Paper,
   TextField,
-  ThemeProvider,
   Typography,
 } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
-import { createTheme } from '@mui/material/styles';
-import { Product } from '../api/BasilApi';
+import { Product, Role, User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { useCategories } from '../hooks/useCategories';
 import { useProduct } from '../hooks/useProduct';
+import { useProfile } from '../hooks/useProfile';
+import { useUsers } from '../hooks/useUsers';
 
 export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { product, upsertProduct } = useProduct(id);
-  const [dto, setDto] = useState<Partial<Product>>({});
+  const [farmers, setFarmers] = useState(null);
+  const { product, upsertProduct } = useProduct(id, true);
+  const { categories } = useCategories();
+  const { users } = useUsers();
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const form = useFormik({
+    initialValues: {
+      name: '',
+      description: '',
+      price: null,
+      available: null,
+      baseUnit: null,
+    } as Partial<Product>,
+    onSubmit: (values: Partial<Product>, { setErrors }) => {
+      return upsertProduct(values)
+        .then(newProduct => {
+          const creating = id == null;
+          toast.success(`Product ${creating ? 'created' : 'updated'}`);
+          if (creating) {
+            navigate(`/admin/products/${(newProduct as Product).id}`);
+          } else navigate('/admin/products');
+        })
+        .catch(e => {
+          setErrors(e.data?.constraints);
+        });
+    },
+  });
 
   useEffect(() => {
-    setDto(product);
+    if (users) {
+      setFarmers(users.filter(u => u.role === Role.FARMER));
+    }
+  }, [users]);
+
+  useEffect(() => {
+    if (product) {
+      form.setValues(product);
+    } else {
+      if ((profile as User)?.role === Role.FARMER) {
+        form.setFieldValue('farmer', profile as User);
+      }
+    }
   }, [product]);
 
-  const handleChange = (key: string, value: any) => {
-    setDto(_dto => ({
-      ..._dto,
-      [key]: value,
-    }));
+  const handleChangeFarmer = (value: string) => {
+    const f = farmers.find((fa: User) => fa.name + ' ' + fa.surname === value);
+    form.setFieldValue('farmer', f);
   };
 
-  const saveChanges = () => {
-    upsertProduct(dto)
-      .then(product => {
-        toast.success('Product updated');
-        navigate(`/admin/products/`);
-      })
-      .catch(() => {
-        // noop
-      });
+  const handleChangeCategory = (value: string) => {
+    form.setFieldValue(
+      'category',
+      categories.find(c => c.name === value),
+    );
   };
 
   return (
@@ -59,19 +98,25 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
         >
           Products / {product?.name}
         </Typography>
-        <Button
-          sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
-          variant="contained"
-          onClick={saveChanges}
+        <IconButton
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+          className="save-icon-button"
+          onClick={form.submitForm}
+          type="submit"
         >
           <Save />
-          <Typography
-            sx={{
-              display: { xs: 'none', sm: 'inline' },
-              textTransform: 'none',
-            }}
-          >
-            Save changes
+        </IconButton>
+        <Button
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+          }}
+          variant="contained"
+          startIcon={<Save />}
+          onClick={form.submitForm}
+          type="submit"
+        >
+          <Typography display="inline" sx={{ textTransform: 'none' }}>
+            Save Changes
           </Typography>
         </Button>
       </AdminAppBar>
@@ -82,75 +127,211 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
           className="AdminProduct"
           sx={{ p: { xs: 2, sm: 3 }, py: { sm: 8 }, position: 'relative' }}
         >
-          <ThemeProvider
-            theme={createTheme({
-              components: {
-                MuiTextField: {
-                  defaultProps: {
-                    fullWidth: true,
-                  },
-                },
-              },
-            })}
-          >
-            <div className="container relative">
-              <Avatar
-                src={product?.image}
-                alt="product image"
-                style={{
-                  width: '250px',
-                  height: '250px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  marginBottom: '40px',
-                }}
-              />
-              <Grid
-                container
-                display="grid"
-                gap={4}
-                gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
-              >
-                <Grid item>
-                  <TextField label="Name" value={dto?.name ?? ''} />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    label="Description"
-                    value={dto?.description ?? ''}
+          <div className="container relative">
+            <Avatar
+              src={product?.image}
+              alt="profile avatar"
+              style={{
+                width: '150px',
+                height: '150px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                marginBottom: '40px',
+              }}
+            >
+              <Inventory />
+            </Avatar>
+            <Grid
+              container
+              direction="row"
+              columnSpacing={4}
+              rowSpacing={2}
+              gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
+            >
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.name}
+                >
+                  <InputLabel htmlFor="product-name">Name</InputLabel>
+                  <OutlinedInput
+                    id="name"
+                    type="text"
+                    name="name"
+                    onChange={form.handleChange}
+                    label="Name"
+                    value={form.values?.name}
                   />
-                </Grid>
-                <Grid item>
-                  <TextField label="Price" value={dto?.price ?? ''} />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    label="Available"
-                    value={dto?.available ?? ''}
-                    onChange={e => handleChange('available', e.target.value)}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField label="Reserved" value={dto?.reserved ?? ''} />
-                </Grid>
-                <Grid item>
-                  <TextField label="Sold" value={dto?.sold ?? ''} />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    label="Category"
-                    value={dto?.category?.name ?? ''}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    label="Farmer"
-                    value={dto?.farmer?.name + ' ' + dto?.farmer?.surname ?? ''}
-                  />
-                </Grid>
+                  <FormHelperText>{form.errors?.name}</FormHelperText>
+                </FormControl>
               </Grid>
-            </div>
-          </ThemeProvider>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.baseUnit}
+                >
+                  <InputLabel htmlFor="product-baseUnit">Base Unit</InputLabel>
+                  <OutlinedInput
+                    id="baseUnit"
+                    type="text"
+                    name="baseUnit"
+                    onChange={form.handleChange}
+                    label="Base Unit"
+                    value={form.values?.baseUnit ?? ''}
+                  />
+                  <FormHelperText>{form.errors?.baseUnit}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.image}
+                >
+                  <InputLabel htmlFor="product-image">Image</InputLabel>
+                  <OutlinedInput
+                    id="image"
+                    type="text"
+                    name="image"
+                    onChange={form.handleChange}
+                    label="Image"
+                    value={form.values?.image ?? ''}
+                  />
+                  <FormHelperText>{form.errors?.image}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.price}
+                >
+                  <InputLabel id="product-price">Price</InputLabel>
+                  <OutlinedInput
+                    id="price"
+                    type="number"
+                    onChange={form.handleChange}
+                    label="Price"
+                    value={form.values?.price ?? ''}
+                    name="price"
+                  />
+                  <FormHelperText>{form.errors?.price}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.available}
+                >
+                  <InputLabel id="product-available">Available</InputLabel>
+                  <OutlinedInput
+                    id="available"
+                    type="number"
+                    label="Available"
+                    value={form.values?.available ?? ''}
+                    onChange={form.handleChange}
+                    name="available"
+                  />
+                  <FormHelperText>{form.errors?.available}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel id="product-reserved">Reserved</InputLabel>
+                  <OutlinedInput
+                    id="reserved"
+                    type="number"
+                    name="reserved"
+                    onChange={form.handleChange}
+                    label="Reserved"
+                    value={form.values?.reserved ?? ''}
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.category}
+                >
+                  <TextField
+                    id="category"
+                    select
+                    name="category"
+                    label="Category"
+                    value={form.values?.category?.name ?? ''}
+                    onChange={e => handleChangeCategory(e.target.value)}
+                  >
+                    {categories.map(c => (
+                      <MenuItem key={c.id} value={c.name}>
+                        {c.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <FormHelperText>{form.errors?.sold}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl variant="outlined" fullWidth>
+                  <TextField
+                    disabled={(profile as User)?.role === Role.FARMER}
+                    name="farmer"
+                    label="Farmer"
+                    select={(profile as User)?.role !== Role.FARMER}
+                    id="farmer"
+                    value={
+                      form.values?.farmer
+                        ? form.values?.farmer?.name +
+                          ' ' +
+                          form.values?.farmer?.surname
+                        : ''
+                    }
+                    onChange={e => handleChangeFarmer(e.target.value)}
+                  >
+                    {farmers?.map((f: User) => (
+                      <MenuItem key={f.id} value={f.name + ' ' + f.surname}>
+                        {f.name} {f.surname}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <FormHelperText>{form.errors?.farmer}</FormHelperText>
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Grid container display="grid" marginTop="32px">
+              <Grid item>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  required
+                  error={!!form.errors?.description}
+                >
+                  <InputLabel htmlFor="product-description">
+                    Description
+                  </InputLabel>
+                  <OutlinedInput
+                    multiline
+                    id="product-description"
+                    type="text"
+                    name="description"
+                    onChange={form.handleChange}
+                    label="Description"
+                    value={form.values?.description ?? ''}
+                  />
+                  <FormHelperText>{form.errors?.description}</FormHelperText>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </div>
         </Paper>
       </Box>
     </>

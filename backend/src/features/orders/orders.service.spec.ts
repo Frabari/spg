@@ -1,11 +1,13 @@
 import { hash } from 'bcrypt';
-import { DateTime } from 'luxon';
+import { DateTime, Settings } from 'luxon';
 import { EntityManager } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { NotificationsService } from '../notifications/notifications.service';
 import { Product } from '../products/entities/product.entity';
 import { ProductsModule } from '../products/products.module';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -14,10 +16,18 @@ import { Role } from '../users/roles.enum';
 import { UsersModule } from '../users/users.module';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
-import { OrderEntry } from './entities/order-entry.entity';
+import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
 import { Order, OrderStatus } from './entities/order.entity';
 import { OrdersModule } from './orders.module';
 import { OrdersService } from './orders.service';
+
+const salesDay = DateTime.now()
+  .set({
+    weekday: 6,
+    hour: 10,
+  })
+  .toMillis();
+Settings.now = () => salesDay;
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -40,7 +50,10 @@ describe('OrdersService', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
 
     service = module.get<OrdersService>(OrdersService);
   });
@@ -79,37 +92,7 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('checkOrder', () => {
-    it('should fail if the date of the order is not between (Wed 08:00 - Fri 18:00)', async () => {
-      const email = 'test@example.com';
-      const password = 'testpwd';
-      const entityManager = module.get(EntityManager);
-      const user = await entityManager.save(User, {
-        email,
-        password: await hash(password, 10),
-        name: 'John',
-        surname: 'Doe',
-      });
-      const product = await entityManager.save(Product, {
-        name: 'onions',
-        description: 'very good onions',
-        price: 10,
-        available: 10,
-      });
-      return expect(
-        service.checkOrder({
-          user: { id: user.id } as User,
-          entries: [{ product, quantity: 5 }] as OrderEntry[],
-          deliverAt: DateTime.fromObject({
-            weekday: 6,
-            hour: 11,
-            minute: 0,
-            second: 0,
-          }).toJSDate(),
-        } as CreateOrderDto),
-      ).rejects.toThrowError(BadRequestException);
-    });
-
+  describe('validateCreateDto', () => {
     it('should fail if the quantity of the order is higher than its product', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
@@ -123,11 +106,12 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
       return expect(
-        service.checkOrder({
+        service.validateCreateDto({
           user: { id: user.id } as User,
           entries: [{ product, quantity: 20 }] as OrderEntry[],
         } as CreateOrderDto),
@@ -147,11 +131,12 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
       return expect(
-        service.checkOrder({
+        service.validateCreateDto({
           user: { id: user.id } as User,
           entries: [{ product, quantity: 0 }] as OrderEntry[],
         } as CreateOrderDto),
@@ -169,7 +154,7 @@ describe('OrdersService', () => {
         surname: 'Doe',
       });
       return expect(
-        service.checkOrder({
+        service.validateCreateDto({
           user: { id: user.id } as User,
           entries: [
             {
@@ -198,11 +183,12 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
       return expect(
-        service.checkOrder({
+        service.validateCreateDto({
           user: { id: user.id } as User,
           entries: [{ product, quantity: 5 }] as OrderEntry[],
         } as CreateOrderDto),
@@ -210,7 +196,7 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('checkOrderUpdate', () => {
+  describe('validateUpdateDto', () => {
     it('should change the status of the order with a following one', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
@@ -225,7 +211,7 @@ describe('OrdersService', () => {
         user: { id: user.id },
       });
       expect(
-        await service.checkOrderUpdate(
+        await service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.PAID,
@@ -244,6 +230,7 @@ describe('OrdersService', () => {
         password: await hash(password, 10),
         name: 'John',
         surname: 'Doe',
+        role: Role.EMPLOYEE,
       });
 
       const order = await entityManager.save(Order, {
@@ -251,7 +238,7 @@ describe('OrdersService', () => {
         status: OrderStatus.PAID,
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.DRAFT,
@@ -275,6 +262,7 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -290,7 +278,7 @@ describe('OrdersService', () => {
           },
         ],
       });
-      await service.checkOrderUpdate(
+      await service.validateUpdateDto(
         order.id,
         {
           status: OrderStatus.LOCKED,
@@ -321,7 +309,7 @@ describe('OrdersService', () => {
         surname: 'Doe',
       });
       return expect(
-        service.checkOrderUpdate(100, {} as UpdateOrderDto, user),
+        service.validateUpdateDto(100, {} as UpdateOrderDto, user),
       ).rejects.toThrowError(NotFoundException);
     });
 
@@ -339,6 +327,7 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -354,7 +343,7 @@ describe('OrdersService', () => {
           },
         ],
       });
-      const finalDto = await service.checkOrderUpdate(
+      const finalDto = await service.validateUpdateDto(
         order.id,
         {
           entries: [
@@ -384,6 +373,7 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -400,7 +390,7 @@ describe('OrdersService', () => {
         ],
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.COMPLETED,
@@ -430,6 +420,7 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -446,7 +437,7 @@ describe('OrdersService', () => {
         ],
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.COMPLETED,
@@ -478,6 +469,7 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 2,
       });
@@ -494,7 +486,7 @@ describe('OrdersService', () => {
         ],
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.COMPLETED,
@@ -524,12 +516,14 @@ describe('OrdersService', () => {
       const product1 = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 2,
       });
       const product2 = await entityManager.save(Product, {
         name: 'apples',
         description: 'very good apples',
+        baseUnit: '1Kg',
         price: 5,
         available: 3,
       });
@@ -546,7 +540,7 @@ describe('OrdersService', () => {
         ],
       });
       return expect(
-        service.checkOrderUpdate(
+        service.validateUpdateDto(
           order.id,
           {
             status: OrderStatus.COMPLETED,
@@ -579,6 +573,7 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 5,
       });
@@ -594,7 +589,7 @@ describe('OrdersService', () => {
           },
         ],
       });
-      await service.checkOrderUpdate(
+      await service.validateUpdateDto(
         order.id,
         {
           status: OrderStatus.COMPLETED,
@@ -605,6 +600,94 @@ describe('OrdersService', () => {
 
       const finalProduct = await entityManager.findOne(Product, product.id);
       expect(finalProduct.available).toEqual(5);
+    });
+
+    it('farmer should not modify OrderEntryStatus to delivered status', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 5,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      return expect(
+        service.validateUpdateDto(
+          order.id,
+          {
+            entries: [
+              {
+                status: OrderEntryStatus.DELIVERED,
+                product: {
+                  id: product.id,
+                },
+              },
+            ],
+          } as UpdateOrderDto,
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should not modify the OrderStatus', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      const finalOrder = await service.validateUpdateDto(
+        order.id,
+        {
+          status: OrderStatus.COMPLETED,
+        } as UpdateOrderDto,
+        user,
+      );
+      expect(finalOrder.status).toBeUndefined();
     });
   });
 
@@ -623,6 +706,7 @@ describe('OrdersService', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -692,6 +776,60 @@ describe('OrdersService', () => {
 
      expect(order.total).toBeGreaterThan(user.balance);
    });*/
+  });
+
+  describe('removeDraftOrderEntries', () => {
+    it('should remove order entries with status DRAFT', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.EMPLOYEE,
+      });
+      const product1 = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+      });
+      const product2 = await entityManager.save(Product, {
+        name: 'apples',
+        description: 'very good apples',
+        baseUnit: '2Kg',
+        price: 5,
+        available: 20,
+      });
+      let order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product1.id,
+            },
+            quantity: 5,
+            status: OrderEntryStatus.DRAFT,
+          },
+          {
+            product: {
+              id: product2.id,
+            },
+            quantity: 2,
+            status: OrderEntryStatus.DELIVERED,
+          },
+        ],
+      });
+      await service.removeDraftOrderEntries();
+      order = await entityManager.findOne(Order, order.id, {
+        relations: ['entries'],
+      });
+      expect(order.entries.length).toEqual(1);
+    });
   });
 
   afterEach(() => {

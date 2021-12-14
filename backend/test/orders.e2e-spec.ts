@@ -1,4 +1,5 @@
 import { hash } from 'bcrypt';
+import { DateTime, Settings } from 'luxon';
 import * as request from 'supertest';
 import { EntityManager } from 'typeorm';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -7,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
 import { NotificationsModule } from '../src/features/notifications/notifications.module';
+import { NotificationsService } from '../src/features/notifications/notifications.service';
 import {
   Order,
   OrderStatus,
@@ -18,6 +20,15 @@ import { TransactionsModule } from '../src/features/transactions/transactions.mo
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
+import { mockNotificationsService } from './utils';
+
+const salesDay = DateTime.now()
+  .set({
+    weekday: 6,
+    hour: 10,
+  })
+  .toMillis();
+Settings.now = () => salesDay;
 
 describe('OrdersController (e2e)', () => {
   let app: INestApplication;
@@ -39,7 +50,10 @@ describe('OrdersController (e2e)', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe(validation));
     await app.init();
@@ -74,20 +88,29 @@ describe('OrdersController (e2e)', () => {
         .auth(authToken, { type: 'bearer' })
         .expect(200);
     });
+  });
 
-    it('should fail if the role is CUSTOMER', async () => {
+  describe('GET /orders/:id', () => {
+    it(`should fail if a customer tries to access someone else's order`, async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
-      const user = await entityManager.save(User, {
+      const user1 = await entityManager.save(User, {
+        email: 'email1@example.com',
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      await entityManager.save(User, {
         email,
         password: await hash(password, 10),
         name: 'John',
         surname: 'Doe',
         role: Role.CUSTOMER,
       });
-      await entityManager.save(Order, {
-        user: { id: user.id },
+      const order = await entityManager.save(Order, {
+        user: { id: user1.id },
       });
       const server = app.getHttpServer();
       const response = await request(server)
@@ -95,9 +118,9 @@ describe('OrdersController (e2e)', () => {
         .send({ username: email, password });
       const authToken = response.body.token;
       return request(server)
-        .get('/orders')
+        .get(`/orders/${order.id}`)
         .auth(authToken, { type: 'bearer' })
-        .expect(403);
+        .expect(404);
     });
   });
 
@@ -120,6 +143,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -157,6 +181,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -194,6 +219,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -231,6 +257,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });
@@ -287,6 +314,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 20,
       });
@@ -327,6 +355,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 2,
       });
@@ -367,6 +396,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 2,
       });
@@ -407,6 +437,7 @@ describe('OrdersController (e2e)', () => {
       const product = await entityManager.save(Product, {
         name: 'onions',
         description: 'very good onions',
+        baseUnit: '1Kg',
         price: 10,
         available: 10,
       });

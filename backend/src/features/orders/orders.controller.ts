@@ -1,15 +1,17 @@
+import { Request as ExpressRequest } from 'express';
 import {
+  Body,
   Controller,
   Get,
   Param,
-  UseGuards,
-  Request,
   Patch,
+  Request,
+  UseGuards,
   UseInterceptors,
-  Body,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
+  CrudAuth,
   CrudController,
   CrudRequest,
   CrudRequestInterceptor,
@@ -18,10 +20,11 @@ import {
   ParsedRequest,
 } from '@nestjsx/crud';
 import { Crud } from '../../core/decorators/crud.decorator';
+import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
-import { ADMINS, Role, STAFF } from '../users/roles.enum';
+import { ADMINS, Role } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -41,7 +44,17 @@ import { OrdersService } from './orders.service';
       deliveredBy: {},
       entries: { eager: true },
       'entries.product': { eager: true },
+      deliveryLocation: { eager: true },
     },
+  },
+})
+@CrudAuth({
+  filter: (req: ExpressRequest & { user: User }) => {
+    const filters: any = {};
+    if (req.user?.role === Role.CUSTOMER) {
+      filters['user.id'] = req.user.id;
+    }
+    return filters;
   },
 })
 @ApiTags(Order.name)
@@ -56,9 +69,8 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  @Roles(...STAFF)
   getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
-    crudRequest.parsed.fields = ['id', 'status', 'createdAt'];
+    crudRequest.parsed.fields = ['id', 'status', 'createdAt', 'deliverAt'];
     return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
       return orders?.map(order =>
         this.service.checkOrderBalance(order, request.user),
@@ -87,8 +99,9 @@ export class OrdersController implements CrudController<Order> {
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
+      { field: 'entries' },
     ];
-    const order = await this.service.checkOrderUpdate(
+    const order = await this.service.validateUpdateDto(
       basket.id,
       dto,
       request.user,
@@ -100,7 +113,6 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  @Roles(...STAFF)
   getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
@@ -122,14 +134,14 @@ export class OrdersController implements CrudController<Order> {
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
     ];
-    const order = await this.service.checkOrder(dto);
+    const order = await this.service.validateCreateDto(dto);
     return this.base
       .createOneBase(crudRequest, order as Order)
       .then(order => this.service.checkOrderBalance(order, request.user));
   }
 
   @Override()
-  @Roles(...ADMINS)
+  @Roles(...ADMINS, Role.FARMER)
   async updateOne(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request,
@@ -140,7 +152,7 @@ export class OrdersController implements CrudController<Order> {
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
     ];
-    const order = await this.service.checkOrderUpdate(id, dto, request.user);
+    const order = await this.service.validateUpdateDto(id, dto, request.user);
     return this.base
       .updateOneBase(crudRequest, order as Order)
       .then(order => this.service.checkOrderBalance(order, request.user));

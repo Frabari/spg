@@ -1,8 +1,12 @@
 import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { Person, ShoppingCart } from '@mui/icons-material';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  Person,
+  ShoppingCart,
+  WarningAmberOutlined,
+} from '@mui/icons-material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -103,20 +107,16 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
       backgroundColor: '#eaeaea',
       alpha: '0.75',
     },
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(3),
     marginLeft: 0,
     width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      marginLeft: theme.spacing(3),
-      width: 'auto',
-    },
   },
   '& .MuiAutocomplete-inputRoot': {
     padding: theme.spacing(0, 0, 0, 0),
     // vertical padding + font size from searchIcon
     transition: theme.transitions.create('width'),
     width: '100%',
-    [theme.breakpoints.up('md')]: {
+    [theme.breakpoints.up('sm')]: {
       width: '35ch',
     },
   },
@@ -177,24 +177,23 @@ function NavBar(props: any) {
       await logout();
       setPending(true);
       load();
+      navigate('/');
     } catch (e) {
       toast.error((e as ApiException).message);
     }
   };
-  return profile === null ? null : profile === false ? (
-    <Navigate to="/login" />
-  ) : (
+  return (
     <>
       <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
         <Container>
           <Toolbar sx={{ px: '0!important' }}>
-            <IconButton href={'/'}>
+            <IconButton onClick={() => navigate('/products')}>
               <Logo />
             </IconButton>
             <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
               Basil
             </Typography>
-            {props.loggedIn === 0 ? (
+            {!profile ? (
               <Box sx={{ position: 'absolute', right: 0 }}>
                 <Button
                   component={Link}
@@ -244,11 +243,13 @@ function NavBar(props: any) {
                       <Box
                         key={option.id}
                         component="li"
-                        sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
+                        sx={{
+                          '& > img': { mr: 2, flexShrink: 0 },
+                        }}
                         {...props}
                       >
                         <Avatar
-                          sx={{ margin: 1 }}
+                          sx={{ m: 1 }}
                           src={
                             option?.type === 'Farmers'
                               ? option?.avatar
@@ -326,23 +327,24 @@ function NavBar(props: any) {
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
-                    {profile.role !== Role.CUSTOMER && (
+                    {profile && profile.role !== Role.CUSTOMER && (
                       <MenuItem onClick={() => navigate('/admin')}>
                         <AdminPanelSettingsIcon sx={{ mr: 2 }} /> Admin
                       </MenuItem>
                     )}
-                    <MenuItem onClick={() => navigate('/profile')}>
-                      <Person sx={{ mr: 2 }} /> Profile
+                    <MenuItem onClick={() => navigate('/account')}>
+                      <Person sx={{ mr: 2 }} /> Account
                     </MenuItem>
                     <MenuItem>
                       <AccountBalanceWalletIcon sx={{ mr: 2 }} />{' '}
-                      {profile.balance} €
+                      {profile && profile.balance} €
                     </MenuItem>
                     <MenuItem onClick={handleLogout}>
                       <LogoutIcon sx={{ mr: 2 }} /> Logout
                     </MenuItem>
                   </Menu>
                   <IconButton
+                    sx={{ display: !profile && 'none' }}
                     size="large"
                     aria-label="show notifications"
                     onClick={handleMenuNotifications}
@@ -391,37 +393,46 @@ function NavBar(props: any) {
                         '& ul': { padding: 0 },
                       }}
                     >
-                      {!notifications.length
-                        ? 'empty'
-                        : notifications.map(n => (
-                            <Fragment key={n.id}>
-                              <ListItem alignItems="flex-start">
-                                <ListItemIcon>
-                                  {n.type === NotificationType.INFO && (
-                                    <InfoOutlinedIcon
-                                      sx={{ color: 'cornflowerblue' }}
-                                    />
-                                  )}
-                                  {n.type === NotificationType.ERROR && (
-                                    <ErrorOutlineIcon color="error" />
-                                  )}
-                                  {n.type === NotificationType.SUCCESS && (
-                                    <DoneIcon color="primary" />
-                                  )}
-                                </ListItemIcon>
-                                <ListItemText
-                                  primary={n.title}
-                                  secondary={
-                                    <React.Fragment>{n.message}</React.Fragment>
-                                  }
-                                />
-                              </ListItem>
-                              <Divider variant="inset" component="li" />
-                            </Fragment>
-                          ))}
+                      {!notifications.length ? (
+                        <ListItem alignItems="center">
+                          <ListItemIcon>
+                            {' '}
+                            <WarningAmberOutlined sx={{ color: '#ff9800' }} />
+                          </ListItemIcon>
+                          <ListItemText secondary="You have no notifications!" />
+                        </ListItem>
+                      ) : (
+                        notifications.map(n => (
+                          <Fragment key={n.id}>
+                            <ListItem alignItems="flex-start">
+                              <ListItemIcon>
+                                {n.type === NotificationType.INFO && (
+                                  <InfoOutlinedIcon
+                                    sx={{ color: 'cornflowerblue' }}
+                                  />
+                                )}
+                                {n.type === NotificationType.ERROR && (
+                                  <ErrorOutlineIcon color="error" />
+                                )}
+                                {n.type === NotificationType.SUCCESS && (
+                                  <DoneIcon color="primary" />
+                                )}
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={n.title}
+                                secondary={
+                                  <React.Fragment>{n.message}</React.Fragment>
+                                }
+                              />
+                            </ListItem>
+                            <Divider variant="inset" component="li" />
+                          </Fragment>
+                        ))
+                      )}
                     </List>
                   </Menu>
                   <IconButton
+                    sx={{ display: !profile && 'none' }}
                     size="large"
                     aria-label="show cart"
                     onClick={() => setShowBasket(true)}
@@ -430,8 +441,12 @@ function NavBar(props: any) {
                       <ShoppingCart />
                     </Badge>
                   </IconButton>
-                  <IconButton size="large" onClick={handleMenu}>
-                    <Avatar src={profile?.avatar} />
+                  <IconButton
+                    sx={{ display: !profile && 'none' }}
+                    size="large"
+                    onClick={handleMenu}
+                  >
+                    <Avatar src={profile && profile.avatar} />
                   </IconButton>
                 </Box>
               </>
@@ -474,7 +489,10 @@ function NavBar(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <Basket balanceWarning={props.balanceWarning} />
+          <Basket
+            balanceWarning={props.balanceWarning}
+            setShowBasket={setShowBasket}
+          />
         </Box>
       </Drawer>
     </>

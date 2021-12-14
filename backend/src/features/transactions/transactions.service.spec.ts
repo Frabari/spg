@@ -3,8 +3,10 @@ import { EntityManager } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { NotificationsService } from '../notifications/notifications.service';
 import { OrdersModule } from '../orders/orders.module';
 import { ProductsModule } from '../products/products.module';
 import { User } from '../users/entities/user.entity';
@@ -33,7 +35,10 @@ describe('TransactionsService', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
 
     service = module.get<TransactionsService>(TransactionsService);
   });
@@ -41,7 +46,7 @@ describe('TransactionsService', () => {
   describe('checkTransaction', () => {
     it('should fail when the related user is missing', () => {
       expect(
-        service.checkTransaction({
+        service.validateTransactionCreateDto({
           user: { id: 1 } as User,
           amount: 10,
         }),
@@ -59,7 +64,7 @@ describe('TransactionsService', () => {
         surname: 'Doe',
       });
       await expect(
-        service.checkTransaction({
+        service.validateTransactionCreateDto({
           user,
           amount: -10,
         }),
@@ -76,7 +81,7 @@ describe('TransactionsService', () => {
         name: 'John',
         surname: 'Doe',
       });
-      await service.checkTransaction({
+      await service.validateTransactionCreateDto({
         user,
         amount: 10,
       });

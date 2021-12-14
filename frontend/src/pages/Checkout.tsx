@@ -1,98 +1,180 @@
+import { addDays } from 'date-fns';
 import * as React from 'react';
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
+import { useFormik } from 'formik';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
-import TimePicker from '@mui/lab/TimePicker';
 import {
   Avatar,
   Box,
   Button,
   Card,
-  Grid,
-  Typography,
-  InputLabel,
   FormControl,
+  FormHelperText,
+  Grid,
+  InputLabel,
   OutlinedInput,
-  ToggleButtonGroup,
-  ToggleButton,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+  Switch,
+  styled,
+  FormControlLabel,
 } from '@mui/material';
 import AvatarGroup from '@mui/material/AvatarGroup';
-import { Order } from '../api/BasilApi';
+import { Order, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
-import { useUser } from '../hooks/useUser';
+import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
+
+export enum DeliveryOption {
+  PICKUP = 'pickup',
+  DELIVERY = 'delivery',
+}
+
+const IOSSwitch = styled((props: any) => (
+  <Switch
+    focusVisibleClassName=".Mui-focusVisible"
+    defaultChecked
+    disableRipple
+    {...props}
+    onChange={p => {
+      props.setCheck(p.target.checked);
+    }}
+  />
+))(({ theme }) => ({
+  width: 42,
+  height: 26,
+  padding: 0,
+  '& .MuiSwitch-switchBase': {
+    padding: 0,
+    margin: 2,
+    transitionDuration: '300ms',
+    '&.Mui-checked': {
+      transform: 'translateX(16px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#65C466',
+        opacity: 1,
+        border: 0,
+      },
+      '&.Mui-disabled + .MuiSwitch-track': {
+        opacity: 0.5,
+      },
+    },
+    '&.Mui-focusVisible .MuiSwitch-thumb': {
+      color: '#33cf4d',
+      border: '6px solid #fff',
+    },
+    '&.Mui-disabled .MuiSwitch-thumb': {
+      color:
+        theme.palette.mode === 'light'
+          ? theme.palette.grey[100]
+          : theme.palette.grey[600],
+    },
+    '&.Mui-disabled + .MuiSwitch-track': {
+      opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    boxSizing: 'border-box',
+    width: 22,
+    height: 22,
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 26 / 2,
+    backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+    opacity: 1,
+    transition: theme.transitions.create(['background-color'], {
+      duration: 500,
+    }),
+  },
+}));
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { basket, updateBasket } = useBasket();
-  const { user } = useUser();
-  const [delivery, setDelivery] = useState<string | null>('at_store');
-  const [date, setDate] = useState<Date | null>(new Date());
-  const [time, setTime] = useState<Date | null>(new Date());
-  const [dto, setDto] = useState<Partial<Order>>({});
+  const { basket, updateBasket, pending } = useBasket();
+  const { profile } = useProfile();
+  const [check, setCheck] = useState(true);
+  const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
+    DeliveryOption.PICKUP,
+  );
+  const form = useFormik({
+    initialValues: {
+      entries: [],
+      deliverAt: null,
+      deliveryLocation: null,
+      total: 0,
+      insufficientBalance: false,
+    } as Partial<Order>,
+    onSubmit: (values, { setErrors }) => {
+      return updateBasket(values)
+        .then(b => {
+          toast.success('Basket saved!');
+          navigate('/products');
+        })
+        .catch(e => {
+          setErrors(e.data?.constraints);
+        });
+    },
+  });
 
-  const handleDelivery = (
-    event: React.MouseEvent<HTMLElement>,
-    newDelivery: string | null,
-  ) => {
-    setDelivery(newDelivery);
+  useEffect(() => {
+    if (basket) {
+      if (basket.deliveryLocation) {
+        setDeliveryOption(DeliveryOption.DELIVERY);
+      } else {
+        setDeliveryOption(DeliveryOption.PICKUP);
+      }
+      form.setValues(basket);
+    }
+  }, [basket]);
+
+  const deliveryDay = (date: Date) => {
+    return date.getDay() !== 3 && date.getDay() !== 4 && date.getDay() !== 5;
   };
 
-  const handleAddressChange = (key: string, value: any) => {
-    setDto(_dto => ({
-      ..._dto,
-      deliveryLocation: {
-        ...(_dto?.deliveryLocation ?? {}),
-        [key]: value,
-      },
-    }));
-  };
-
-  const saveBasket = () => {
-    const deliverAt = date;
-    deliverAt?.setHours(time.getHours());
-    deliverAt?.setMinutes(time.getMinutes());
-
-    updateBasket({ ...dto, deliverAt })
-      .then(() => {
-        toast.success('Order paid successfully!');
-        navigate(`/products`);
-      })
-      .catch(() => {
-        // noop
-      });
-  };
   return (
     <>
       <NavigationBox.NavBar onProducts={false} setBasketListener={null} />
-      <Grid container direction="row" sx={{ px: 15, py: 8 }}>
-        <Grid container item xs={12} spacing={2} sx={{ py: 5 }}>
+      <Grid
+        container
+        direction="row"
+        spacing="1rem"
+        paddingY="5rem"
+        alignItems="center"
+        justifyItems="center"
+        width="auto"
+        xs={12}
+        sx={{ ml: '0' }}
+      >
+        {' '}
+        <Grid container item xs={12} sx={{ pb: 2 }}>
           <Typography
             variant="h6"
             noWrap
-            component="h1"
             color="primary.main"
             fontWeight="bold"
             sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
           >
             {'Checkout'}
           </Typography>
-          {delivery === 'at_store' ? (
+          {deliveryOption === 'pickup' ? (
             <Button
               sx={{
                 minWidth: 0,
-                px: { xs: 1, sm: 2 },
                 float: 'right',
               }}
               variant="contained"
-              onClick={saveBasket}
+              type="submit"
+              onClick={form.submitForm}
             >
-              <CreditCardIcon />
+              <AddShoppingCartIcon />
               <Typography
                 sx={{
                   textTransform: 'none',
@@ -114,7 +196,7 @@ export default function Checkout() {
                 component="h2"
                 sx={{ fontWeight: 'bold' }}
               >
-                {'Your basket'}
+                Your basket
               </Typography>
             </Box>
             <Grid
@@ -138,7 +220,7 @@ export default function Checkout() {
                   component="div"
                   color="#757575"
                 >
-                  {'Your balance €'}
+                  Your balance €
                   <Typography
                     fontWeight="bold"
                     align="right"
@@ -147,7 +229,7 @@ export default function Checkout() {
                     display="inline"
                     color="#757575"
                   >
-                    {user?.balance == null ? '0' : user?.balance}
+                    {basket?.user?.balance == null ? '0' : basket.user.balance}
                   </Typography>
                 </Typography>
                 <Typography
@@ -156,7 +238,7 @@ export default function Checkout() {
                   variant="h5"
                   component="div"
                 >
-                  {'Total €'}
+                  Total €
                   <Typography
                     fontWeight="bold"
                     align="right"
@@ -180,173 +262,270 @@ export default function Checkout() {
                 component="h2"
                 sx={{ fontWeight: 'bold' }}
               >
-                {'Delivery options'}
+                Delivery options
               </Typography>
             </Box>
             <Typography component="div" sx={{ fontSize: '15px' }}>
-              {'Choose an option: '}
+              Choose an option:
             </Typography>
 
             <ToggleButtonGroup
-              value={delivery}
+              value={deliveryOption}
               exclusive
-              onChange={handleDelivery}
+              onChange={(e, value) => {
+                value === DeliveryOption.PICKUP
+                  ? setCheck(false)
+                  : setCheck(true);
+                setDeliveryOption(value);
+                form.setFieldValue(
+                  'deliveryLocation',
+                  value === DeliveryOption.PICKUP
+                    ? null
+                    : basket.deliveryLocation ?? {
+                        name: (profile as User).name,
+                        surname: (profile as User).surname,
+                        address: (profile as User)?.address.address,
+                        zipCode: (profile as User)?.address.zipCode,
+                        city: (profile as User)?.address.city,
+                        province: (profile as User)?.address.province,
+                        region: (profile as User)?.address.region,
+                      },
+                );
+              }}
               aria-label="delivery"
               sx={{ mt: 2, borderRadius: '16px' }}
             >
-              <ToggleButton value="at_store">{"I'll pick it up"}</ToggleButton>
-              <ToggleButton value="at_home">{'Deliver it'}</ToggleButton>
+              <ToggleButton value={DeliveryOption.PICKUP}>
+                I'll pick it up
+              </ToggleButton>
+              <ToggleButton value={DeliveryOption.DELIVERY}>
+                Deliver it
+              </ToggleButton>
             </ToggleButtonGroup>
-            {delivery === 'at_home' ? (
+            {deliveryOption === DeliveryOption.DELIVERY && (
+              <FormControlLabel
+                control={
+                  <IOSSwitch
+                    sx={{ m: 1, marginLeft: 10 }}
+                    setCheck={() => {
+                      if (!check) {
+                        form.setFieldValue(
+                          'deliveryLocation',
+                          (profile as User).address,
+                        );
+                      } else {
+                        form.setFieldValue('deliveryLocation', null);
+                      }
+                      setCheck(!check);
+                    }}
+                  />
+                }
+                label="Default address"
+              />
+            )}
+            {deliveryOption === DeliveryOption.DELIVERY && (
               <Grid
                 container
-                display="grid"
-                gap={6}
+                direction="row"
+                spacing={2}
                 gridTemplateColumns="repeat(auto-fill, minmax(20rem, 1fr))"
                 sx={{ pt: 3 }}
               >
-                <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.name}
+                  >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Name'}
+                      Name
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-name"
-                      onChange={e =>
-                        handleAddressChange('name', e.target.value)
-                      }
+                      name="deliveryLocation.name"
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.name ?? ''}
                       label="Name"
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.name}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
-                <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.surname}
+                  >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Surname'}
+                      Surname
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-surname"
-                      onChange={e =>
-                        handleAddressChange('surname', e.target.value)
-                      }
+                      name="deliveryLocation.surname"
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.surname ?? ''}
                       label="Surname"
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.surname}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
-                <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.address}
+                  >
                     <InputLabel htmlFor="outlined-adornment-address">
-                      {'Address'}
+                      Address
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-address"
-                      onChange={e =>
-                        handleAddressChange('address', e.target.value)
-                      }
+                      name="deliveryLocation.address"
+                      value={form.values?.deliveryLocation?.address ?? ''}
                       label="Address"
+                      disabled={check}
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.address}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
-                <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.zipCode}
+                  >
                     <InputLabel htmlFor="outlined-adornment-zipcode">
-                      {'Zip code'}
+                      Zip code
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-zipcode"
-                      onChange={e =>
-                        handleAddressChange('zipCode', e.target.value)
-                      }
                       label="Zip code"
+                      name="deliveryLocation.zipCode"
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.zipCode ?? ''}
+                      onChange={form.handleChange}
                     />
                   </FormControl>
+                  <FormHelperText>
+                    {form.errors?.deliveryLocation?.zipCode}
+                  </FormHelperText>
                 </Grid>
-                <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.city}
+                  >
                     <InputLabel htmlFor="outlined-adornment-city">
-                      {'City'}
+                      City
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-city"
-                      onChange={e =>
-                        handleAddressChange('city', e.target.value)
-                      }
                       label="City"
+                      name="deliveryLocation.city"
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.city ?? ''}
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.city}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
-                <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.province}
+                  >
                     <InputLabel htmlFor="outlined-adornment-province">
-                      {'Province'}
+                      Province
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-province"
-                      onChange={e =>
-                        handleAddressChange('privince', e.target.value)
-                      }
                       label="Province"
+                      name="deliveryLocation.province"
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.province ?? ''}
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.province}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
-                <Grid item>
-                  <FormControl variant="outlined" fullWidth>
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    disabled={pending}
+                    error={!!form.errors?.deliveryLocation?.region}
+                  >
                     <InputLabel htmlFor="outlined-adornment-region">
-                      {'Region'}
+                      Region
                     </InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-region"
-                      onChange={e =>
-                        handleAddressChange('region', e.target.value)
-                      }
                       label="Region"
+                      name="deliveryLocation.region"
+                      disabled={check}
+                      value={form.values?.deliveryLocation?.region ?? ''}
+                      onChange={form.handleChange}
                     />
+                    <FormHelperText>
+                      {form.errors?.deliveryLocation?.region}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
               </Grid>
-            ) : (
-              ''
             )}
             <Typography component="div" sx={{ py: 3, fontSize: '15px' }}>
-              {'Delivery date: '}
+              Delivery date:
             </Typography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
-                label="Choose a date"
-                value={date}
-                minDate={new Date('2021-01-01')}
-                maxDate={new Date('2025-12-31')}
-                onChange={(newDate: Date) => {
-                  setDate(newDate);
+              <DateTimePicker
+                renderInput={props => <TextField {...props} />}
+                label="Delivery date and time"
+                value={form.values?.deliverAt}
+                shouldDisableDate={deliveryDay}
+                minDate={new Date()}
+                maxDate={addDays(new Date(), 7)}
+                minTime={new Date(0, 0, 0, 9)}
+                maxTime={new Date(0, 0, 0, 18, 0)}
+                onChange={newValue => {
+                  form.setFieldValue('deliverAt', newValue);
                 }}
-                renderInput={(params: any) => (
-                  <TextField sx={{ mr: 8 }} {...params} />
-                )}
               />
-              <TimePicker
-                label="Choose a time"
-                value={time}
-                onChange={(newTime: any) => {
-                  setTime(newTime);
-                }}
-                renderInput={params => (
-                  <TextField sx={{ mr: 'auto' }} {...params} />
-                )}
-              />
+              <FormHelperText>{form.errors?.deliverAt}</FormHelperText>
             </LocalizationProvider>
           </Card>
-          {delivery === 'at_home' ? (
+          {deliveryOption === 'delivery' ? (
             <Button
+              type="submit"
               sx={{
                 minWidth: 0,
-                px: { xs: 1, sm: 2 },
-                mt: 2,
                 float: 'right',
+                mt: '16px',
               }}
               variant="contained"
-              onClick={saveBasket}
+              onClick={form.submitForm}
             >
-              <CreditCardIcon />
+              <AddShoppingCartIcon />
               <Typography
                 sx={{
                   textTransform: 'none',

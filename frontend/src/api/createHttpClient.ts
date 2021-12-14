@@ -1,7 +1,10 @@
 /* eslint-disable no-restricted-globals */
-export class ApiException extends Error {
-  constructor(message: string, public statusCode: number, public data: any) {
-    super(message);
+export class ApiException<T = unknown> extends Error {
+  constructor(
+    public statusCode: number,
+    public data: T extends object ? { constraints?: T } : unknown,
+  ) {
+    super('Api Exception');
   }
 }
 
@@ -22,19 +25,7 @@ export const createHttpClient = (baseUrl: string) => {
     const response = await fetch(input, _options);
     if (!response.ok) {
       const body = await response.json();
-      let message = 'Network error';
-      if (body.error) {
-        message = body.error;
-      }
-      if (body.message) {
-        message += ': ';
-        if (Array.isArray(body.message)) {
-          message += body.message.join(', ');
-        } else {
-          message += body.message;
-        }
-      }
-      throw new ApiException(message, response.status, body);
+      throw new ApiException(response.status, body);
     }
     return response.json();
   };

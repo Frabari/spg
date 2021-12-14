@@ -1,33 +1,11 @@
 import { Exclude, Expose } from 'class-transformer';
-import { Allow, IsIn, IsString, IsUrl, Min } from 'class-validator';
+import { Allow, IsBoolean, IsInt, IsString, IsUrl, Min } from 'class-validator';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
-import { STAFF } from '../../users/roles.enum';
+import { ADMINS, Role, STAFF } from '../../users/roles.enum';
 
 export type ProductId = number;
-
-export enum ProductMeasures {
-  /**
-   * Kg of product selected
-   */
-  KG = 'Kg',
-
-  /**
-   * hg of product selected
-   */
-  HG = 'hg',
-
-  /**
-   *  g of product selected
-   */
-  G = 'g',
-
-  /**
-   * unit of product selected
-   */
-  UNIT = 'unit',
-}
 
 @Entity()
 @Exclude()
@@ -40,24 +18,24 @@ export class Product {
    * If true this product is visible and saleable
    */
   @Column({ default: false })
-  @Allow()
-  @Expose({ groups: STAFF })
+  @Expose({ groups: ADMINS.concat(Role.FARMER) })
+  @IsBoolean()
   public: boolean;
 
   /**
    * A short name
    */
   @Column()
-  @Allow()
   @Expose()
+  @IsString()
   name: string;
 
   /**
    * A detailed description
    */
   @Column()
-  @Allow()
   @Expose()
+  @IsString()
   description: string;
 
   /**
@@ -68,18 +46,21 @@ export class Product {
   @Expose()
   price: number;
 
-  @Column({ default: ProductMeasures.KG, nullable: false })
-  @IsString()
-  @IsIn(Object.values(ProductMeasures))
+  /**
+   * The unit of the products
+   */
+  @Column()
   @Expose()
-  unitOfMeasure: ProductMeasures;
+  @IsString()
+  baseUnit: string;
 
   /**
    * The number of available units of this product
    * to be sold right now
    */
   @Column({ default: 0 })
-  @Allow()
+  @IsInt()
+  @Min(0)
   @Expose()
   available: number;
 
@@ -87,32 +68,25 @@ export class Product {
    * The number of units currently in customer orders
    */
   @Column({ default: 0 })
-  @Allow()
+  @IsInt()
+  @Min(0)
   @Expose({ groups: STAFF })
   reserved: number;
-
-  /**
-   * The number of sold units
-   */
-  @Column({ default: 0 })
-  @Allow()
-  @Expose({ groups: STAFF })
-  sold: number;
 
   /**
    * The category to which this product belongs
    */
   @ManyToOne(() => Category, cat => cat.products)
-  @Allow()
   @Expose()
+  @Allow()
   category: Category;
 
   /**
    * The farmer who produces this product
    */
   @ManyToOne(() => User, user => user.products)
-  @Allow()
   @Expose()
+  @Allow()
   farmer: User;
 
   /**
@@ -121,5 +95,6 @@ export class Product {
   @Column({ default: null })
   @IsUrl()
   @Expose()
+  @IsString()
   image: string;
 }

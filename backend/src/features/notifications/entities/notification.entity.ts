@@ -14,6 +14,11 @@ export enum NotificationType {
   ERROR = 'error',
 }
 
+export enum NotificationPriority {
+  INFO = 'info',
+  CRITICAL = 'critical',
+}
+
 @Entity()
 export class Notification {
   @PrimaryGeneratedColumn()
@@ -34,4 +39,8 @@ export class Notification {
   @ManyToMany(() => User, user => user.notifications)
   @JoinTable()
   deliveredTo: User[];
+
+  persistent: boolean;
+
+  priority: NotificationPriority;
 }
