@@ -1,4 +1,5 @@
 import { createGlobalState } from 'react-hooks-global-state';
+import { DateTime } from 'luxon';
 import { Order, User, Notification } from '../api/BasilApi';
 
 const { useGlobalState } = createGlobalState({
@@ -9,7 +10,7 @@ const { useGlobalState } = createGlobalState({
   pending: false,
   notifications: [] as Notification[],
   newNotification: null as Notification,
-  date: new Date(),
+  date: DateTime.now(),
 });
 
 export { useGlobalState };

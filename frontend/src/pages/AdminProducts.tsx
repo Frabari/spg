@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import moment from 'moment';
 import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -29,8 +28,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
-
-const { DateTime } = require('luxon');
+import { useVirtualClock } from '../hooks/useVirtualClock';
 
 const columns: {
   key: keyof Product;
@@ -185,6 +183,7 @@ export const AdminProducts = (props: {
   const [farmers, setFarmers] = useState(null);
   const { users } = useUsers();
   const sort = useCategories();
+  const [date] = useVirtualClock();
 
   useEffect(() => {
     if (users) {
@@ -213,6 +212,41 @@ export const AdminProducts = (props: {
       });
     }
   };
+
+  const fromAvailability = date.set({
+    weekday: 1,
+    hour: 18,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const toAvailability = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+
+  const fromReserved =
+    date.weekday === 1 && date.hour <= 9
+      ? date
+          .set({
+            weekday: 7,
+            hour: 23,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          })
+          .minus({ weeks: 1 })
+      : date.set({
+          weekday: 7,
+          hour: 23,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        });
+  const toReserved = fromReserved.plus({ hours: 10 });
 
   return (
     <>
@@ -440,13 +474,17 @@ export const AdminProducts = (props: {
                       <>
                         <TableCell>
                           {product.available === 0 &&
-                            DateTime.now() >= moment().day('sunday').hour(23) &&
-                            DateTime.now() <=
-                              moment().day('monday').hour(9).minutes(0) && (
+                            date >= fromAvailability &&
+                            date <= toAvailability && (
                               <Alert severity="warning">
                                 {'Remember to update the availability field'}
                               </Alert>
                             )}
+                          {date >= fromReserved && date <= toReserved && (
+                            <Alert severity="warning">
+                              {"Remember to confirm orders' booking"}
+                            </Alert>
+                          )}
                         </TableCell>
                       </>
                     ) : (

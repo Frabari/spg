@@ -57,6 +57,6 @@ export class SchedulingService {
   setDate(date: string) {
     const newDate = new Date(date);
     Settings.now = () => newDate.getTime();
-    return newDate.toString();
+    return { date: newDate.toISOString() };
   }
 }

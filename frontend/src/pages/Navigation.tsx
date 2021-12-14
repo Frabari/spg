@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { DateTime } from 'luxon';
 import {
   Person,
   ShoppingCart,
@@ -16,6 +17,9 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SearchIcon from '@mui/icons-material/Search';
+import { DateTimePicker } from '@mui/lab';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import {
   AppBar,
   Autocomplete,
@@ -53,6 +57,7 @@ import { usePendingState } from '../hooks/usePendingState';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
+import { useVirtualClock } from '../hooks/useVirtualClock';
 
 interface LinkTabProps {
   label: string;
@@ -130,6 +135,8 @@ function NavBar(props: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] =
     React.useState<null | HTMLElement>(null);
+  const [anchorVC, setAnchorVC] = React.useState<null | HTMLElement>(null);
+
   const [list, setList] = useState([]);
   const { profile, load } = useProfile();
   const { setPending } = usePendingState();
@@ -139,6 +146,7 @@ function NavBar(props: any) {
   const { users } = useUsers();
   const { basket } = useBasket();
   const { notifications } = useNotifications();
+  const [date, setDate] = useVirtualClock();
 
   useEffect(() => {
     const u = users
@@ -172,6 +180,14 @@ function NavBar(props: any) {
     setAnchorElNotifications(null);
   };
 
+  const handleVC = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorVC(event.currentTarget);
+  };
+
+  const handleCloseVC = () => {
+    setAnchorVC(null);
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -182,15 +198,67 @@ function NavBar(props: any) {
       toast.error((e as ApiException).message);
     }
   };
+
   return (
     <>
       <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
         <Container>
           <Toolbar sx={{ px: '0!important' }}>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorVC}
+              keepMounted
+              PaperProps={{
+                elevation: 0,
+                sx: {
+                  overflow: 'visible',
+                  filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                  mt: 1.5,
+                  '& .MuiAvatar-root': {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                  },
+                  '&:before': {
+                    content: '""',
+                    display: 'block',
+                    position: 'absolute',
+                    top: 0,
+                    right: 14,
+                    width: 10,
+                    height: 10,
+                    bgcolor: 'background.paper',
+                    transform: 'translateY(-50%) rotate(45deg)',
+                    zIndex: 0,
+                  },
+                },
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              open={Boolean(anchorVC)}
+              onClose={handleCloseVC}
+            >
+              <MenuItem>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DateTimePicker
+                    renderInput={props => <TextField {...props} />}
+                    value={date.toJSDate()}
+                    label="Virtual clock"
+                    onChange={newDate => setDate(DateTime.fromJSDate(newDate))}
+                  />
+                </LocalizationProvider>
+              </MenuItem>
+            </Menu>
             <IconButton onClick={() => navigate('/products')}>
               <Logo />
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ ml: 1, mr: 'auto' }}
+              onClick={handleVC}
+            >
               Basil
             </Typography>
             <Box display={props.onProducts ? 'block' : 'none'}>
