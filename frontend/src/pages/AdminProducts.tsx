@@ -171,56 +171,58 @@ export const AdminProducts = (props: {
     const [entries, setEntries] = useProductOrderEntries(productId);
 
     return (
-      <Grid item sx={{ p: 2, pt: 0 }}>
-        <ButtonGroup variant="outlined" aria-label="outlined button group">
-          {(profile as User).role === Role.MANAGER && (
-            <Button
-              type="submit"
-              variant="outlined"
-              color="warning"
-              sx={{ px: 3 }}
-              onClick={ev => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                setEntries({ status: OrderEntryStatus.DRAFT });
-              }}
-            >
-              Draft
-            </Button>
-          )}
-          {((profile as User).role === Role.MANAGER ||
-            (profile as User).role === Role.FARMER) && (
-            <Button
-              type="submit"
-              variant="outlined"
-              color="error"
-              onClick={ev => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                setEntries({ status: OrderEntryStatus.CONFIRMED });
-              }}
-              sx={{ px: 3 }}
-            >
-              Confirm
-            </Button>
-          )}
-          {((profile as User).role === Role.MANAGER ||
-            (profile as User).role === Role.WAREHOUSE_MANAGER) && (
-            <Button
-              type="submit"
-              variant="outlined"
-              sx={{ px: 3 }}
-              onClick={ev => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                setEntries({ status: OrderEntryStatus.DELIVERED });
-              }}
-            >
-              Delivered
-            </Button>
-          )}
-        </ButtonGroup>
-      </Grid>
+      entries.length > 0 && (
+        <Grid item sx={{ p: 2, pt: 0 }}>
+          <ButtonGroup variant="outlined" aria-label="outlined button group">
+            {(profile as User).role === Role.MANAGER && (
+              <Button
+                type="submit"
+                variant="outlined"
+                color="warning"
+                sx={{ px: 3 }}
+                onClick={ev => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  setEntries({ status: OrderEntryStatus.DRAFT });
+                }}
+              >
+                Draft
+              </Button>
+            )}
+            {((profile as User).role === Role.MANAGER ||
+              (profile as User).role === Role.FARMER) && (
+              <Button
+                type="submit"
+                variant="outlined"
+                color="error"
+                onClick={ev => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  setEntries({ status: OrderEntryStatus.CONFIRMED });
+                }}
+                sx={{ px: 3 }}
+              >
+                Confirm
+              </Button>
+            )}
+            {((profile as User).role === Role.MANAGER ||
+              (profile as User).role === Role.WAREHOUSE_MANAGER) && (
+              <Button
+                type="submit"
+                variant="outlined"
+                sx={{ px: 3 }}
+                onClick={ev => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  setEntries({ status: OrderEntryStatus.DELIVERED });
+                }}
+              >
+                Delivered
+              </Button>
+            )}
+          </ButtonGroup>
+        </Grid>
+      )
     );
   };
 
@@ -378,6 +380,8 @@ export const AdminProducts = (props: {
                     </TableCell>
                   ) : c.key === 'description' ? (
                     <></>
+                  ) : c.key === 'farmer' && props.profile.role === 'farmer' ? (
+                    <></>
                   ) : (
                     <TableCell
                       key={c.key}
@@ -506,11 +510,9 @@ export const AdminProducts = (props: {
                         <TableCell>
                           {product.farmer.name + ' ' + product.farmer.surname}
                         </TableCell>
-                        <TableCell>
-                          {<Actions productId={product.id} />}
-                        </TableCell>
                       </>
                     )}
+                    <TableCell>{<Actions productId={product.id} />}</TableCell>
                   </TableRow>
                 ))}
             </TableBody>
