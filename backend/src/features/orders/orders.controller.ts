@@ -57,7 +57,7 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  @Roles(...STAFF)
+  @Roles(...STAFF, Role.FARMER)
   getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
     crudRequest.parsed.fields = ['id', 'status', 'createdAt'];
     return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
@@ -101,7 +101,7 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  @Roles(...STAFF)
+  @Roles(...STAFF, Role.FARMER)
   getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
