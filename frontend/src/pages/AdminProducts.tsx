@@ -24,14 +24,15 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import {getProductOrderEntries, Product, Role, User } from '../api/BasilApi';
+import { Product, Role, User } from '../api/BasilApi';
+import { OrderEntryStatus } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
+import { useProductOrderEntries } from '../hooks/useProductOrderEntries';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
-import {OrderEntryStatus} from '../api/BasilApi'
-import {useProductOrderEntries} from '../hooks/useProductOrderEntries'
+
 const { DateTime } = require('luxon');
 
 const columns: {
@@ -166,45 +167,61 @@ export const AdminProducts = (props: {
     });
   };
 
-  const Actions = ({productId}:{productId:number})=>{
+  const Actions = ({ productId }: { productId: number }) => {
     const [entries, setEntries] = useProductOrderEntries(productId);
 
-
-      return (
-          <Grid item sx={{ p: 2, pt: 0 }}>
-            <ButtonGroup variant="outlined" aria-label="outlined button group">
-              { (profile as User).role === Role.MANAGER && <Button
-                  type="submit"
-                  variant="outlined"
-                  color = 'warning'
-                  sx={{ px: 3 }}
-                  onClick ={()=>{entries.forEach(e=> e.status = OrderEntryStatus.DRAFT); useProductOrderEntries(productId)}}
-              >
-                Draft
-              </Button>}
-              {
-                ((profile as User).role === Role.MANAGER || (profile as User).role === Role.FARMER) &&
-                <Button
-                type="submit"
-                variant="outlined"
-                color='error'
-                onClick ={()=>{entries.forEach(e=> e.status = OrderEntryStatus.CONFIRMED); useProductOrderEntries(productId)}}
-                sx={{ px: 3 }}
+    return (
+      <Grid item sx={{ p: 2, pt: 0 }}>
+        <ButtonGroup variant="outlined" aria-label="outlined button group">
+          {(profile as User).role === Role.MANAGER && (
+            <Button
+              type="submit"
+              variant="outlined"
+              color="warning"
+              sx={{ px: 3 }}
+              onClick={ev => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                setEntries({ status: OrderEntryStatus.DRAFT });
+              }}
+            >
+              Draft
+            </Button>
+          )}
+          {((profile as User).role === Role.MANAGER ||
+            (profile as User).role === Role.FARMER) && (
+            <Button
+              type="submit"
+              variant="outlined"
+              color="error"
+              onClick={ev => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                setEntries({ status: OrderEntryStatus.CONFIRMED });
+              }}
+              sx={{ px: 3 }}
             >
               Confirm
-            </Button>}
-              {((profile as User).role === Role.MANAGER || (profile as User).role === Role.WAREHOUSE_MANAGER) &&
-              <Button
-                  type="submit"
-                  variant="outlined"
-                  sx={{ px: 3 }}
-                  onClick ={(ev)=>{ev.preventDefault(); ev.stopPropagation(); entries.forEach(e=> e.status = OrderEntryStatus.DELIVERED); useProductOrderEntries(productId)}}
-              >
-                Delivered
-              </Button>}
-            </ButtonGroup>
-          </Grid>
-      );
+            </Button>
+          )}
+          {((profile as User).role === Role.MANAGER ||
+            (profile as User).role === Role.WAREHOUSE_MANAGER) && (
+            <Button
+              type="submit"
+              variant="outlined"
+              sx={{ px: 3 }}
+              onClick={ev => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                setEntries({ status: OrderEntryStatus.DELIVERED });
+              }}
+            >
+              Delivered
+            </Button>
+          )}
+        </ButtonGroup>
+      </Grid>
+    );
   };
 
   const handleChange = (value: any) => {
@@ -359,8 +376,7 @@ export const AdminProducts = (props: {
                         </Grid>
                       </Grid>
                     </TableCell>
-                  ) :
-                    (c.key === 'description') ? (
+                  ) : c.key === 'description' ? (
                     <></>
                   ) : (
                     <TableCell
@@ -419,7 +435,7 @@ export const AdminProducts = (props: {
                 ) : (
                   <></>
                 )}
-                  <TableCell>{'Actions'}</TableCell>
+                <TableCell>{'Actions'}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -445,7 +461,10 @@ export const AdminProducts = (props: {
                       '&:last-child td, &:last-child th': { border: 0 },
                       cursor: 'pointer',
                     }}
-                    onClick={(ev) => {ev.preventDefault(); navigate(`/admin/products/${product.id}`);}}
+                    onClick={ev => {
+                      ev.preventDefault();
+                      navigate(`/admin/products/${product.id}`);
+                    }}
                   >
                     <TableCell sx={{ py: 0 }}>
                       <img
@@ -487,9 +506,9 @@ export const AdminProducts = (props: {
                         <TableCell>
                           {product.farmer.name + ' ' + product.farmer.surname}
                         </TableCell>
-                          <TableCell>
-                            {<Actions productId={product.id}/>}
-                          </TableCell>
+                        <TableCell>
+                          {<Actions productId={product.id} />}
+                        </TableCell>
                       </>
                     )}
                   </TableRow>
