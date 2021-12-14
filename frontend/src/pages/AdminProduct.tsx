@@ -29,7 +29,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
   const [farmers, setFarmers] = useState(null);
-  const { product, upsertProduct } = useProduct(id);
+  const { product, upsertProduct } = useProduct(id, true);
   const { categories } = useCategories();
   const { users } = useUsers();
   const navigate = useNavigate();

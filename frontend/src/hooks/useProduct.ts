@@ -11,7 +11,7 @@ import {
 import { ApiException } from '../api/createHttpClient';
 import { usePendingState } from './usePendingState';
 
-export const useProduct = (id?: ProductId) => {
+export const useProduct = (id?: ProductId, stock = false) => {
   const { setPending: setGlobalPending } = usePendingState();
   const [pending, setPending] = useState(false);
   const [product, setProduct] = useState<Product>(null);
@@ -50,7 +50,7 @@ export const useProduct = (id?: ProductId) => {
   useEffect(() => {
     if (id) {
       setPending(true);
-      getProduct(id)
+      getProduct(id, stock)
         .then(setProduct)
         .catch(e => {
           setError(e);

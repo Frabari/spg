@@ -184,11 +184,11 @@ export const createUser = (user: Partial<User>) =>
 export const updateUser = (id: UserId, user: Partial<User>) =>
   client.patch<User>(`/users/${id}`, user);
 
-export const getProducts = (loadAllStock = false) =>
-  client.get<Product[]>(`/products${loadAllStock ? '?stock' : ''}`);
+export const getProducts = (stock = false) =>
+  client.get<Product[]>(`/products${stock ? '?stock' : ''}`);
 
-export const getProduct = (id: ProductId) =>
-  client.get<Product>(`/products/${id}`);
+export const getProduct = (id: ProductId, stock = false) =>
+  client.get<Product>(`/products/${id}${stock ? '?stock' : ''}`);
 
 export const createProduct = (product: Partial<Product>) =>
   client.post<Product>('/products', product);

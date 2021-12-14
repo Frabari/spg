@@ -188,7 +188,6 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
     onSubmit: (values: Partial<Order>, { setErrors }) => {
       return upsertOrder(values)
         .then(newOrder => {
-          console.log(newOrder);
           const creating = id == null;
           toast.success(`Order ${creating ? 'created' : 'updated'}`);
           if (creating) {
