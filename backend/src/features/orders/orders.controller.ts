@@ -1,3 +1,4 @@
+import { Request as ExpressRequest } from 'express';
 import {
   Body,
   Controller,
@@ -10,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
+  CrudAuth,
   CrudController,
   CrudRequest,
   CrudRequestInterceptor,
@@ -18,6 +20,7 @@ import {
   ParsedRequest,
 } from '@nestjsx/crud';
 import { Crud } from '../../core/decorators/crud.decorator';
+import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
@@ -45,6 +48,15 @@ import { OrdersService } from './orders.service';
     },
   },
 })
+@CrudAuth({
+  filter: (req: ExpressRequest & { user: User }) => {
+    const filters: any = {};
+    if (req.user?.role === Role.CUSTOMER) {
+      filters['user.id'] = req.user.id;
+    }
+    return filters;
+  },
+})
 @ApiTags(Order.name)
 @ApiBearerAuth()
 @Controller('orders')
@@ -59,7 +71,7 @@ export class OrdersController implements CrudController<Order> {
   @Override()
   @Roles(...STAFF, Role.FARMER)
   getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
-    crudRequest.parsed.fields = ['id', 'status', 'createdAt'];
+    crudRequest.parsed.fields = ['id', 'status', 'createdAt', 'deliverAt'];
     return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
       return orders?.map(order =>
         this.service.checkOrderBalance(order, request.user),
@@ -88,6 +100,7 @@ export class OrdersController implements CrudController<Order> {
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
+      { field: 'entries' },
     ];
     const order = await this.service.validateUpdateDto(
       basket.id,

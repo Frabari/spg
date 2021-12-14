@@ -177,11 +177,11 @@ export const createUser = (user: Partial<User>) =>
 export const updateUser = (id: UserId, user: Partial<User>) =>
   client.patch<User>(`/users/${id}`, user);
 
-export const getProducts = (loadAllStock = false) =>
-  client.get<Product[]>(`/products${loadAllStock ? '?stock' : ''}`);
+export const getProducts = (stock = false) =>
+  client.get<Product[]>(`/products${stock ? '?stock' : ''}`);
 
-export const getProduct = (id: ProductId) =>
-  client.get<Product>(`/products/${id}`);
+export const getProduct = (id: ProductId, stock = false) =>
+  client.get<Product>(`/products/${id}${stock ? '?stock' : ''}`);
 
 export const createProduct = (product: Partial<Product>) =>
   client.post<Product>('/products', product);
@@ -195,7 +195,7 @@ export const getProductOrderEntries = (id: ProductId) =>
 export const updateProductOrderEntries = (
   id: ProductId,
   dto: Partial<OrderEntry>,
-) => client.patch<Product>(`/products/${id}/order-entries`, dto);
+) => client.patch<OrderEntry[]>(`/products/${id}/order-entries`, dto);
 
 export const getCategories = () => client.get<Category[]>('/categories');
 
@@ -216,3 +216,8 @@ export const getBasket = () => client.get<Order>('/orders/basket');
 
 export const updateBasket = (basket: Partial<Order>) =>
   client.patch<Order>('/orders/basket', basket);
+
+export const getDate = () => client.get<string>('scheduling/date');
+
+export const setDate = (dto: { date: string }) =>
+  client.patch<string>('scheduling/date', dto);

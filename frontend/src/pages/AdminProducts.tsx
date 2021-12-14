@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import moment from 'moment';
 import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -28,6 +29,8 @@ import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
+
+const { DateTime } = require('luxon');
 
 const columns: {
   key: keyof Product;
@@ -122,9 +125,7 @@ const Description = styled(Box)({
 
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
-  farmer: boolean;
-  category: string;
-  farmers: string;
+  profile: User;
 }) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -177,9 +178,10 @@ export const AdminProducts = (props: {
       ),
     );
   };
-
-  const [sortOption, setSortOption] = useState(props.category);
-  const [farmerFilter, setFarmerFilter] = useState(props.farmers);
+  const [searchParams, setSearchParams] = useSearchParams({
+    category: 'all',
+    farmer: 'all',
+  });
   const [farmers, setFarmers] = useState(null);
   const { users } = useUsers();
   const sort = useCategories();
@@ -190,28 +192,25 @@ export const AdminProducts = (props: {
     }
   }, [users]);
 
-  const handleFilterByCategory = (s: string) => {
-    setSortOption(s);
-    if (s === 'all') {
-      navigate(`/admin/products`);
-      setSortedProducts(products);
-    } else {
-      navigate(`/admin/products?category=${s}`);
-      setSortedProducts(products.filter(p => p.category.slug === s));
-    }
+  const handleCategorySearchParams = (category: string) => {
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      category: category,
+    });
   };
 
-  const handleFilterByFarmer = (f: string) => {
-    const farmer = farmers.find((fa: User) => fa.email === f);
-    setFarmerFilter(f);
+  const handleFarmerSearchParams = (f: string) => {
     if (f === 'all') {
-      navigate(`/admin/products`);
-      setSortedProducts(products);
+      setSearchParams({
+        ...Object.fromEntries(searchParams.entries()),
+        farmer: f,
+      });
     } else {
-      navigate(
-        `/admin/products?farmer=${farmer.name.toLowerCase()}_${farmer.surname.toLowerCase()}`,
-      );
-      setSortedProducts(products.filter(p => p.farmer.email === f));
+      const farmer = farmers.find((fa: User) => fa.email === f);
+      setSearchParams({
+        ...Object.fromEntries(searchParams.entries()),
+        farmer: farmer.name + ' ' + farmer.surname,
+      });
     }
   };
 
@@ -267,7 +266,7 @@ export const AdminProducts = (props: {
             <TableHead>
               <TableRow>
                 {columns.map(c =>
-                  c.key === 'farmer' && !props.farmer ? (
+                  c.key === 'farmer' && !(props.profile.role === 'farmer') ? (
                     <TableCell
                       key={c.key}
                       sortDirection={sorting.by === c.key ? sorting.dir : false}
@@ -294,16 +293,16 @@ export const AdminProducts = (props: {
                             <TextField
                               id="outlined-select-farmer"
                               select
-                              value={farmerFilter}
+                              value={searchParams.get('farmer')}
                               label="Filter by farmer"
                               size="small"
                               sx={{ width: '175px' }}
                               onChange={e =>
-                                handleFilterByFarmer(e.target.value)
+                                handleFarmerSearchParams(e.target.value)
                               }
                             >
                               <MenuItem key="all" value="all">
-                                All
+                                {'All'}
                               </MenuItem>
                               {farmers?.map((option: User) => (
                                 <MenuItem key={option.id} value={option.email}>
@@ -317,7 +316,9 @@ export const AdminProducts = (props: {
                         </Grid>
                       </Grid>
                     </TableCell>
-                  ) : c.key === 'farmer' && props.farmer ? (
+                  ) : (c.key === 'farmer' && props.profile.role === 'farmer') ||
+                    (c.key === 'description' &&
+                      props.profile.role === 'warehouse_manager') ? (
                     <></>
                   ) : (
                     <TableCell
@@ -346,12 +347,12 @@ export const AdminProducts = (props: {
                             <TextField
                               id="outlined-select-category"
                               select
-                              value={sortOption}
+                              value={searchParams.get('category')}
                               label="Filter by category"
                               size="small"
                               sx={{ width: '175px' }}
                               onChange={e =>
-                                handleFilterByCategory(e.target.value)
+                                handleCategorySearchParams(e.target.value)
                               }
                             >
                               <MenuItem key="all" value="all">
@@ -371,120 +372,96 @@ export const AdminProducts = (props: {
                     </TableCell>
                   ),
                 )}
-                {props.farmer ? <TableCell>Notes</TableCell> : <></>}
+                {props.profile.role === 'farmer' ? (
+                  <TableCell>{'Notes'}</TableCell>
+                ) : (
+                  <></>
+                )}
+                {props.profile.role === 'warehouse_manager' ? (
+                  <TableCell>{'Actions'}</TableCell>
+                ) : (
+                  <></>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
-              {props.farmer ? (
-                <>
-                  {sortedProducts
-                    ?.filter(
-                      p =>
-                        !sortOption ||
-                        sortOption === 'all' ||
-                        p.category.slug === sortOption,
-                    )
-                    ?.filter(p => p.farmer.id === dto.id)
-                    ?.map(product => (
-                      <TableRow
-                        hover
-                        key={product.id}
-                        sx={{
-                          '&:last-child td, &:last-child th': { border: 0 },
-                          cursor: 'pointer',
+              {sortedProducts
+                ?.filter(
+                  p =>
+                    !searchParams.get('category') ||
+                    searchParams.get('category') === 'all' ||
+                    p.category.slug === searchParams.get('category'),
+                )
+                ?.filter(
+                  p =>
+                    !searchParams.get('farmer') ||
+                    searchParams.get('farmer') === 'all' ||
+                    p.farmer.name + ' ' + p.farmer.surname ===
+                      searchParams.get('farmer'),
+                )
+                ?.map(product => (
+                  <TableRow
+                    hover
+                    key={product.id}
+                    sx={{
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/admin/products/${product.id}`)}
+                  >
+                    <TableCell sx={{ py: 0 }}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: '50%',
+                          objectFit: 'cover',
                         }}
-                        onClick={() =>
-                          navigate(`/admin/products/${product.id}`)
-                        }
-                      >
-                        <TableCell sx={{ py: 0 }}>
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            style={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell
-                          component="th"
-                          scope="row"
-                          align="left"
-                          sx={{ pr: 0 }}
-                        >
-                          {product.name}
-                        </TableCell>
-                        <TableCell sx={{ pr: 0 }}>
-                          <Description>{product.description}</Description>
-                        </TableCell>
-                        <TableCell>{product.price}</TableCell>
-                        <TableCell>{product.category.name}</TableCell>
+                      />
+                    </TableCell>
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      align="left"
+                      sx={{ pr: 0 }}
+                    >
+                      {product.name}
+                    </TableCell>
+                    {!(props.profile.role === 'warehouse_manager') && (
+                      <TableCell sx={{ pr: 0 }}>
+                        <Description>{product.description}</Description>
+                      </TableCell>
+                    )}
+                    <TableCell>{product.price}</TableCell>
+                    <TableCell>{product.category.name}</TableCell>
+                    {props.profile.role === 'farmer' ? (
+                      <>
                         <TableCell>
-                          {product.available === 0 && (
-                            <Alert severity="warning">
-                              {'Remember to update the availability field'}
-                            </Alert>
-                          )}
+                          {product.available === 0 &&
+                            DateTime.now() >= moment().day('sunday').hour(23) &&
+                            DateTime.now() <=
+                              moment().day('monday').hour(9).minutes(0) && (
+                              <Alert severity="warning">
+                                {'Remember to update the availability field'}
+                              </Alert>
+                            )}
                         </TableCell>
-                      </TableRow>
-                    ))}
-                </>
-              ) : (
-                <>
-                  {sortedProducts
-                    ?.filter(
-                      p =>
-                        !sortOption ||
-                        sortOption === 'all' ||
-                        p.category.slug === sortOption,
-                    )
-                    ?.map(product => (
-                      <TableRow
-                        hover
-                        key={product.id}
-                        sx={{
-                          '&:last-child td, &:last-child th': { border: 0 },
-                          cursor: 'pointer',
-                        }}
-                        onClick={() =>
-                          navigate(`/admin/products/${product.id}`)
-                        }
-                      >
-                        <TableCell sx={{ py: 0 }}>
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            style={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell
-                          component="th"
-                          scope="row"
-                          align="left"
-                          sx={{ pr: 0 }}
-                        >
-                          {product.name}
-                        </TableCell>
-                        <TableCell sx={{ pr: 0 }}>
-                          <Description>{product.description}</Description>
-                        </TableCell>
-                        <TableCell>{product.price}</TableCell>
-                        <TableCell>{product.category.name}</TableCell>
+                      </>
+                    ) : (
+                      <>
                         <TableCell>
                           {product.farmer.name + ' ' + product.farmer.surname}
                         </TableCell>
-                      </TableRow>
-                    ))}
-                </>
-              )}
+
+                        {props.profile.role === 'warehouse_manager' && (
+                          <TableCell>azioni da implementare</TableCell>
+                        )}
+                      </>
+                    )}
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

@@ -1,6 +1,6 @@
 import { MouseEvent, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import {
   Alert,
@@ -246,7 +246,6 @@ function OutlinedCard() {
 }
 
 export default function SignUp() {
-  // const [logged, setLogged] = useState(false);
   const { profile } = useProfile();
 
   if (profile !== null && profile !== false) {
@@ -271,12 +270,23 @@ export default function SignUp() {
             marginBottom="2rem"
           >
             <Grid item>
-              <Logo />
-            </Grid>
-            <Grid item>
-              <Typography variant="h6" component="div" marginLeft="10px">
-                Basil
-              </Typography>
+              <Box component={Link} to="/" sx={{ textDecoration: 'none' }}>
+                <Grid container direction="row">
+                  <Grid item>
+                    <Logo />
+                  </Grid>
+                  <Grid item>
+                    <Typography
+                      display="inline"
+                      variant="h6"
+                      component="div"
+                      marginLeft="10px"
+                    >
+                      Basil
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
             </Grid>
           </Grid>
           <OutlinedCard />

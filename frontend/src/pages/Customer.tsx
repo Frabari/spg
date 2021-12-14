@@ -7,7 +7,7 @@ import {
   Routes,
   useSearchParams,
 } from 'react-router-dom';
-import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
+import { Person, ShoppingCart } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
   Avatar,
@@ -32,23 +32,15 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { drawerWidth } from '../constants';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
-import { AdminOrder } from './AdminOrder';
-import { AdminOrders } from './AdminOrders';
-import { AdminProduct } from './AdminProduct';
-import { AdminProducts } from './AdminProducts';
-import { AdminUser } from './AdminUser';
-import { AdminUsers } from './AdminUsers';
+import { CustomerOrder } from './CustomerOrder';
+import { CustomerOrders } from './CustomerOrders';
+import Profile from './Profile';
 
 const pages = [
   {
-    title: 'Users',
-    path: 'users',
+    title: 'Profile',
+    path: 'profile',
     icon: <Person />,
-  },
-  {
-    title: 'Products',
-    path: 'products',
-    icon: <Inventory />,
   },
   {
     title: 'Orders',
@@ -57,7 +49,7 @@ const pages = [
   },
 ];
 
-export const Admin = () => {
+export const Customer = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { profile, load } = useProfile();
   const { pending, setPending } = usePendingState();
@@ -95,7 +87,7 @@ export const Admin = () => {
           <ListItem key={page.path} sx={{ py: 0, px: 1 }}>
             <ListItemButton
               component={Link}
-              to={`/admin/${page.path}`}
+              to={`/account/${page.path}`}
               sx={{ borderRadius: 2 }}
               onClick={handleDrawerToggle}
             >
@@ -131,7 +123,7 @@ export const Admin = () => {
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="Admin pages"
+        aria-label="Customer pages"
       >
         <Drawer
           variant="temporary"
@@ -179,42 +171,16 @@ export const Admin = () => {
             path="/"
             element={
               <ProtectedRoute>
-                <Navigate to="/admin/users" />
+                <Navigate to="/account/profile" />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/users"
+            path="/profile"
             element={
               <ProtectedRoute>
-                <AdminUsers handleDrawerToggle={handleDrawerToggle} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/users/:id"
-            element={
-              <ProtectedRoute>
-                <AdminUser handleDrawerToggle={handleDrawerToggle} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/products"
-            element={
-              <ProtectedRoute>
-                <AdminProducts
-                  handleDrawerToggle={handleDrawerToggle}
-                  profile={typeof profile === 'object' ? profile : null}
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/products/:id"
-            element={
-              <ProtectedRoute>
-                <AdminProduct handleDrawerToggle={handleDrawerToggle} />
+                <Profile handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
           />
@@ -222,7 +188,12 @@ export const Admin = () => {
             path="/orders"
             element={
               <ProtectedRoute>
-                <AdminOrders handleDrawerToggle={handleDrawerToggle} />
+                <CustomerOrders
+                  handleDrawerToggle={handleDrawerToggle}
+                  status={queryParams.get('status')}
+                  week={queryParams.get('week')}
+                  delivery={queryParams.get('delivery')}
+                />
               </ProtectedRoute>
             }
           />
@@ -230,7 +201,7 @@ export const Admin = () => {
             path="/orders/:id"
             element={
               <ProtectedRoute>
-                <AdminOrder handleDrawerToggle={handleDrawerToggle} />
+                <CustomerOrder handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
           />

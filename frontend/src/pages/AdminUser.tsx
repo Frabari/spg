@@ -49,7 +49,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
       if (!values.password?.length) {
         delete values.password;
       }
-      upsertUser(values)
+      return upsertUser(values)
         .then(newUser => {
           const creating = id == null;
           toast.success(`User ${creating ? 'created' : 'updated'}`);

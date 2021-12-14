@@ -29,7 +29,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
   const [farmers, setFarmers] = useState(null);
-  const { product, upsertProduct } = useProduct(id);
+  const { product, upsertProduct } = useProduct(id, true);
   const { categories } = useCategories();
   const { users } = useUsers();
   const navigate = useNavigate();
@@ -43,13 +43,13 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
       baseUnit: null,
     } as Partial<Product>,
     onSubmit: (values: Partial<Product>, { setErrors }) => {
-      upsertProduct(values)
+      return upsertProduct(values)
         .then(newProduct => {
           const creating = id == null;
           toast.success(`Product ${creating ? 'created' : 'updated'}`);
           if (creating) {
             navigate(`/admin/products/${(newProduct as Product).id}`);
-          }
+          } else navigate('/admin/products');
         })
         .catch(e => {
           setErrors(e.data?.constraints);
@@ -289,9 +289,11 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                     select={(profile as User)?.role !== Role.FARMER}
                     id="farmer"
                     value={
-                      form.values?.farmer?.name +
-                      ' ' +
-                      form.values?.farmer?.surname
+                      form.values?.farmer
+                        ? form.values?.farmer?.name +
+                          ' ' +
+                          form.values?.farmer?.surname
+                        : ''
                     }
                     onChange={e => handleChangeFarmer(e.target.value)}
                   >
