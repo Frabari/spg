@@ -153,7 +153,7 @@ function NavBar(props: any) {
         ...product,
         type: 'Products',
       }));
-    setList([...p, ...u]);
+    setList([...u, ...p]);
   }, [products, users]);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
