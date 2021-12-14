@@ -4,13 +4,14 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { SchedulerMetadataAccessor } from '@nestjs/schedule/dist/schedule-metadata.accessor';
 import { ScheduleExplorer } from '@nestjs/schedule/dist/schedule.explorer';
 import { SchedulerOrchestrator } from '@nestjs/schedule/dist/scheduler.orchestrator';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { OrdersModule } from '../orders/orders.module';
 import { ProductsModule } from '../products/products.module';
 import { SchedulingController } from './scheduling.controller';
 import { SchedulingService } from './scheduling.service';
 
 @Module({
-  imports: [ProductsModule, OrdersModule, DiscoveryModule],
+  imports: [ProductsModule, OrdersModule, DiscoveryModule, NotificationsModule],
   controllers: [SchedulingController],
   providers: [
     SchedulingService,
