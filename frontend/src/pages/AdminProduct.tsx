@@ -33,7 +33,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const [farmers, setFarmers] = useState(null);
   const { product, upsertProduct } = useProduct(id, true);
   const { categories } = useCategories();
-  const [entries, setEntries] = useProductOrderEntries(product?.id);
+  const { entries, setEntries } = useProductOrderEntries(product?.id);
   const { users } = useUsers();
   const navigate = useNavigate();
   const { profile } = useProfile();
