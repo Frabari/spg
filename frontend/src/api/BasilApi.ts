@@ -100,6 +100,13 @@ export enum Role {
   MANAGER = 'manager',
 }
 
+export const ADMINS = [
+  Role.MANAGER,
+  Role.WAREHOUSE_MANAGER,
+  Role.WAREHOUSE_WORKER,
+  Role.EMPLOYEE,
+];
+
 export enum NotificationType {
   INFO = 'info',
   SUCCESS = 'success',

@@ -1,3 +1,4 @@
+import { ADMINS } from 'backend/dist/src/features/users/roles.enum';
 import { addDays } from 'date-fns';
 import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
@@ -47,6 +48,7 @@ import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
 import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
+import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
 import { DeliveryOption } from './Checkout';
 
@@ -117,8 +119,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const [check, setCheck] = useState(true);
   const id = idParam === 'new' ? null : +idParam;
   const { order, upsertOrder, pending } = useOrder(id);
-  const { users } = useUsers();
   const [user, setUser] = useState<User>();
+  const { users } = useUsers();
+  const { profile } = useProfile();
   const [date, setDate] = useState<Date | null>(new Date());
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
@@ -150,15 +153,19 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   });
 
   useEffect(() => {
-    if (form.values.user.id !== null) {
-      getUser(form.values.user.id).then(u => {
-        setUser(u);
-      });
+    if (
+      form.values.user.id !== null &&
+      ADMINS.includes((profile as User).role)
+    ) {
+      getUser(form.values.user.id).then(u => setUser(u));
     }
   }, [form.values.user.id]);
 
   useEffect(() => {
-    if (deliveryOption === 'delivery') {
+    if (
+      deliveryOption === 'delivery' &&
+      ADMINS.includes((profile as User).role)
+    ) {
       getUser(form.values.user.id).then(u => {
         form.setFieldValue('deliveryLocation', u.address);
       });

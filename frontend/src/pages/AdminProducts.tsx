@@ -23,7 +23,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import { Product, Role, User } from '../api/BasilApi';
+import { getProductOrderEntries, Product, Role, User } from '../api/BasilApi';
 import { OrderEntryStatus } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
@@ -139,6 +139,19 @@ export const AdminProducts = (props: {
   }>({ by: null, dir: 'asc' });
 
   useEffect(() => {
+    if (products.length > 0) {
+      products.forEach(p =>
+        getProductOrderEntries(p.id)
+          // @ts-ignore
+          .then(e => (p.productEntryStatus = e.entries[0].status))
+          .catch(e => {
+            //noop
+          }),
+      );
+    }
+  }, [products]);
+
+  useEffect(() => {
     if (products?.length) {
       const { by, dir } = sorting;
       if (by != null) {
@@ -166,7 +179,7 @@ export const AdminProducts = (props: {
   };
 
   const Actions = ({ productId }: { productId: number }) => {
-    const {entries, setEntries} = useProductOrderEntries(productId);
+    const { entries, setEntries } = useProductOrderEntries(productId);
 
     return (
       entries.length > 0 && (
@@ -252,6 +265,13 @@ export const AdminProducts = (props: {
       setFarmers(users.filter(u => u.role === Role.FARMER));
     }
   }, [users]);
+
+  const handleStatusSearchParams = () => {
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      status: OrderEntryStatus.CONFIRMED,
+    });
+  };
 
   const handleCategorySearchParams = (category: string) => {
     setSearchParams({
@@ -354,6 +374,31 @@ export const AdminProducts = (props: {
         </Button>
       </AdminAppBar>
       <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
+        <Grid container direction="column">
+          <Grid item>
+            <Button
+              sx={{ mb: '16px' }}
+              onClick={() => handleStatusSearchParams()}
+            >
+              Show products to be delivered
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              sx={{ mb: '16px' }}
+              color="error"
+              onClick={() =>
+                setSearchParams({
+                  category: 'all',
+                  filter: 'all',
+                  status: 'all',
+                })
+              }
+            >
+              Reset
+            </Button>
+          </Grid>
+        </Grid>
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}
@@ -490,6 +535,13 @@ export const AdminProducts = (props: {
                     searchParams.get('farmer') === 'all' ||
                     p.farmer.name + ' ' + p.farmer.surname ===
                       searchParams.get('farmer'),
+                )
+                ?.filter(
+                  p =>
+                    !searchParams.get('status') ||
+                    searchParams.get('status') === 'all' ||
+                    //  @ts-ignore
+                    p.productEntryStatus === searchParams.get('status'),
                 )
                 ?.map(product => (
                   <TableRow

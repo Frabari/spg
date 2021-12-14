@@ -208,6 +208,15 @@ export default function ProductInfo(props: any) {
                       >
                         /unit
                       </Typography>
+                      <Typography
+                        ml="16px"
+                        variant="subtitle1"
+                        color="text.secondary"
+                        display="inline"
+                        fontWeight="bold"
+                      >
+                        ({product.baseUnit})
+                      </Typography>
                     </Grid>
                     <Grid item display={!profile && 'none'}>
                       <Grid
