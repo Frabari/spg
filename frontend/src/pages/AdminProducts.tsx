@@ -166,7 +166,7 @@ export const AdminProducts = (props: {
   };
 
   const Actions = ({ productId }: { productId: number }) => {
-    const [entries, setEntries] = useProductOrderEntries(productId);
+    const {entries, setEntries} = useProductOrderEntries(productId);
 
     return (
       entries.length > 0 && (

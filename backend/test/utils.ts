@@ -26,7 +26,6 @@ export const checkKeys = <T>(
 
 export const mockNotificationsService = {
   sendNotification() {
-    console.log('Mock');
     return Promise.resolve();
   },
 };
