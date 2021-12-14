@@ -36,14 +36,7 @@ import {
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
-import {
-  getUser,
-  Order,
-  OrderEntry,
-  OrderStatus,
-  Product,
-  User,
-} from '../api/BasilApi';
+import { Order, OrderEntry, OrderStatus, Product, User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
 import { orderStatuses } from '../constants';
@@ -206,18 +199,8 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
   useEffect(() => {}, [order]);
 
   useEffect(() => {
-    if (form.values.user.id !== null) {
-      getUser(form.values.user.id).then(u => {
-        setUser(u);
-      });
-    }
-  }, [form.values.user.id]);
-
-  useEffect(() => {
     if (deliveryOption === 'delivery') {
-      getUser(form.values.user.id).then(u => {
-        form.setFieldValue('deliveryLocation', u.address);
-      });
+      form.setFieldValue('deliveryLocation', order.deliveryLocation);
     }
   }, [deliveryOption]);
 

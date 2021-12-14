@@ -33,7 +33,7 @@ export enum OrderStatus {
   CANCELED = 'canceled',
 }
 
-export enum OrderEntryStatus{
+export enum OrderEntryStatus {
   DRAFT = 'draft',
   CONFIRMED = 'confirmed',
   DELIVERED = 'delivered',
@@ -99,6 +99,13 @@ export enum Role {
   WAREHOUSE_MANAGER = 'warehouse_manager',
   MANAGER = 'manager',
 }
+
+export const ADMINS = [
+  Role.MANAGER,
+  Role.WAREHOUSE_MANAGER,
+  Role.WAREHOUSE_WORKER,
+  Role.EMPLOYEE,
+];
 
 export enum NotificationType {
   INFO = 'info',
