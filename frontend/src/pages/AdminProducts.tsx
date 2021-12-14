@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import moment from 'moment';
 import { Add } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -128,8 +128,6 @@ const Description = styled(Box)({
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
   profile: User;
-  category: string;
-  farmers: string;
 }) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -223,9 +221,10 @@ export const AdminProducts = (props: {
       ),
     );
   };
-
-  const [sortOption, setSortOption] = useState(props.category);
-  const [farmerFilter, setFarmerFilter] = useState(props.farmers);
+  const [searchParams, setSearchParams] = useSearchParams({
+    category: 'all',
+    farmer: 'all',
+  });
   const [farmers, setFarmers] = useState(null);
   const { users } = useUsers();
   const sort = useCategories();
@@ -236,28 +235,25 @@ export const AdminProducts = (props: {
     }
   }, [users]);
 
-  const handleFilterByCategory = (s: string) => {
-    setSortOption(s);
-    if (s === 'all') {
-      navigate(`/admin/products`);
-      setSortedProducts(products);
-    } else {
-      navigate(`/admin/products?category=${s}`);
-      setSortedProducts(products.filter(p => p.category.slug === s));
-    }
+  const handleCategorySearchParams = (category: string) => {
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      category: category,
+    });
   };
 
-  const handleFilterByFarmer = (f: string) => {
-    const farmer = farmers.find((fa: User) => fa.email === f);
-    setFarmerFilter(f);
+  const handleFarmerSearchParams = (f: string) => {
     if (f === 'all') {
-      navigate(`/admin/products`);
-      setSortedProducts(products);
+      setSearchParams({
+        ...Object.fromEntries(searchParams.entries()),
+        farmer: f,
+      });
     } else {
-      navigate(
-        `/admin/products?farmer=${farmer.name.toLowerCase()}_${farmer.surname.toLowerCase()}`,
-      );
-      setSortedProducts(products.filter(p => p.farmer.email === f));
+      const farmer = farmers.find((fa: User) => fa.email === f);
+      setSearchParams({
+        ...Object.fromEntries(searchParams.entries()),
+        farmer: farmer.name + ' ' + farmer.surname,
+      });
     }
   };
 
@@ -340,12 +336,12 @@ export const AdminProducts = (props: {
                             <TextField
                               id="outlined-select-farmer"
                               select
-                              value={farmerFilter}
+                              value={searchParams.get('farmer')}
                               label="Filter by farmer"
                               size="small"
                               sx={{ width: '175px' }}
                               onChange={e =>
-                                handleFilterByFarmer(e.target.value)
+                                handleFarmerSearchParams(e.target.value)
                               }
                             >
                               <MenuItem key="all" value="all">
@@ -393,12 +389,12 @@ export const AdminProducts = (props: {
                             <TextField
                               id="outlined-select-category"
                               select
-                              value={sortOption}
+                              value={searchParams.get('category')}
                               label="Filter by category"
                               size="small"
                               sx={{ width: '175px' }}
                               onChange={e =>
-                                handleFilterByCategory(e.target.value)
+                                handleCategorySearchParams(e.target.value)
                               }
                             >
                               <MenuItem key="all" value="all">
@@ -430,9 +426,16 @@ export const AdminProducts = (props: {
               {sortedProducts
                 ?.filter(
                   p =>
-                    !sortOption ||
-                    sortOption === 'all' ||
-                    p.category.slug === sortOption,
+                    !searchParams.get('category') ||
+                    searchParams.get('category') === 'all' ||
+                    p.category.slug === searchParams.get('category'),
+                )
+                ?.filter(
+                  p =>
+                    !searchParams.get('farmer') ||
+                    searchParams.get('farmer') === 'all' ||
+                    p.farmer.name + ' ' + p.farmer.surname ===
+                      searchParams.get('farmer'),
                 )
                 ?.map(product => (
                   <TableRow

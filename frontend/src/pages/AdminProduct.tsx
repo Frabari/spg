@@ -41,6 +41,8 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
       price: null,
       available: null,
       baseUnit: null,
+      farmer: null,
+      category: null,
     } as Partial<Product>,
     onSubmit: (values: Partial<Product>, { setErrors }) => {
       return upsertProduct(values)
@@ -277,11 +279,16 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                       </MenuItem>
                     ))}
                   </TextField>
-                  <FormHelperText>{form.errors?.sold}</FormHelperText>
+                  <FormHelperText>{form.errors?.category}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
-                <FormControl variant="outlined" fullWidth>
+                <FormControl
+                  required
+                  error={!!form.errors?.farmer}
+                  variant="outlined"
+                  fullWidth
+                >
                   <TextField
                     disabled={(profile as User)?.role === Role.FARMER}
                     name="farmer"

@@ -153,7 +153,7 @@ export class ProductsController implements CrudController<Product> {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...ADMINS, Role.FARMER)
   async getProductOrderEntries(@Param('id') id: number) {
-    return this.ordersService.getProductOrderEntries(id);
+    return this.ordersService.getOrderEntriesContainingProduct(id);
   }
 
   @Patch(':id/order-entries')

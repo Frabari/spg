@@ -82,7 +82,7 @@ export const Admin = () => {
   const drawer = (
     <div>
       <Toolbar>
-        <IconButton href="/" sx={{ p: 0 }}>
+        <IconButton href="/products" sx={{ p: 0 }}>
           <Logo />
         </IconButton>
         <Typography variant="h6" component="h1" marginLeft="10px">
@@ -187,10 +187,7 @@ export const Admin = () => {
             path="/users"
             element={
               <ProtectedRoute>
-                <AdminUsers
-                  handleDrawerToggle={handleDrawerToggle}
-                  role={queryParams.get('role')}
-                />
+                <AdminUsers handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
           />
@@ -209,8 +206,6 @@ export const Admin = () => {
                 <AdminProducts
                   handleDrawerToggle={handleDrawerToggle}
                   profile={typeof profile === 'object' ? profile : null}
-                  category={queryParams.get('category')}
-                  farmers={queryParams.get('farmer')}
                 />
               </ProtectedRoute>
             }
@@ -227,12 +222,7 @@ export const Admin = () => {
             path="/orders"
             element={
               <ProtectedRoute>
-                <AdminOrders
-                  handleDrawerToggle={handleDrawerToggle}
-                  status={queryParams.get('status')}
-                  week={queryParams.get('week')}
-                  delivery={queryParams.get('delivery')}
-                />
+                <AdminOrders handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
           />

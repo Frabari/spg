@@ -3,6 +3,8 @@ import { In, Repository } from 'typeorm';
 import {
   BadRequestException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -21,7 +23,11 @@ import { ADMINS } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderEntryDto } from './dtos/update-order-entry.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
-import { OrderEntry, OrderEntryStatus } from './entities/order-entry.entity';
+import {
+  OrderEntry,
+  OrderEntryId,
+  OrderEntryStatus,
+} from './entities/order-entry.entity';
 import { Order, OrderId, OrderStatus } from './entities/order.entity';
 
 const statuses = Object.values(OrderStatus);
@@ -33,6 +39,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     private readonly ordersRepository: Repository<Order>,
     @InjectRepository(OrderEntry)
     private readonly orderEntriesRepository: Repository<OrderEntry>,
+    @Inject(forwardRef(() => ProductsService))
     private readonly productsService: ProductsService,
     private readonly notificationsService: NotificationsService,
     private readonly transactionsService: TransactionsService,
@@ -202,6 +209,20 @@ export class OrdersService extends TypeOrmCrudService<Order> {
               entries: {
                 [ei]: {
                   quantity: `Add at least a product`,
+                },
+              },
+            },
+          });
+        }
+        if (
+          entry.status === OrderEntryStatus.DELIVERED &&
+          !ADMINS.includes(user.role)
+        ) {
+          throw new BadRequestException({
+            constraints: {
+              entries: {
+                [ei]: {
+                  status: `You cannot edit this field since you are not a manager `,
                 },
               },
             },
@@ -418,14 +439,32 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * Gets all the order entries containing a product
+   * Find entries that contain a certain product
    */
-  getProductOrderEntries(productId: ProductId) {
-    return this.orderEntriesRepository.find({
-      product: {
-        id: productId,
+  async getOrderEntriesContainingProduct(productId: ProductId) {
+    const entries = await this.orderEntriesRepository.find({
+      where: {
+        product: {
+          id: productId,
+        },
       },
+      relations: ['order'],
     });
+    return entries.sort((a, b) => +b.order.createdAt - +a.order.createdAt);
+  }
+
+  /**
+   * update entries with a given product's quantity
+   */
+  updateOrderEntry(id: OrderEntryId, dto: UpdateOrderEntryDto) {
+    return this.orderEntriesRepository.update(id, dto);
+  }
+
+  /**
+   * Deletes an order entry with a given id
+   */
+  deleteOrderEntry(id: OrderEntryId) {
+    return this.orderEntriesRepository.delete(id);
   }
 
   /**

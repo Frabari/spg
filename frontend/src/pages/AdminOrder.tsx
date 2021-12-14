@@ -355,7 +355,12 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                 );
               })}
             </List>
-            <Button variant="text" onClick={() => setSelectingProduct(true)}>
+            <Button
+              variant="text"
+              onClick={() => {
+                setSelectingProduct(true);
+              }}
+            >
               <Add />
               Add product
             </Button>

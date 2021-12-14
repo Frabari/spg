@@ -2,8 +2,10 @@ import { hash } from 'bcrypt';
 import { EntityManager } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { NotificationsService } from '../notifications/notifications.service';
 import { OrdersModule } from '../orders/orders.module';
 import { ProductsModule } from '../products/products.module';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -32,8 +34,10 @@ describe('UsersService', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
-
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
     service = module.get<UsersService>(UsersService);
   });
 

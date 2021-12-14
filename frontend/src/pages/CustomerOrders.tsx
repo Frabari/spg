@@ -118,20 +118,20 @@ export const CustomerOrders = (props: {
 
   const handleFilterByStatus = (s: string) => {
     navigate(
-      `/customer/orders?status=${s}&week=${weekFilter}&delivery=${deliveryFilter}`,
+      `/account/orders?status=${s}&week=${weekFilter}&delivery=${deliveryFilter}`,
     );
     setOrderStatus(s);
   };
 
   const handleFilterByWeek = (s: string) => {
     navigate(
-      `/customer/orders?week=${s}&status=${orderStatus}&delivery=${deliveryFilter}`,
+      `/account/orders?week=${s}&status=${orderStatus}&delivery=${deliveryFilter}`,
     );
     setWeekFilter(s);
   };
 
   const handleFilterByDelivery = (s: string) => {
-    navigate(`/customer/orders?delivery=${s}&week=${s}&status=${orderStatus}`);
+    navigate(`/account/orders?delivery=${s}&week=${s}&status=${orderStatus}`);
     setDeliveryFilter(s);
   };
 
