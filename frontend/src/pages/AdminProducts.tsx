@@ -7,6 +7,7 @@ import {
   Alert,
   Box,
   Button,
+  ButtonGroup,
   Grid,
   IconButton,
   InputBase,
@@ -23,13 +24,14 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import { Product, Role, User } from '../api/BasilApi';
+import {getProductOrderEntries, Product, Role, User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
-
+import {OrderEntryStatus} from '../api/BasilApi'
+import {useProductOrderEntries} from '../hooks/useProductOrderEntries'
 const { DateTime } = require('luxon');
 
 const columns: {
@@ -164,6 +166,47 @@ export const AdminProducts = (props: {
       by: by === byKey && dir === 'desc' ? null : byKey,
       dir: by == null ? 'asc' : dir === 'asc' ? 'desc' : 'asc',
     });
+  };
+
+  const Actions = ({productId}:{productId:number})=>{
+    const [entries, setEntries] = useProductOrderEntries(productId);
+
+
+      return (
+          <Grid item sx={{ p: 2, pt: 0 }}>
+            <ButtonGroup variant="outlined" aria-label="outlined button group">
+              { (profile as User).role === Role.MANAGER && <Button
+                  type="submit"
+                  variant="outlined"
+                  color = 'warning'
+                  sx={{ px: 3 }}
+                  onClick ={()=>{entries.forEach(e=> e.status = OrderEntryStatus.DRAFT); useProductOrderEntries(productId)}}
+              >
+                Draft
+              </Button>}
+              {
+                ((profile as User).role === Role.MANAGER || (profile as User).role === Role.FARMER) &&
+                <Button
+                type="submit"
+                variant="outlined"
+                color='error'
+                onClick ={()=>{entries.forEach(e=> e.status = OrderEntryStatus.CONFIRMED); useProductOrderEntries(productId)}}
+                sx={{ px: 3 }}
+            >
+              Confirm
+            </Button>}
+              {((profile as User).role === Role.MANAGER || (profile as User).role === Role.WAREHOUSE_MANAGER) &&
+              <Button
+                  type="submit"
+                  variant="outlined"
+                  sx={{ px: 3 }}
+                  onClick ={(ev)=>{ev.preventDefault(); ev.stopPropagation(); entries.forEach(e=> e.status = OrderEntryStatus.DELIVERED); useProductOrderEntries(productId)}}
+              >
+                Delivered
+              </Button>}
+            </ButtonGroup>
+          </Grid>
+      );
   };
 
   const handleChange = (value: any) => {
@@ -320,9 +363,8 @@ export const AdminProducts = (props: {
                         </Grid>
                       </Grid>
                     </TableCell>
-                  ) : (c.key === 'farmer' && props.profile.role === 'farmer') ||
-                    (c.key === 'description' &&
-                      props.profile.role === 'warehouse_manager') ? (
+                  ) :
+                    (c.key === 'description') ? (
                     <></>
                   ) : (
                     <TableCell
@@ -381,11 +423,7 @@ export const AdminProducts = (props: {
                 ) : (
                   <></>
                 )}
-                {props.profile.role === 'warehouse_manager' ? (
                   <TableCell>{'Actions'}</TableCell>
-                ) : (
-                  <></>
-                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -404,7 +442,7 @@ export const AdminProducts = (props: {
                       '&:last-child td, &:last-child th': { border: 0 },
                       cursor: 'pointer',
                     }}
-                    onClick={() => navigate(`/admin/products/${product.id}`)}
+                    onClick={(ev) => {ev.preventDefault(); navigate(`/admin/products/${product.id}`);}}
                   >
                     <TableCell sx={{ py: 0 }}>
                       <img
@@ -426,11 +464,6 @@ export const AdminProducts = (props: {
                     >
                       {product.name}
                     </TableCell>
-                    {!(props.profile.role === 'warehouse_manager') && (
-                      <TableCell sx={{ pr: 0 }}>
-                        <Description>{product.description}</Description>
-                      </TableCell>
-                    )}
                     <TableCell>{product.price}</TableCell>
                     <TableCell>{product.category.name}</TableCell>
                     {props.profile.role === 'farmer' ? (
@@ -451,10 +484,9 @@ export const AdminProducts = (props: {
                         <TableCell>
                           {product.farmer.name + ' ' + product.farmer.surname}
                         </TableCell>
-
-                        {props.profile.role === 'warehouse_manager' && (
-                          <TableCell>azioni da implementare</TableCell>
-                        )}
+                          <TableCell>
+                            {<Actions productId={product.id}/>}
+                          </TableCell>
                       </>
                     )}
                   </TableRow>
