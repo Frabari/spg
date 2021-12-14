@@ -3,7 +3,7 @@ import { getProducts, Product } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { usePendingState } from './usePendingState';
 
-export const useProducts = (loadAllStock = false) => {
+export const useProducts = (stock = false) => {
   const { setPending: setGlobalPending } = usePendingState();
   const [pending, setPending] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -16,7 +16,7 @@ export const useProducts = (loadAllStock = false) => {
   const loadProducts = useRef<() => void>();
   loadProducts.current = () => {
     setPending(true);
-    getProducts(loadAllStock)
+    getProducts(stock)
       .then(setProducts)
       .catch(e => {
         setError(e);
@@ -26,12 +26,12 @@ export const useProducts = (loadAllStock = false) => {
 
   useEffect(() => {
     setPending(true);
-    getProducts(loadAllStock)
+    getProducts(stock)
       .then(setProducts)
       .catch(e => {
         setError(e);
       })
       .finally(() => setPending(false));
-  }, [loadAllStock, setPending]);
+  }, [stock, setPending]);
   return { products, loadProducts: loadProducts.current, pending, error };
 };

@@ -24,7 +24,7 @@ import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
-import { ADMINS, Role } from '../users/roles.enum';
+import { ADMINS, Role, STAFF } from '../users/roles.enum';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -69,6 +69,7 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
+  @Roles(...STAFF, Role.FARMER)
   getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
     crudRequest.parsed.fields = ['id', 'status', 'createdAt', 'deliverAt'];
     return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
@@ -113,6 +114,7 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
+  @Roles(...STAFF, Role.FARMER)
   getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
