@@ -4,8 +4,10 @@ import { EntityManager } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { NotificationsService } from '../notifications/notifications.service';
 import { Product } from '../products/entities/product.entity';
 import { ProductsModule } from '../products/products.module';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -48,7 +50,10 @@ describe('OrdersService', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
 
     service = module.get<OrdersService>(OrdersService);
   });

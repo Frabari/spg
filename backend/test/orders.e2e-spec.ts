@@ -2,13 +2,13 @@ import { hash } from 'bcrypt';
 import { DateTime, Settings } from 'luxon';
 import * as request from 'supertest';
 import { EntityManager } from 'typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
 import { NotificationsModule } from '../src/features/notifications/notifications.module';
+import { NotificationsService } from '../src/features/notifications/notifications.service';
 import {
   Order,
   OrderStatus,
@@ -20,6 +20,7 @@ import { TransactionsModule } from '../src/features/transactions/transactions.mo
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
+import { mockNotificationsService } from './utils';
 
 const salesDay = DateTime.now()
   .set({
@@ -49,15 +50,10 @@ describe('OrdersController (e2e)', () => {
         OrdersModule,
         NotificationsModule,
       ],
-      providers: [
-        {
-          provide: MailerService,
-          useValue: {
-            sendMail: () => Promise.resolve(),
-          },
-        },
-      ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe(validation));
     await app.init();

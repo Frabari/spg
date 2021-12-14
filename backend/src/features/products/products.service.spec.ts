@@ -4,8 +4,9 @@ import { EntityManager, Not } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { NotificationsService } from '../notifications/notifications.service';
 import { Order, OrderStatus } from '../orders/entities/order.entity';
 import { OrdersModule } from '../orders/orders.module';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -37,10 +38,11 @@ describe('ProductsService', () => {
         CategoriesModule,
         TransactionsModule,
         OrdersModule,
-        NotificationsModule,
       ],
-    }).compile();
-
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
     service = module.get<ProductsService>(ProductsService);
   });
 

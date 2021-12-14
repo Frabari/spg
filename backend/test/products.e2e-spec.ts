@@ -8,6 +8,7 @@ import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
 import { Category } from '../src/features/categories/entities/category.entity';
 import { NotificationsModule } from '../src/features/notifications/notifications.module';
+import { NotificationsService } from '../src/features/notifications/notifications.service';
 import { OrdersModule } from '../src/features/orders/orders.module';
 import { Product } from '../src/features/products/entities/product.entity';
 import { ProductsModule } from '../src/features/products/products.module';
@@ -15,7 +16,7 @@ import { TransactionsModule } from '../src/features/transactions/transactions.mo
 import { User } from '../src/features/users/entities/user.entity';
 import { Role } from '../src/features/users/roles.enum';
 import { UsersModule } from '../src/features/users/users.module';
-import { checkKeys } from './utils';
+import { checkKeys, mockNotificationsService } from './utils';
 
 describe('ProductsController (e2e)', () => {
   let app: INestApplication;
@@ -37,7 +38,10 @@ describe('ProductsController (e2e)', () => {
         OrdersModule,
         NotificationsModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(NotificationsService)
+      .useValue(mockNotificationsService)
+      .compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe(validation));
     await app.init();
