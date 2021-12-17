@@ -54,31 +54,30 @@ sections:
   - Coverage (if available)--> 71.5% 
 - E2E testing:
   - Total hours estimated --> 10
-  - Total hours spent -->15
+  - Total hours spent --> 15
 - Code review
   - Total hours estimated --> 10
-  - Total hours spent --> 15
+  - Total hours spent --> 17
 - Technical Debt management:
   - Total hours estimated--> 10
   - Total hours spent--> 12
   - Hours estimated for remediation by SonarQube--> 0
   - Hours estimated for remediation by SonarQube only for the selected and planned  issues--> 0
   - Hours spent on remediation--> 0
-  - debt ratio (as reported by SonarQube under "Measures-Maintainability") →  0.2%
+  - debt ratio (as reported by SonarQube under "Measures-Maintainability") →  0.3%
   - rating for each quality characteristic reported in SonarQube under "Measures" (namely reliability, security, maintainability ) → AAA
 
 ## ASSESSMENT
 
 - What caused your errors in estimation (if any)?
   Some tasks required more time than we estimated due to some difficulties found during their development.
-  For this reason we were not able to complete all the stories we planned and the spent time is less than the estimated one.
  
 - What lessons did you learn (both positive and negative) in this sprint?
   We must prepare the presentation in a better way.
 
 - Which improvement goals set in the previous retrospective were you able to achieve?
   We improved the management of virtual clock, but this lead to a worst usability flow for testing and presentation purposes.
-  The validations needs to be improved but many of them are done.
+  The validations needs to be improved but many of them are done and work in a correct way.
 
 - Which ones were you not able to achieve? Why?
   
