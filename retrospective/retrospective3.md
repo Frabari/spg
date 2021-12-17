@@ -50,17 +50,17 @@ sections:
 - Unit Testing:
   - Total hours estimated --> 10
   - Total hours spent --> 10
-  - Nr of automated unit test cases → 15
+  - Nr of automated unit test cases → 6
   - Coverage (if available)--> 71.5% 
 - E2E testing:
   - Total hours estimated --> 10
-  - Total hours spent --> 15
+  - Total hours spent --> 6
 - Code review
   - Total hours estimated --> 10
   - Total hours spent --> 17
 - Technical Debt management:
   - Total hours estimated--> 10
-  - Total hours spent--> 12
+  - Total hours spent--> 7
   - Hours estimated for remediation by SonarQube--> 0
   - Hours estimated for remediation by SonarQube only for the selected and planned  issues--> 0
   - Hours spent on remediation--> 0
@@ -73,10 +73,10 @@ sections:
   Some tasks required more time than we estimated due to some difficulties found during their development.
  
 - What lessons did you learn (both positive and negative) in this sprint?
-  We must prepare the presentation in a better way.
+  We must prepare the data for the presentation in a better way.
 
 - Which improvement goals set in the previous retrospective were you able to achieve?
-  We improved the management of virtual clock, but this lead to a worst usability flow for testing and presentation purposes.
+  We improved the management of virtual clock, but this led to a worst usability flow for testing and presentation purposes.
   The validations needs to be improved but many of them are done and work in a correct way.
 
 - Which ones were you not able to achieve? Why?
@@ -89,5 +89,5 @@ sections:
 > Propose one or two
 
 - One thing you are proud of as a Team!!
-  The team's harmony.
+  We are proud of all good feedback that we received during the demos.
   
