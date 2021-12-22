@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 import {
+  Alert,
   Box,
   Card,
   CardActions,
@@ -13,6 +15,8 @@ import {
   IconButton,
   MenuItem,
   TextField,
+  Collapse,
+  Stack,
   Typography,
 } from '@mui/material';
 import { Product, User } from '../api/BasilApi';
@@ -47,16 +51,16 @@ function ProductCard({
     }
   };
 
-  const handleSelect = (product: Product) => {
-    const from = date.set({
-      weekday: 6,
-      hour: 9,
-      minute: 0,
-      second: 0,
-      millisecond: 0,
-    });
-    const to = from.plus({ hour: 38 });
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
 
+  const handleSelect = (product: Product) => {
     if (date < from || date > to) {
       toast.error(
         `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
@@ -112,13 +116,17 @@ function ProductCard({
             € {product.price}/unit
           </Typography>
         </CardContent>
-        <CardActions sx={{ display: !profile && 'none' }}>
-          <Box marginLeft="auto" padding="0.5rem">
-            <IconButton onClick={() => handleSelect(product)}>
-              <AddIcon />
-            </IconButton>
-          </Box>
-        </CardActions>
+        {date >= from && date <= to ? (
+          <CardActions sx={{ display: !profile && 'none' }}>
+            <Box marginLeft="auto" padding="0.5rem">
+              <IconButton onClick={() => handleSelect(product)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+          </CardActions>
+        ) : (
+          ''
+        )}
       </Card>
     </Grid>
   );
@@ -144,6 +152,7 @@ export default function ProductsGrid({
   setBasketListener?: (bol: boolean) => void;
 }) {
   const { products, loadProducts } = useProducts();
+  const [date] = useVirtualClock();
 
   const [sortOption, setSortOption] = useState('');
   const sort = [
@@ -152,6 +161,15 @@ export default function ProductsGrid({
     'Ascending name',
     'Descending name',
   ];
+
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
 
   useEffect(() => {
     if (basketListener) {
@@ -179,9 +197,42 @@ export default function ProductsGrid({
     }
   };
 
+  const [open, setOpen] = useState(true);
+
   return (
     <>
       <Grid container direction="row">
+        {date < from || date > to ? (
+          <Stack sx={{ width: '100%' }} spacing={2}>
+            <Collapse in={open}>
+              <Alert
+                severity="info"
+                action={
+                  <IconButton
+                    aria-label="close"
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      setOpen(false);
+                    }}
+                  >
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                }
+                sx={{ mb: 2 }}
+              >
+                {' Products can be purchased from '}
+                {'Saturday'} {from.day}
+                {' (9:00 am)'}
+                {' to '}
+                {'Sunday'} {to.day}
+                {' (11:00 pm)'}
+              </Alert>
+            </Collapse>
+          </Stack>
+        ) : (
+          ''
+        )}
         <Grid item xs={12} sm={11}>
           {farmer && (
             <Chip
@@ -215,6 +266,7 @@ export default function ProductsGrid({
           </TextField>
         </Grid>
       </Grid>
+
       <Grid
         container
         direction="row"

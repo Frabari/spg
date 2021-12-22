@@ -199,6 +199,15 @@ function NavBar(props: any) {
     }
   };
 
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
+
   return (
     <>
       <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
@@ -500,16 +509,20 @@ function NavBar(props: any) {
                       )}
                     </List>
                   </Menu>
-                  <IconButton
-                    sx={{ display: !profile && 'none' }}
-                    size="large"
-                    aria-label="show cart"
-                    onClick={() => setShowBasket(true)}
-                  >
-                    <Badge badgeContent={basket?.entries?.length}>
-                      <ShoppingCart />
-                    </Badge>
-                  </IconButton>
+                  {date >= from && date <= to ? (
+                    <IconButton
+                      sx={{ display: !profile && 'none' }}
+                      size="large"
+                      aria-label="show cart"
+                      onClick={() => setShowBasket(true)}
+                    >
+                      <Badge badgeContent={basket?.entries?.length}>
+                        <ShoppingCart />
+                      </Badge>
+                    </IconButton>
+                  ) : (
+                    ''
+                  )}
                   <IconButton
                     sx={{ display: !profile && 'none' }}
                     size="large"
