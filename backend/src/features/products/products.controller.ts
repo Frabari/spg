@@ -82,15 +82,15 @@ export class ProductsController implements CrudController<Product> {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...ADMINS, Role.FARMER)
   async getManyStockProducts(@Request() req) {
-    const user = req.user as User;
-    return this.service.getAllStockProducts(user);
+    //const user = req.user as User;
+    return this.service.getAllStockProducts(req.user as User);
   }
 
   @Get('stock/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...ADMINS, Role.FARMER)
-  async getOneStockProduct(@Param('id') id: number) {
-    return this.service.getSingleStockProduct(id);
+  async getOneStockProduct(@Request() req, @Param('id') id: number) {
+    return this.service.getSingleStockProduct(req.user as User, id);
   }
 
   @Override()
