@@ -89,6 +89,25 @@ describe('TransactionsService', () => {
       expect(updatedUser.balance).toEqual(10);
     });
   });
+  describe('createTransaction', () => {
+    it('should create a transaction', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+      });
+      const transaction = await service.createTransaction({
+        user,
+        amount: 10,
+      });
+      const transactionSaved = await service.findOne(transaction.id);
+      expect(transactionSaved.id).toEqual(transaction.id);
+    });
+  });
 
   afterEach(() => {
     return module.close();
