@@ -174,4 +174,12 @@ export class ProductsService extends TypeOrmCrudService<Product> {
 
     return dto;
   }
+
+  getAllStockProducts() {
+    return this.productsRepository.find({ relations: ['farmer'] });
+  }
+
+  getSingleStockProduct(id) {
+    return this.productsRepository.findOne(id, { relations: ['farmer'] });
+  }
 }
