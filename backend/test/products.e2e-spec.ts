@@ -48,7 +48,7 @@ describe('ProductsController (e2e)', () => {
   });
 
   describe('GET /products', () => {
-    it('should work if the user is not authenticated', () => {
+    it('should not work if the user is not authenticated', () => {
       return request(app.getHttpServer()).get('/products').expect(200);
     });
 
@@ -117,14 +117,14 @@ describe('ProductsController (e2e)', () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
-      await entityManager.insert(User, {
+      await entityManager.save(User, {
         email,
         password: await hash(password, 10),
         name: 'John',
         surname: 'Doe',
         role: Role.MANAGER,
       });
-      await entityManager.insert(Product, {
+      await entityManager.save(Product, {
         name: 'Name',
         description: 'Description',
         public: true,
@@ -153,7 +153,6 @@ describe('ProductsController (e2e)', () => {
               'baseUnit',
               'available',
               'reserved',
-              'category',
               'farmer',
               'image',
             ],
@@ -169,14 +168,14 @@ describe('ProductsController (e2e)', () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
-      await entityManager.insert(User, {
+      await entityManager.save(User, {
         email,
         password: await hash(password, 10),
         name: 'John',
         surname: 'Doe',
         role: Role.MANAGER,
       });
-      await entityManager.insert(Product, {
+      await entityManager.save(Product, {
         name: 'Name',
         description: 'Description',
         public: true,
@@ -184,7 +183,7 @@ describe('ProductsController (e2e)', () => {
         available: 5,
         baseUnit: '1Kg',
       });
-      await entityManager.insert(Product, {
+      await entityManager.save(Product, {
         name: 'Name2',
         description: 'Description2',
         public: false,
@@ -192,7 +191,7 @@ describe('ProductsController (e2e)', () => {
         available: 5,
         baseUnit: '1Kg',
       });
-      await entityManager.insert(Product, {
+      await entityManager.save(Product, {
         name: 'Name2',
         description: 'Description2',
         public: true,
@@ -206,7 +205,7 @@ describe('ProductsController (e2e)', () => {
         .send({ username: email, password });
       const authToken = response.body.token;
       return request(server)
-        .get('/products?stock')
+        .get('/products/stock')
         .auth(authToken, { type: 'bearer' })
         .expect(200)
         .expect(response => {
@@ -221,7 +220,6 @@ describe('ProductsController (e2e)', () => {
               'baseUnit',
               'available',
               'reserved',
-              'category',
               'farmer',
               'image',
             ],
