@@ -106,6 +106,21 @@ describe('ProductsService', () => {
       } as User);
       expect(result.reserved).toBeUndefined();
     });
+
+    it('should fail if the role is different from farmer and product does not contains farmer', async () => {
+      const dto = {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      } as CreateProductDto;
+      return expect(
+        service.checkProduct(dto, {
+          id: 1,
+          role: Role.MANAGER,
+        } as User),
+      ).rejects.toThrowError(BadRequestException);
+    });
   });
 
   describe('checkProductsUpdate', () => {
@@ -239,6 +254,45 @@ describe('ProductsService', () => {
       expect(updatedProduct.reserved).toBeUndefined();
     });
 
+    it('should fail if we edit available field in wrong time interval', async () => {
+      const salesDay = DateTime.now()
+        .set({
+          weekday: 7,
+          hour: 8,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
+
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 5,
+        available: 10,
+        farmer: user,
+      });
+      return expect(
+        service.checkProductsUpdate(
+          product.id,
+          {
+            ...product,
+            available: 5,
+          },
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
     it('should modify available field', async () => {
       const salesDay = DateTime.now()
         .set({
@@ -315,6 +369,45 @@ describe('ProductsService', () => {
           user,
         ),
       ).toMatchObject({ reserved: 20 });
+    });
+
+    it('should fail if we edit reserved field in the wrong time interval', async () => {
+      const salesDay = DateTime.now()
+        .set({
+          weekday: 2,
+          hour: 7,
+        })
+        .toMillis();
+      Settings.now = () => salesDay;
+
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.MANAGER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 5,
+        reserved: 5,
+        farmer: user,
+      });
+      return expect(
+        service.checkProductsUpdate(
+          product.id,
+          {
+            ...product,
+            reserved: 20,
+          },
+          user,
+        ),
+      ).rejects.toThrowError(BadRequestException);
     });
 
     it('Should delete and update the entries of the last orders created', async () => {
@@ -400,6 +493,153 @@ describe('ProductsService', () => {
         relations: ['entries'],
       });
       expect(finalOrder2.entries.length).toEqual(0);
+    });
+    describe('getAllStockProducts', () => {
+      it('Should retrieve all the products present in stock', async () => {
+        const password = 'testpwd';
+        const entityManager = module.get(EntityManager);
+        const user1 = await entityManager.save(User, {
+          email: 'test@example.com',
+          password: await hash(password, 10),
+          name: 'John',
+          surname: 'Doe',
+          role: Role.MANAGER,
+        });
+        const user2 = await entityManager.save(User, {
+          email: 'test@example1.com',
+          password: await hash(password, 10),
+          name: 'Jonh',
+          surname: 'Cena',
+          role: Role.FARMER,
+        });
+        const product1 = await entityManager.save(Product, {
+          name: 'onions',
+          description: 'very good onions',
+          baseUnit: '1Kg',
+          price: 10,
+          available: 15,
+          reserved: 15,
+          farmer: user2,
+        });
+        const product2 = await entityManager.save(Product, {
+          name: 'peppers',
+          description: 'very good chili peppers',
+          baseUnit: '1Kg',
+          price: 10,
+          available: 15,
+          reserved: 15,
+          farmer: user2,
+        });
+        const products = await service.getAllStockProducts(user1);
+        expect(products.length).toEqual(2);
+      });
+
+      it('Should retrieve only the products that belongs to a specific farmer', async () => {
+        const password = 'testpwd';
+        const entityManager = module.get(EntityManager);
+        const user1 = await entityManager.save(User, {
+          email: 'test@example.com',
+          password: await hash(password, 10),
+          name: 'John',
+          surname: 'Doe',
+          role: Role.FARMER,
+        });
+        const user2 = await entityManager.save(User, {
+          email: 'test@example1.com',
+          password: await hash(password, 10),
+          name: 'Jonh',
+          surname: 'Cena',
+          role: Role.FARMER,
+        });
+        const product1 = await entityManager.save(Product, {
+          name: 'onions',
+          description: 'very good onions',
+          baseUnit: '1Kg',
+          price: 10,
+          available: 15,
+          reserved: 15,
+          farmer: user1,
+        });
+        const product2 = await entityManager.save(Product, {
+          name: 'peppers',
+          description: 'very good chili peppers',
+          baseUnit: '1Kg',
+          price: 10,
+          available: 15,
+          reserved: 15,
+          farmer: user2,
+        });
+        const products = await service.getAllStockProducts(user1);
+        expect(products[0].farmer.id).toEqual(user1.id);
+      });
+    });
+    describe('getSingleStockProduct', () => {
+      it('Should retrieve only the selected product', async () => {
+        const password = 'testpwd';
+        const entityManager = module.get(EntityManager);
+        const user1 = await entityManager.save(User, {
+          email: 'test@example.com',
+          password: await hash(password, 10),
+          name: 'John',
+          surname: 'Doe',
+          role: Role.FARMER,
+        });
+        const user2 = await entityManager.save(User, {
+          email: 'test@example1.com',
+          password: await hash(password, 10),
+          name: 'Jonh',
+          surname: 'Cena',
+          role: Role.MANAGER,
+        });
+        const product = await entityManager.save(Product, {
+          name: 'onions',
+          description: 'very good onions',
+          baseUnit: '1Kg',
+          price: 10,
+          available: 15,
+          reserved: 15,
+          farmer: user1,
+        });
+
+        const productSelected = await service.getSingleStockProduct(
+          user2,
+          product.id,
+        );
+        expect(productSelected.id).toEqual(product.id);
+      });
+
+      it('Should not retrieve the product created by another farmer', async () => {
+        const password = 'testpwd';
+        const entityManager = module.get(EntityManager);
+        const user1 = await entityManager.save(User, {
+          email: 'test@example.com',
+          password: await hash(password, 10),
+          name: 'John',
+          surname: 'Doe',
+          role: Role.FARMER,
+        });
+        const user2 = await entityManager.save(User, {
+          email: 'test1@example.com',
+          password: await hash(password, 10),
+          name: 'John',
+          surname: 'Doe',
+          role: Role.FARMER,
+        });
+
+        const product = await entityManager.save(Product, {
+          name: 'onions',
+          description: 'very good onions',
+          baseUnit: '1Kg',
+          price: 10,
+          available: 15,
+          reserved: 15,
+          farmer: user2,
+        });
+
+        return expect(
+          service.getSingleStockProduct(user1, product.id),
+        ).rejects.toThrowError(BadRequestException);
+      });
     });
   });
 
