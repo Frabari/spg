@@ -175,11 +175,23 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     return dto;
   }
 
-  getAllStockProducts() {
-    return this.productsRepository.find({ relations: ['farmer'] });
+  getAllStockProducts(user) {
+    if (user.role === Role.FARMER) {
+      return this.productsRepository.find({
+        where: {
+          farmer: user.id,
+        },
+        relations: ['farmer', 'category'],
+      });
+    } else
+      return this.productsRepository.find({
+        relations: ['farmer', 'category'],
+      });
   }
 
   getSingleStockProduct(id) {
-    return this.productsRepository.findOne(id, { relations: ['farmer'] });
+    return this.productsRepository.findOne(id, {
+      relations: ['farmer', 'category'],
+    });
   }
 }

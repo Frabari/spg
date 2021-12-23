@@ -73,19 +73,22 @@ export class ProductsController implements CrudController<Product> {
         },
       ],
     };
+    crudReq.parsed.join = [{ field: 'category' }];
+
     return this.base.getManyBase(crudReq) as Promise<Product[]>;
   }
 
   @Get('stock')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(...ADMINS)
-  async getManyStockProducts() {
-    return this.service.getAllStockProducts();
+  @Roles(...ADMINS, Role.FARMER)
+  async getManyStockProducts(@Request() req) {
+    const user = req.user as User;
+    return this.service.getAllStockProducts(user);
   }
 
   @Get('stock/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(...ADMINS)
+  @Roles(...ADMINS, Role.FARMER)
   async getOneStockProduct(@Param('id') id: number) {
     return this.service.getSingleStockProduct(id);
   }
