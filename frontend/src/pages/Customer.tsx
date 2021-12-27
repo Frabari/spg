@@ -25,7 +25,7 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import { logout, Role, User } from '../api/BasilApi';
+import { logout, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { Logo } from '../components/Logo';
 import { ProtectedRoute } from '../components/ProtectedRoute';
@@ -112,10 +112,6 @@ export const Customer = () => {
       </List>
     </div>
   );
-
-  if (typeof profile === 'object' && profile.role === Role.CUSTOMER) {
-    return <Navigate to="/products" />;
-  }
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>

@@ -7,6 +7,7 @@ import {
   Avatar,
   Box,
   Button,
+  ButtonGroup,
   FormControl,
   FormHelperText,
   Grid,
@@ -18,10 +19,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Product, Role, User } from '../api/BasilApi';
+import { OrderEntryStatus, Product, Role, User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
 import { useProduct } from '../hooks/useProduct';
+import { useProductOrderEntries } from '../hooks/useProductOrderEntries';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
 
@@ -31,6 +33,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const [farmers, setFarmers] = useState(null);
   const { product, upsertProduct } = useProduct(id, true);
   const { categories } = useCategories();
+  const { entries, setEntries } = useProductOrderEntries(product?.id);
   const { users } = useUsers();
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -41,6 +44,8 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
       price: null,
       available: null,
       baseUnit: null,
+      farmer: null,
+      category: null,
     } as Partial<Product>,
     onSubmit: (values: Partial<Product>, { setErrors }) => {
       return upsertProduct(values)
@@ -277,11 +282,16 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                       </MenuItem>
                     ))}
                   </TextField>
-                  <FormHelperText>{form.errors?.sold}</FormHelperText>
+                  <FormHelperText>{form.errors?.category}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
-                <FormControl variant="outlined" fullWidth>
+                <FormControl
+                  required
+                  error={!!form.errors?.farmer}
+                  variant="outlined"
+                  fullWidth
+                >
                   <TextField
                     disabled={(profile as User)?.role === Role.FARMER}
                     name="farmer"
@@ -330,6 +340,73 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                   <FormHelperText>{form.errors?.description}</FormHelperText>
                 </FormControl>
               </Grid>
+            </Grid>
+            <Grid item sx={{ p: 2, pt: 0 }}>
+              <Typography
+                variant="h6"
+                noWrap
+                component="h1"
+                color="primary.secondary"
+                sx={{
+                  mt: 2,
+                  minWidth: '6rem',
+                  fontSize: { sm: 20 },
+                  mr: 'auto',
+                }}
+              >
+                This product is contained in {entries.length} order entries
+              </Typography>
+              <ButtonGroup
+                variant="outlined"
+                aria-label="outlined button group"
+              >
+                {(profile as User).role === Role.MANAGER && (
+                  <Button
+                    type="submit"
+                    variant="outlined"
+                    color="warning"
+                    sx={{ px: 3 }}
+                    onClick={ev => {
+                      ev.preventDefault();
+                      ev.stopPropagation();
+                      setEntries({ status: OrderEntryStatus.DRAFT });
+                    }}
+                  >
+                    Draft
+                  </Button>
+                )}
+                {((profile as User).role === Role.MANAGER ||
+                  (profile as User).role === Role.FARMER) && (
+                  <Button
+                    type="submit"
+                    variant="outlined"
+                    color="error"
+                    onClick={ev => {
+                      ev.preventDefault();
+                      ev.stopPropagation();
+                      setEntries({ status: OrderEntryStatus.CONFIRMED });
+                    }}
+                    sx={{ px: 3 }}
+                  >
+                    Confirm
+                  </Button>
+                )}
+                {((profile as User).role === Role.MANAGER ||
+                  (profile as User).role === Role.WAREHOUSE_MANAGER) && (
+                  <Button
+                    type="submit"
+                    variant="outlined"
+                    sx={{ px: 3 }}
+                    onClick={ev => {
+                      ev.preventDefault();
+                      ev.stopPropagation();
+                      setEntries({ status: OrderEntryStatus.DELIVERED });
+                    }}
+                  >
+                    Delivered
+                  </Button>
+                )}
+              </ButtonGroup>
             </Grid>
           </div>
         </Paper>

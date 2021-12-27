@@ -13,6 +13,7 @@ export interface Category {
 export type OrderEntryId = number;
 
 export interface OrderEntry {
+  status?: string;
   id?: OrderEntryId;
   product: Product;
   quantity: number;
@@ -30,6 +31,12 @@ export enum OrderStatus {
   COMPLETED = 'completed',
   PENDING_CANCELLATION = 'pending_cancellation',
   CANCELED = 'canceled',
+}
+
+export enum OrderEntryStatus {
+  DRAFT = 'draft',
+  CONFIRMED = 'confirmed',
+  DELIVERED = 'delivered',
 }
 
 export interface DeliveryLocation {
@@ -92,6 +99,13 @@ export enum Role {
   WAREHOUSE_MANAGER = 'warehouse_manager',
   MANAGER = 'manager',
 }
+
+export const ADMINS = [
+  Role.MANAGER,
+  Role.WAREHOUSE_MANAGER,
+  Role.WAREHOUSE_WORKER,
+  Role.EMPLOYEE,
+];
 
 export enum NotificationType {
   INFO = 'info',
@@ -217,7 +231,7 @@ export const getBasket = () => client.get<Order>('/orders/basket');
 export const updateBasket = (basket: Partial<Order>) =>
   client.patch<Order>('/orders/basket', basket);
 
-export const getDate = () => client.get<string>('scheduling/date');
+export const getDate = () => client.get<{ date: string }>('scheduling/date');
 
 export const setDate = (dto: { date: string }) =>
-  client.patch<string>('scheduling/date', dto);
+  client.patch<{ date: string }>('scheduling/date', dto);

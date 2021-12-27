@@ -1,17 +1,17 @@
 import { useEffect } from 'react';
-import { Settings } from 'luxon';
+import { DateTime, Settings } from 'luxon';
 import * as api from '../api/BasilApi';
 import { useGlobalState } from './useGlobalState';
 
 export const useVirtualClock = () => {
   const [date, _setDate] = useGlobalState('date');
-  const setDate = (date: Date) => {
+  const setDate = (date: DateTime) => {
     api
-      .setDate({ date: date.toString() })
+      .setDate({ date: date.toISO() })
       .then(d => {
-        const newDate = new Date(d);
+        const newDate = DateTime.fromISO(d.date);
         _setDate(newDate);
-        Settings.now = () => newDate.getTime();
+        Settings.now = () => newDate.toMillis();
       })
       .catch(e => {
         // noop
@@ -22,14 +22,15 @@ export const useVirtualClock = () => {
     api
       .getDate()
       .then(d => {
-        const newDate = new Date(d);
+        const newDate = DateTime.fromISO(d.date);
+
         _setDate(newDate);
-        Settings.now = () => newDate.getTime();
+        Settings.now = () => newDate.toMillis();
       })
       .catch(e => {
         // noop
       });
   }, []);
 
-  return [date, setDate];
+  return [date, setDate] as const;
 };

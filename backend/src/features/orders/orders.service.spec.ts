@@ -823,11 +823,11 @@ describe('OrdersService', () => {
             status: OrderEntryStatus.DELIVERED,
           },
         ],
-      });
+      }) as Order;
       await service.removeDraftOrderEntries();
       order = await entityManager.findOne(Order, order.id, {
         relations: ['entries'],
-      });
+      }) as Order;
       expect(order.entries.length).toEqual(1);
     });
   });
