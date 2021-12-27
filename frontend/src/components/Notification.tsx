@@ -6,6 +6,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Slide,
+  SlideProps,
   Snackbar,
   SnackbarContent,
 } from '@mui/material';
@@ -35,11 +37,19 @@ export default function Notifications() {
     setOpen(false);
   };
 
+  type TransitionProps = Omit<SlideProps, 'direction'>;
+
+  function TransitionLeft(props: TransitionProps) {
+    return <Slide {...props} direction="left" />;
+  }
+
   return (
     <Snackbar
+      key="notification-snackbar"
       onClose={handleClose}
       sx={{ maxWidth: '350px' }}
       autoHideDuration={6000}
+      TransitionComponent={TransitionLeft}
       open={open}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
