@@ -88,6 +88,31 @@ describe('OrdersController (e2e)', () => {
         .auth(authToken, { type: 'bearer' })
         .expect(200);
     });
+
+    it('should not return the orders', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.CUSTOMER,
+      });
+      await entityManager.save(Order, {
+        user: { id: user.id },
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      return request(server)
+        .get('/orders')
+        .auth(authToken, { type: 'bearer' })
+        .expect(403);
+    });
   });
 
   describe('GET /orders/:id', () => {
@@ -279,6 +304,47 @@ describe('OrdersController (e2e)', () => {
           ],
         })
         .expect(400);
+    });
+
+    it('should check the field user.orders', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = app.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        balance: 100,
+        role: Role.MANAGER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+      });
+      const server = app.getHttpServer();
+      const response = await request(server)
+        .post('/users/login')
+        .send({ username: email, password });
+      const authToken = response.body.token;
+      const order = await request(server)
+        .post('/orders')
+        .auth(authToken, { type: 'bearer' })
+        .send({
+          user: { id: user.id },
+          entries: [
+            {
+              quantity: 5,
+              product: { id: product.id },
+            },
+          ],
+        });
+      console.log(user);
+      console.log(order.body);
+      return expect(user.orders.length).toEqual(1);
     });
   });
 

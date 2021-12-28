@@ -45,6 +45,7 @@ import { OrdersService } from './orders.service';
       entries: { eager: true },
       'entries.product': { eager: true },
       deliveryLocation: { eager: true },
+      orders: { eager: true },
     },
   },
 })
@@ -68,6 +69,7 @@ export class OrdersController implements CrudController<Order> {
     return this;
   }
 
+  @Roles(...ADMINS)
   @Override()
   getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
     crudRequest.parsed.fields = ['id', 'status', 'createdAt', 'deliverAt'];
