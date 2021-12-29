@@ -1,24 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import {
+  Autocomplete,
   Box,
   Card,
   CardActions,
   CardContent,
   CardMedia,
-  Chip,
   Grid,
   IconButton,
   MenuItem,
   TextField,
   Typography,
 } from '@mui/material';
-import { Product, User } from '../api/BasilApi';
+import { Product, Role } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
+import { useUsers } from '../hooks/useUsers';
 import { useVirtualClock } from '../hooks/useVirtualClock';
 
 function ProductCard({
@@ -134,7 +135,7 @@ export default function ProductsGrid({
   basketListener,
   setBasketListener,
 }: {
-  farmer?: User;
+  farmer?: string;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
@@ -144,8 +145,12 @@ export default function ProductsGrid({
   setBasketListener?: (bol: boolean) => void;
 }) {
   const { products, loadProducts } = useProducts();
-
+  const { users } = useUsers();
+  const [count, setCount] = useState(0);
+  const [filters, setFilters] = useState([]);
   const [sortOption, setSortOption] = useState('');
+  const firstUpdate = useRef(true);
+  const navigate = useNavigate();
   const sort = [
     'Highest price',
     'Lowest price',
@@ -160,8 +165,40 @@ export default function ProductsGrid({
     }
   }, [basketListener]);
 
+  useEffect(() => {
+    console.log(count);
+    if (count === 0) {
+      if (farmer)
+        setFilters(
+          users.filter(u => farmer.split(',').indexOf(u.id.toString()) >= 0),
+        );
+      setCount(1);
+    }
+    if (count === 2) {
+      if (filters.length === 0)
+        navigate(`/products${filter ? `?category=${filter}` : ''}`);
+      else {
+        let str = '';
+        for (const fa of filters) str += fa.id + ',';
+        navigate(
+          `/products?farmer=${str}${filter ? `&category=${filter}` : ''}`,
+        );
+      }
+    }
+  }, [filters]);
+
   const handleChange = (s: string) => {
     setSortOption(s);
+  };
+
+  const handleFarmerChange = () => {
+    if (filters.length === 0)
+      navigate(`/products${filter ? `?category=${filter}` : ''}`);
+    else {
+      let str = '';
+      for (const fa of filters) str += fa.id + ',';
+      navigate(`/products?farmer=${str}${filter ? `&category=${filter}` : ''}`);
+    }
   };
 
   const sortProducts = (a: Product, b: Product) => {
@@ -181,18 +218,25 @@ export default function ProductsGrid({
 
   return (
     <>
-      <Grid container direction="row">
-        <Grid item xs={12} sm={11}>
-          {farmer && (
-            <Chip
-              sx={{ m: 2 }}
-              onDelete={handleDelete}
-              variant="outlined"
-              label={`Product by ${farmer.name} ${farmer.surname}`}
-            />
-          )}
+      <Grid container direction="row" alignItems="center">
+        <Grid item xs={3} sx={{ ml: 'auto' }}>
+          <Autocomplete
+            multiple
+            id="tags-outlined"
+            value={filters}
+            options={users.filter(u => u.role === Role.FARMER)}
+            getOptionLabel={option => option.name + ' ' + option.surname}
+            filterSelectedOptions
+            onChange={(event, newValue) => {
+              setCount(2);
+              setFilters(newValue);
+            }}
+            renderInput={params => (
+              <TextField {...params} label="Filter farmers" size="small" />
+            )}
+          />
         </Grid>
-        <Grid item xs={12} sm={1} display={onSelect ? 'none' : 'block'}>
+        <Grid item display={onSelect ? 'none' : 'block'}>
           <TextField
             id="outlined-select-sort"
             select
@@ -231,8 +275,7 @@ export default function ProductsGrid({
           )
           ?.filter(
             p =>
-              !farmer ||
-              p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
+              !farmer || farmer.split(',').indexOf(p.farmer.id.toString()) >= 0,
           )
           ?.filter(p => p.available > 0)
           ?.sort((a, b) => sortProducts(a, b))

@@ -56,7 +56,6 @@ import { useNotifications } from '../hooks/useNotifications';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
-import { useUsers } from '../hooks/useUsers';
 import { useVirtualClock } from '../hooks/useVirtualClock';
 
 interface LinkTabProps {
@@ -66,10 +65,19 @@ interface LinkTabProps {
 }
 
 function LinkTab({ slug, label, ...rest }: LinkTabProps) {
+  const [queryParams] = useSearchParams();
   return (
     <Tab
       component={Link}
-      to={`/products${slug ? `?category=${slug}` : ''}`}
+      to={`/products?${
+        queryParams.get('farmer') != null
+          ? `farmer=${queryParams.get('farmer')}`
+          : ''
+      }${
+        slug
+          ? `${(queryParams.get('farmer') && '&') || ''}category=${slug}`
+          : ''
+      }`}
       label={label}
       {...rest}
     />
@@ -136,33 +144,25 @@ function NavBar(props: any) {
   const [anchorElNotifications, setAnchorElNotifications] =
     React.useState<null | HTMLElement>(null);
   const [anchorVC, setAnchorVC] = React.useState<null | HTMLElement>(null);
-
   const [list, setList] = useState([]);
   const { profile, load } = useProfile();
   const { setPending } = usePendingState();
   const [showBasket, setShowBasket] = React.useState(false);
   const navigate = useNavigate();
   const { products } = useProducts();
-  const { users } = useUsers();
   const { basket } = useBasket();
   const { notifications } = useNotifications();
   const [date, setDate] = useVirtualClock();
 
   useEffect(() => {
-    const u = users
-      .filter(u => u.role === Role.FARMER)
-      .map(user => ({
-        ...user,
-        type: 'Farmers',
-      }));
     const p = products
       .filter(product => product.available > 0)
       .map(product => ({
         ...product,
         type: 'Products',
       }));
-    setList([...u, ...p]);
-  }, [products, users]);
+    setList([...p]);
+  }, [products]);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
