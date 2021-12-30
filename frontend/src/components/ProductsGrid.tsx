@@ -109,7 +109,7 @@ function ProductCard({
             align="center"
             fontWeight="bold"
           >
-            € {product.price}/unit
+            € {product.price}/{product.baseUnit}
           </Typography>
         </CardContent>
         <CardActions sx={{ display: !profile && 'none' }}>

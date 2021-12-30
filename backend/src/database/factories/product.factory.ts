@@ -260,7 +260,7 @@ const products = [
     img: 'https://images.unsplash.com/photo-1615485290885-c7273a06c79e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258Mzd8SXZVdlQ5eC0zRTR8fHx8fDJ8fDE2MzY2NTAyNTU&ixlib=rb-1.2.1&q=80&w=1080',
     description:
       'Winter melons are large fruits, averaging 15 to 80 centimeters in length, and have a bulbous, round to oblong shape with blunt, curved ends. The melons are covered in a thin but tough, light to dark green skin, often enveloped in a textured, chalky layer of wax, depending on the variety. Young Winter melons also bear a pale, fuzzy coating of hair that disappears as the fruit matures. Underneath the hard surface, the flesh is thick, firm, aqueous, and white, encasing a large central cavity filled with pithy membranes and cream-colored oval seeds. The seeds are edible once cooked and have a nutty, neutral taste. Winter melons are not typically consumed raw and contain a mild, vegetal, and subtly grassy flavor reminiscent of a watermelon rind or cucumber. When cooked, the flesh becomes transparent and softens, absorbing accompanying flavors.',
-    baseUnit: 'One unit corresponds more or less to 2 Kg',
+    baseUnit: '2 Kg',
   },
   {
     name: 'Corns',
