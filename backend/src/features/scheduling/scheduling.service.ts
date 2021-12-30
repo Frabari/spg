@@ -12,6 +12,11 @@ import { OrderStatus } from '../orders/entities/order.entity';
 import { OrdersService } from '../orders/orders.service';
 import { ProductsService } from '../products/products.service';
 
+const toFaketimeDate = (date: Date) => {
+  const res = date.toISOString().replace('T', ' ');
+  return res.substring(0, res.length - 5);
+};
+
 const CLOSE_WEEKLY_SALES = '0 23 * * 0';
 const CLOSE_BASKETS = '0 9 * * 1';
 const PAY_PENDING_BASKETS = '0 18 * * 1';
@@ -52,7 +57,7 @@ export class SchedulingService {
   }
 
   getDate() {
-    return DateTime.now().toString();
+    return DateTime.now().toISO();
   }
 
   setDate(date: string) {
@@ -81,15 +86,15 @@ export class SchedulingService {
       executions
         .sort((a, b) => +a.date - +b.date)
         .forEach(e => {
-          process.env.FAKETIME = e.date.toISOString();
+          process.env.FAKETIME = toFaketimeDate(e.date);
           this.jobs[e.key].bind(this).apply();
         });
     }
     this.schedulerOrchestrator.mountTimeouts();
     this.schedulerOrchestrator.mountIntervals();
     this.schedulerOrchestrator.mountCron();
-    process.env.FAKETIME = date;
-    return newDate.toString();
+    process.env.FAKETIME = '@' + toFaketimeDate(newDate);
+    return newDate.toISOString();
   }
 
   @Cron(PICKUP_NOTIFICATION)
