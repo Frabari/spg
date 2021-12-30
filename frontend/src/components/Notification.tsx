@@ -47,7 +47,7 @@ export default function Notifications() {
     <Snackbar
       key="notification-snackbar"
       onClose={handleClose}
-      sx={{ maxWidth: '350px' }}
+      sx={{ maxWidth: '350px', mt: 5, mr: 10 }}
       autoHideDuration={6000}
       TransitionComponent={TransitionLeft}
       open={open}
