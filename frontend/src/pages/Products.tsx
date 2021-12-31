@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Route, Routes, useSearchParams } from 'react-router-dom';
 import { Container } from '@mui/material';
-import ProductsGrid from '../components/ProductsGrid';
+import ProductsByFarmer from '../components/ProductsByFarmer';
 import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
 import ProductInfo from './ProductInfo';
@@ -40,7 +40,7 @@ export default function Products() {
           path="/"
           element={
             <Container sx={{ mt: 18 }}>
-              <ProductsGrid
+              <ProductsByFarmer
                 farmer={farmer}
                 filter={queryParams.get('category')}
                 search={search}
