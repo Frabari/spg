@@ -66,10 +66,19 @@ interface LinkTabProps {
 }
 
 function LinkTab({ slug, label, ...rest }: LinkTabProps) {
+  const [queryParams] = useSearchParams();
   return (
     <Tab
       component={Link}
-      to={`/products${slug ? `?category=${slug}` : ''}`}
+      to={`/products?${
+        queryParams.get('farmer') != null
+          ? `farmer=${queryParams.get('farmer')}`
+          : ''
+      }${
+        slug
+          ? `${(queryParams.get('farmer') && '&') || ''}category=${slug}`
+          : ''
+      }`}
       label={label}
       {...rest}
     />
@@ -161,7 +170,7 @@ function NavBar(props: any) {
         ...product,
         type: 'Products',
       }));
-    setList([...u, ...p]);
+    setList([...p]);
   }, [products, users]);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -269,7 +278,10 @@ function NavBar(props: any) {
                 options={
                   props.farmer
                     ? list.filter(
-                        option => option.farmer?.email === props.farmer?.email,
+                        option =>
+                          props.farmer
+                            .split('-')
+                            .indexOf(String(option.farmer?.id)) >= 0,
                       )
                     : list
                 }

@@ -10,26 +10,21 @@ export default function Products() {
   const { profile } = useProfile();
   const [basketListener, setBasketListener] = useState(false);
   const [search, setSearch] = useState('');
-  const [queryParams] = useSearchParams();
-  const [farmer, setFarmer] = useState(null);
+  const [queryParams, setSearchParams] = useSearchParams();
   const [balanceWarning, setBalanceWarning] = useState(false);
 
   const handleSearch = (value: any) => {
     setSearch(value);
   };
 
-  const handleDelete = () => {
-    setFarmer('');
-  };
-
   return (
     <>
       <NavigationBox.NavBar
-        farmer={farmer}
-        setFarmer={setFarmer}
         loggedIn={1}
         products={true}
         handleSearch={handleSearch}
+        farmer={queryParams.get('farmer')}
+        setSearchParams={setSearchParams}
         balanceWarning={balanceWarning}
         basketListener={basketListener}
         setBasketListener={setBasketListener}
@@ -41,11 +36,11 @@ export default function Products() {
           element={
             <Container sx={{ mt: 18 }}>
               <ProductsGrid
-                farmer={farmer}
-                filter={queryParams.get('category')}
+                farmer={queryParams.get('farmer')}
+                filter={queryParams.get('category') || ''}
+                setSearchParams={setSearchParams}
                 search={search}
                 onSelect={null}
-                handleDelete={handleDelete}
                 setBalanceWarning={setBalanceWarning}
                 basketListener={basketListener}
                 setBasketListener={setBasketListener}
