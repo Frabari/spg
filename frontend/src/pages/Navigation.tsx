@@ -76,8 +76,8 @@ function LinkTab({ slug, label, ...rest }: LinkTabProps) {
   );
 }
 
-function NavTabs() {
-  const [value, setValue] = React.useState(0);
+function NavTabs(props: any) {
+  const [value, setValue] = useState(0);
   const [queryParams] = useSearchParams();
   const { categories } = useCategories();
 
@@ -92,7 +92,12 @@ function NavTabs() {
     <Toolbar
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
-      <Tabs value={value} variant="scrollable" scrollButtons="auto">
+      <Tabs
+        value={value}
+        variant="scrollable"
+        scrollButtons="auto"
+        onChange={props.setCategory(value)}
+      >
         <LinkTab key="all" label="all" />
         {categories?.map(c => (
           <LinkTab key={c.id} label={c.name} slug={c.slug} />

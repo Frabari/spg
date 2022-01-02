@@ -249,7 +249,7 @@ export default function ProductsByFarmer({
               sx={{ m: 2 }}
               onDelete={handleDelete}
               variant="outlined"
-              label={`Product by ${farmer.name} ${farmer.surname}`}
+              label={`Products by ${farmer.name} ${farmer.surname}`}
             />
           )}
         </Grid>
@@ -265,6 +265,7 @@ export default function ProductsByFarmer({
               float: { xs: 'left', sm: 'right' },
               mr: 2,
               ml: 2,
+              mt: { xs: 2, sm: 0 },
             }}
             onChange={e => handleChange(e.target.value)}
           >
@@ -279,6 +280,7 @@ export default function ProductsByFarmer({
       {farmers?.map((f: any) => (
         <>
           <Grid
+            borderRadius="16px"
             spacing="2rem"
             padding="1rem"
             width="auto"
@@ -286,7 +288,7 @@ export default function ProductsByFarmer({
             sx={{ backgroundColor: 'white' }}
           >
             <Typography align="left" gutterBottom variant="h6" component="div">
-              {'Product by '}
+              {'Products by '}
               <Typography
                 fontWeight="bold"
                 align="left"
