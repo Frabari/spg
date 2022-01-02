@@ -174,4 +174,42 @@ export class ProductsService extends TypeOrmCrudService<Product> {
 
     return dto;
   }
+
+  getAllStockProducts(user) {
+    if (user.role === Role.FARMER) {
+      return this.productsRepository.find({
+        where: {
+          farmer: user.id,
+        },
+        relations: ['farmer', 'category'],
+      });
+    } else
+      return this.productsRepository.find({
+        relations: ['farmer', 'category'],
+      });
+  }
+
+  async getSingleStockProduct(user, id) {
+    if (user.role === Role.FARMER) {
+      const product = await this.productsRepository.findOne({
+        where: {
+          farmer: user.id,
+          id: id,
+        },
+        relations: ['farmer', 'category'],
+      });
+      if (!product) {
+        throw new BadRequestException({
+          constraints: {
+            reserved: 'Cannot retrieve this product',
+          },
+        });
+      } else {
+        return product;
+      }
+    } else
+      return this.productsRepository.findOne(id, {
+        relations: ['farmer', 'category'],
+      });
+  }
 }

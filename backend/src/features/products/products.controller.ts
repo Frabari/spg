@@ -1,4 +1,3 @@
-import type { Request as ExpressRequest } from 'express';
 import {
   Body,
   Controller,
@@ -6,13 +5,11 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
-  CrudAuth,
   CrudController,
   CrudRequest,
   Override,
@@ -20,7 +17,6 @@ import {
   ParsedRequest,
 } from '@nestjsx/crud';
 import { Crud } from '../../core/decorators/crud.decorator';
-import { ParseBoolFlagPipe } from '../../core/pipes/parse-bool-flag.pipe';
 import { UpdateOrderEntryDto } from '../orders/dtos/update-order-entry.dto';
 import { OrdersService } from '../orders/orders.service';
 import { User } from '../users/entities/user.entity';
@@ -51,27 +47,6 @@ import { ProductsService } from './products.service';
     },
   },
 })
-@CrudAuth({
-  filter: (req: ExpressRequest & { user: User }) => {
-    const filters: any = {};
-    if (
-      req.user?.role === Role.CUSTOMER ||
-      !('stock' in req.query) ||
-      req.query.stock === 'false'
-    ) {
-      filters.public = true;
-      filters.available = {
-        $gt: 0,
-      };
-    }
-    if ('stock' in req.query && req.query.stock !== 'false') {
-      if (req.user.role === Role.FARMER) {
-        filters['farmer.id'] = { $eq: req.user.id };
-      }
-    }
-    return filters;
-  },
-})
 @ApiTags(Product.name)
 @ApiBearerAuth()
 @Controller('products')
@@ -87,19 +62,35 @@ export class ProductsController implements CrudController<Product> {
 
   @Override()
   @UseGuards(OptionalJwtAuthGuard)
-  @ApiQuery({
-    name: 'stock',
-    type: Boolean,
-    allowEmptyValue: true,
-    required: false,
-  })
-  getMany(
-    @ParsedRequest() crudReq: CrudRequest,
-    @Request() req,
-    @Query('stock', ParseBoolFlagPipe) stock = false,
-  ) {
-    crudReq.parsed.join = [{ field: 'farmer' }, { field: 'category' }];
+  getMany(@ParsedRequest() crudReq: CrudRequest, @Request() req) {
+    crudReq.parsed.search = {
+      $and: [
+        { public: true },
+        {
+          available: {
+            $gt: 0,
+          },
+        },
+      ],
+    };
+    crudReq.parsed.join = [{ field: 'category' }];
+
     return this.base.getManyBase(crudReq) as Promise<Product[]>;
+  }
+
+  @Get('stock')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...ADMINS, Role.FARMER)
+  async getManyStockProducts(@Request() req) {
+    //const user = req.user as User;
+    return this.service.getAllStockProducts(req.user as User);
+  }
+
+  @Get('stock/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...ADMINS, Role.FARMER)
+  async getOneStockProduct(@Request() req, @Param('id') id: number) {
+    return this.service.getSingleStockProduct(req.user as User, id);
   }
 
   @Override()

@@ -5,6 +5,8 @@
   "scripts": {
     "start": "concurrently -n \"backend,frontend\" \"npm run -w backend start\" \"npm run -w frontend start\"",
     "start:dev": "concurrently -n \"backend,frontend\" \"npm run -w backend start:dev\" \"npm run -w frontend start\"",
+    "docker:up": "docker-compose up",
+    "docker:dev": "npx concurrently -n \"backend,frontend\" \"npm run -w backend start:vclock -- --watch\" \"npm run -w frontend start\"",
     "test": "npm run -w backend test:cov && npm run -w backend test:e2e && npm run -w frontend test:cov",
     "prepare": "husky install",
     "lint:staged": "npm run -ws lint:staged"
