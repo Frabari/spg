@@ -60,7 +60,7 @@ export class SchedulingService {
     return DateTime.now().toISO();
   }
 
-  setDate(date: string) {
+  async setDate(date: string) {
     this.schedulerOrchestrator.clearTimeouts();
     this.schedulerOrchestrator.clearIntervals();
     this.schedulerOrchestrator.closeCronJobs();
@@ -83,12 +83,11 @@ export class SchedulingService {
             nextExecutionDate = e.exp.next().toDate();
           }
         });
-      executions
-        .sort((a, b) => +a.date - +b.date)
-        .forEach(e => {
-          process.env.FAKETIME = toFaketimeDate(e.date);
-          this.jobs[e.key].bind(this).apply();
-        });
+      executions.sort((a, b) => +a.date - +b.date);
+      for (const e of executions) {
+        process.env.FAKETIME = '@' + toFaketimeDate(e.date);
+        await this.jobs[e.key].bind(this).apply();
+      }
     }
     this.schedulerOrchestrator.mountTimeouts();
     this.schedulerOrchestrator.mountIntervals();
