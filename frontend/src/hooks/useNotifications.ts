@@ -25,6 +25,7 @@ export const useNotifications = () => {
 
   return {
     newNotification,
+    enqueueNotifications: setNewNotification,
     notifications,
   };
 };

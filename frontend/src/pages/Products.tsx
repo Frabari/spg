@@ -12,7 +12,6 @@ export default function Products() {
   const [search, setSearch] = useState('');
   const [queryParams] = useSearchParams();
   const [balanceWarning, setBalanceWarning] = useState(false);
-
   const handleSearch = (value: any) => {
     setSearch(value);
   };
