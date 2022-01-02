@@ -16,7 +16,6 @@ import {
   CrudRequest,
   CrudRequestInterceptor,
   Override,
-  ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
 import { BasilRequest } from '../../../types';
@@ -35,7 +34,7 @@ import { ProductsService } from './products.service';
 
 @Crud(Product, {
   routes: {
-    only: ['getOneBase', 'getManyBase'],
+    only: ['getOneBase', 'updateOneBase', 'createOneBase', 'getManyBase'],
   },
   dto: {
     create: CreateProductDto,
@@ -103,7 +102,7 @@ export class ProductsController implements CrudController<Product> {
   async createOne(
     @ParsedRequest() crudRequest: CrudRequest,
     @Request() request: BasilRequest,
-    @ParsedBody() dto: CreateProductDto,
+    @Body() dto: CreateProductDto,
   ) {
     const product = await this.service.validateCreateProductDto(
       dto,

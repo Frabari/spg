@@ -23,9 +23,11 @@ import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
+import { useUpdateProfile } from '../hooks/useUpdateProfile';
 
 export default function Profile(props: { handleDrawerToggle: () => void }) {
-  const { profile, updateProfile } = useProfile();
+  const { data: profile } = useProfile();
+  const { mutate: updateProfile } = useUpdateProfile();
   const { pending } = usePendingState();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
@@ -38,18 +40,23 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
       avatar: '',
       address: null,
     } as Partial<User>,
-    onSubmit: (values: Partial<User>, { setErrors }) => {
+    onSubmit: (values: Partial<User>, { setErrors, setSubmitting }) => {
       if (!values.password?.length) {
         delete values.password;
       }
-      updateProfile(values)
-        .then(p => {
+      setSubmitting(true);
+      updateProfile(values, {
+        onSuccess() {
           toast.success('Profile updated!');
           navigate('/products');
-        })
-        .catch(e => {
-          setErrors(e.data?.constraints);
-        });
+        },
+        onError(error: any) {
+          setErrors(error.data?.constraints);
+        },
+        onSettled() {
+          setSubmitting(false);
+        },
+      });
     },
   });
 

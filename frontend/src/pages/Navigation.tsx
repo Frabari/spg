@@ -1,5 +1,9 @@
-import * as React from 'react';
-import { Fragment, useEffect, useState } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useState,
+  MouseEvent as ReactMouseEvent,
+} from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { DateTime } from 'luxon';
@@ -46,18 +50,19 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { logout, NotificationType, Role } from '../api/BasilApi';
+import { NotificationType, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import Basket from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { useBasket } from '../hooks/useBasket';
 import { useCategories } from '../hooks/useCategories';
+import { useDate } from '../hooks/useDate';
+import { useLogout } from '../hooks/useLogout';
 import { useNotifications } from '../hooks/useNotifications';
-import { usePendingState } from '../hooks/usePendingState';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
+import { useUpdateDate } from '../hooks/useUpdateDate';
 import { useUsers } from '../hooks/useUsers';
-import { useVirtualClock } from '../hooks/useVirtualClock';
 
 interface LinkTabProps {
   label: string;
@@ -77,9 +82,9 @@ function LinkTab({ slug, label, ...rest }: LinkTabProps) {
 }
 
 function NavTabs() {
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = useState(0);
   const [queryParams] = useSearchParams();
-  const { categories } = useCategories();
+  const { data: categories } = useCategories();
 
   useEffect(() => {
     const categoryIndex = categories.findIndex(
@@ -132,21 +137,21 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 }));
 
 function NavBar(props: any) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] =
-    React.useState<null | HTMLElement>(null);
-  const [anchorVC, setAnchorVC] = React.useState<null | HTMLElement>(null);
-
+    useState<null | HTMLElement>(null);
+  const [anchorVC, setAnchorVC] = useState<null | HTMLElement>(null);
   const [list, setList] = useState([]);
-  const { profile, load } = useProfile();
-  const { setPending } = usePendingState();
-  const [showBasket, setShowBasket] = React.useState(false);
+  const { data: profile } = useProfile();
+  const { mutateAsync: logout } = useLogout();
+  const [showBasket, setShowBasket] = useState(false);
   const navigate = useNavigate();
-  const { products } = useProducts();
-  const { users } = useUsers();
-  const { basket } = useBasket();
+  const { data: products } = useProducts();
+  const { data: users } = useUsers();
+  const { data: basket } = useBasket();
   const { notifications } = useNotifications();
-  const [date, setDate] = useVirtualClock();
+  const { data: date } = useDate();
+  const { mutate } = useUpdateDate();
 
   useEffect(() => {
     const u = users
@@ -156,19 +161,19 @@ function NavBar(props: any) {
         type: 'Farmers',
       }));
     const p = products
-      .filter(product => product.available > 0)
+      ?.filter(product => product.available > 0)
       .map(product => ({
         ...product,
         type: 'Products',
       }));
-    setList([...u, ...p]);
+    setList([...u, ...(p ?? [])]);
   }, [products, users]);
 
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenu = (event: ReactMouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuNotifications = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuNotifications = (event: ReactMouseEvent<HTMLElement>) => {
     setAnchorElNotifications(event.currentTarget);
   };
 
@@ -180,7 +185,7 @@ function NavBar(props: any) {
     setAnchorElNotifications(null);
   };
 
-  const handleVC = (event: React.MouseEvent<HTMLElement>) => {
+  const handleVC = (event: ReactMouseEvent<HTMLElement>) => {
     setAnchorVC(event.currentTarget);
   };
 
@@ -191,8 +196,6 @@ function NavBar(props: any) {
   const handleLogout = async () => {
     try {
       await logout();
-      setPending(true);
-      load();
       navigate('/');
     } catch (e) {
       toast.error((e as ApiException).message);
@@ -245,7 +248,7 @@ function NavBar(props: any) {
                     renderInput={props => <TextField {...props} />}
                     value={date.toJSDate()}
                     label="Virtual clock"
-                    onChange={newDate => setDate(DateTime.fromJSDate(newDate))}
+                    onChange={newDate => mutate(DateTime.fromJSDate(newDate))}
                   />
                 </LocalizationProvider>
               </MenuItem>
@@ -489,9 +492,7 @@ function NavBar(props: any) {
                               </ListItemIcon>
                               <ListItemText
                                 primary={n.title}
-                                secondary={
-                                  <React.Fragment>{n.message}</React.Fragment>
-                                }
+                                secondary={<Fragment>{n.message}</Fragment>}
                               />
                             </ListItem>
                             <Divider variant="inset" component="li" />

@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import {
-  Link,
-  Navigate,
-  Route,
-  Routes,
-  useSearchParams,
-} from 'react-router-dom';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { Inventory, Person, ShoppingCart } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
@@ -25,12 +19,12 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import { logout, Role, User } from '../api/BasilApi';
+import { Role, User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { Logo } from '../components/Logo';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { drawerWidth } from '../constants';
-import { usePendingState } from '../hooks/usePendingState';
+import { useLogout } from '../hooks/useLogout';
 import { useProfile } from '../hooks/useProfile';
 import { AdminOrder } from './AdminOrder';
 import { AdminOrders } from './AdminOrders';
@@ -59,9 +53,8 @@ const pages = [
 
 export const Admin = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { profile, load } = useProfile();
-  const { pending, setPending } = usePendingState();
-  const [queryParams] = useSearchParams();
+  const { data: profile } = useProfile();
+  const { mutateAsync: logout } = useLogout();
   const isMobile = useMediaQuery('(max-width:760px)');
   const handleDrawerToggle = () => {
     if (isMobile) {
@@ -72,8 +65,6 @@ export const Admin = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      setPending(true);
-      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }

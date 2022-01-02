@@ -25,12 +25,12 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import { logout, User } from '../api/BasilApi';
+import { User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { Logo } from '../components/Logo';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { drawerWidth } from '../constants';
-import { usePendingState } from '../hooks/usePendingState';
+import { useLogout } from '../hooks/useLogout';
 import { useProfile } from '../hooks/useProfile';
 import { CustomerOrder } from './CustomerOrder';
 import { CustomerOrders } from './CustomerOrders';
@@ -51,8 +51,8 @@ const pages = [
 
 export const Customer = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { profile, load } = useProfile();
-  const { pending, setPending } = usePendingState();
+  const { data: profile } = useProfile();
+  const { mutateAsync: logout } = useLogout();
   const [queryParams] = useSearchParams();
   const isMobile = useMediaQuery('(max-width:760px)');
   const handleDrawerToggle = () => {
@@ -64,8 +64,6 @@ export const Customer = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      setPending(true);
-      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }

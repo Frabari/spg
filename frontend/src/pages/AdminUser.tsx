@@ -23,7 +23,8 @@ import Avatar from '@mui/material/Avatar';
 import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { usePendingState } from '../hooks/usePendingState';
-import { useTransaction } from '../hooks/useTransaction';
+import { useUpsertTransaction } from '../hooks/useUpsertTransaction';
+import { useUpsertUser } from '../hooks/useUpsertUser';
 import { useUser } from '../hooks/useUser';
 import { Balance } from './Balance';
 
@@ -31,10 +32,11 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { user, upsertUser, load } = useUser(id);
+  const { data: user } = useUser(id);
+  const { upsertUser } = useUpsertUser();
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
-  const { upsertTransaction } = useTransaction();
+  const { upsertTransaction } = useUpsertTransaction();
   const { pending } = usePendingState();
   const form = useFormik({
     initialValues: {
@@ -88,7 +90,6 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
         amount,
       })
         .then(() => {
-          load();
           toast.success(`Wallet updated`);
           navigate(`/admin/users/${user?.id}`);
           setOpen(false);

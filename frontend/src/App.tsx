@@ -1,4 +1,5 @@
 import { Toaster } from 'react-hot-toast';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Container, LinearProgress } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
@@ -14,57 +15,67 @@ import Login from './pages/Login';
 import Products from './pages/Products';
 import SignUp from './pages/SignUp';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 function App() {
   const { showLoadingIndicator } = usePendingState();
   return (
     <>
-      <Toaster />
-      <Notifications />
-      <ThemeProvider theme={themeOptions}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Homepage />} />
+      <QueryClientProvider client={queryClient}>
+        <Toaster />
+        <Notifications />
+        <ThemeProvider theme={themeOptions}>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Homepage />} />
 
-            <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<Login />} />
 
-            <Route path="/signup" element={<SignUp />} />
+              <Route path="/signup" element={<SignUp />} />
 
-            <Route
-              path="/checkout"
-              element={
-                <Container>
-                  <Checkout />
-                </Container>
-              }
+              <Route
+                path="/checkout"
+                element={
+                  <Container>
+                    <Checkout />
+                  </Container>
+                }
+              />
+
+              <Route
+                path="/account/*"
+                element={
+                  <ProtectedRoute>
+                    <Customer />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route path="/products/*" element={<Products />} />
+            </Routes>
+          </BrowserRouter>
+          {showLoadingIndicator && (
+            <LinearProgress
+              sx={{ position: 'fixed', width: '100%', top: 0, zIndex: 11000 }}
             />
-
-            <Route
-              path="/account/*"
-              element={
-                <ProtectedRoute>
-                  <Customer />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/*"
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route path="/products/*" element={<Products />} />
-          </Routes>
-        </BrowserRouter>
-        {showLoadingIndicator && (
-          <LinearProgress
-            sx={{ position: 'fixed', width: '100%', top: 0, zIndex: 11000 }}
-          />
-        )}
-      </ThemeProvider>
+          )}
+        </ThemeProvider>
+      </QueryClientProvider>
     </>
   );
 }

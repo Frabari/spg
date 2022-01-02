@@ -125,7 +125,7 @@ const dateDiffInDays = (a: Date, b: Date) => {
 
 export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { orders } = useOrders();
+  const { data: orders } = useOrders();
   const [searchParams, setSearchParams] = useSearchParams({
     status: 'all',
     delivery: 'all',

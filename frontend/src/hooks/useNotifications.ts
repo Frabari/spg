@@ -4,7 +4,7 @@ import { useGlobalState } from './useGlobalState';
 import { useProfile } from './useProfile';
 
 export const useNotifications = () => {
-  const { profile } = useProfile();
+  const { data: profile } = useProfile();
   const [notifications, setNotifications] = useGlobalState('notifications');
   const [newNotification, setNewNotification] =
     useGlobalState('newNotification');
@@ -25,6 +25,7 @@ export const useNotifications = () => {
 
   return {
     newNotification,
+    enqueueNotification: setNewNotification,
     notifications,
   };
 };

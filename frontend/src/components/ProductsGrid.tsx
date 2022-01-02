@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -17,25 +17,25 @@ import {
 } from '@mui/material';
 import { Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
+import { useDate } from '../hooks/useDate';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
-import { useVirtualClock } from '../hooks/useVirtualClock';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
 function ProductCard({
   product,
   setBalanceWarning,
-  setBasketListener,
   onSelect,
 }: {
   product?: Product;
   setBalanceWarning?: (bol: boolean) => void;
-  setBasketListener?: (bol: boolean) => void;
   onSelect: (product: Product) => void;
 }) {
-  const { basket, upsertEntry } = useBasket();
-  const { profile } = useProfile();
+  const { data: basket } = useBasket();
+  const { upsertEntry } = useUpdateBasket();
+  const { data: profile } = useProfile();
   const navigate = useNavigate();
-  const [date] = useVirtualClock();
+  const { data: date } = useDate();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
 
@@ -65,8 +65,7 @@ function ProductCard({
       if (onSelect) {
         onSelect(product);
       } else {
-        upsertEntry(product, 1).then(o => {
-          setBasketListener(true);
+        upsertEntry(product, 1).then(() => {
           toast.success(`${product.name} successfully added!`);
         });
       }
@@ -131,8 +130,6 @@ export default function ProductsGrid({
   search,
   handleDelete,
   setBalanceWarning,
-  basketListener,
-  setBasketListener,
 }: {
   farmer?: User;
   filter?: string;
@@ -140,11 +137,8 @@ export default function ProductsGrid({
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
   setBalanceWarning?: (bol: boolean) => void;
-  basketListener?: boolean;
-  setBasketListener?: (bol: boolean) => void;
 }) {
-  const { products, loadProducts } = useProducts();
-
+  const { data: products } = useProducts();
   const [sortOption, setSortOption] = useState('');
   const sort = [
     'Highest price',
@@ -152,13 +146,6 @@ export default function ProductsGrid({
     'Ascending name',
     'Descending name',
   ];
-
-  useEffect(() => {
-    if (basketListener) {
-      loadProducts();
-      setBasketListener(false);
-    }
-  }, [basketListener]);
 
   const handleChange = (s: string) => {
     setSortOption(s);
@@ -242,7 +229,6 @@ export default function ProductsGrid({
               product={p}
               onSelect={onSelect}
               setBalanceWarning={setBalanceWarning}
-              setBasketListener={setBasketListener}
             />
           ))}
       </Grid>

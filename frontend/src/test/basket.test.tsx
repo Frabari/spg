@@ -3,16 +3,18 @@ import { act, waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
 import { Product } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
+import { wrapper } from './wrapper';
 
 test('basket', async () => {
-  const { result } = renderHook(() => useBasket());
+  const { result } = renderHook(() => useBasket(), { wrapper });
   await waitFor(() => {
-    expect(result.current.basket.id).toEqual(1);
+    expect(result.current.data.id).toEqual(1);
   });
 });
 
 test('update basket', async () => {
-  const { result } = renderHook(() => useBasket());
+  const { result } = renderHook(() => useUpdateBasket(), { wrapper });
   return act(async () => {
     const product: Partial<Product> = {
       id: 1,
@@ -29,13 +31,13 @@ test('update basket', async () => {
       ],
     };
     return expect(
-      await result.current.upsertEntry(product as Product, 2),
+      result.current.upsertEntry(product as Product, 2),
     ).toMatchObject(dto);
   });
 });
 
 test('delete entry basket', async () => {
-  const { result } = renderHook(() => useBasket());
+  const { result } = renderHook(() => useUpdateBasket(), { wrapper });
   return act(async () => {
     const product: Partial<Product> = {
       id: 1,
@@ -44,8 +46,8 @@ test('delete entry basket', async () => {
       id: 1,
       user: { id: 30 },
     };
-    return expect(
-      await result.current.deleteEntry(product as Product),
-    ).toMatchObject(dto);
+    return expect(result.current.deleteEntry(product as Product)).toMatchObject(
+      dto,
+    );
   });
 });
