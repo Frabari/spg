@@ -67,8 +67,7 @@ function ProductCard({
         type: NotificationType.ERROR,
         title:
           'You can add products to the basket only from Saturday 9am to Sunday 23pm',
-        message:
-          'You can add products to the basket only from Saturday 9am to Sunday 23pm',
+        message: '',
         createdAt: new Date(),
       });
     } else {
