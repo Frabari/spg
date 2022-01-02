@@ -325,7 +325,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       {
         type: NotificationType.ERROR,
         title: 'Order modified',
-        message: `Pay attention some entries of your order are deleted`,
+        message: `Some order entries were removed from your order because the producer couldn't confirm the availability.\nPlease log in to the app to see the updated order`,
         priority: NotificationPriority.CRITICAL,
       },
       { id: In([...users].map((element: User) => element.id)) },
@@ -468,7 +468,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * Updates all order entries containing a product
+   * Updates all order entries containing the given product
    */
   async updateProductOrderEntries(
     productId: ProductId,

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Add } from '@mui/icons-material';
+import { Add, Check, MoveToInbox } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Alert,
   Box,
   Button,
-  ButtonGroup,
   Grid,
   IconButton,
   InputBase,
@@ -23,15 +22,15 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import { getProductOrderEntries, Product, Role, User } from '../api/BasilApi';
+import { Product, Role, User } from '../api/BasilApi';
 import { OrderEntryStatus } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
-import { useProductOrderEntries } from '../hooks/useProductOrderEntries';
-import { useProducts } from '../hooks/useProducts';
+import { useDate } from '../hooks/useDate';
 import { useProfile } from '../hooks/useProfile';
+import { useStock } from '../hooks/useStock';
+import { useUpdateProductOrderEntries } from '../hooks/useUpdateProductOrderEntries';
 import { useUsers } from '../hooks/useUsers';
-import { useVirtualClock } from '../hooks/useVirtualClock';
 
 const columns: {
   key: keyof Product;
@@ -129,9 +128,11 @@ export const AdminProducts = (props: {
   profile: User;
 }) => {
   const navigate = useNavigate();
-  const { profile } = useProfile();
+  const { data: profile } = useProfile();
   const [dto, setDto] = useState<Partial<User>>(profile as User);
-  const { products } = useProducts(true);
+  const { data: items } = useStock();
+  const { mutateAsync: updateProductOrderEntries } =
+    useUpdateProductOrderEntries();
   const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Product;
@@ -139,32 +140,17 @@ export const AdminProducts = (props: {
   }>({ by: null, dir: 'asc' });
 
   useEffect(() => {
-    if (products.length > 0) {
-      products.forEach(p =>
-        getProductOrderEntries(p.id)
-          // @ts-ignore
-          .then(e => (p.productEntryStatus = e.entries[0].status))
-          .catch(e => {
-            //noop
-          }),
-      );
-    }
-  }, [products]);
-
-  useEffect(() => {
-    if (products?.length) {
+    if (items?.length) {
       const { by, dir } = sorting;
       if (by != null) {
         const mul = dir === 'asc' ? -1 : 1;
-        const sorted = [...products].sort((a, b) =>
-          a[by] < b[by] ? mul : -mul,
-        );
+        const sorted = [...items].sort((a, b) => (a[by] < b[by] ? mul : -mul));
         setSortedProducts(sorted);
       } else {
-        setSortedProducts(products);
+        setSortedProducts(items);
       }
     }
-  }, [products, sorting]);
+  }, [items, sorting]);
 
   useEffect(() => {
     setDto(profile as User);
@@ -178,76 +164,13 @@ export const AdminProducts = (props: {
     });
   };
 
-  const Actions = ({ productId }: { productId: number }) => {
-    const { entries, setEntries } = useProductOrderEntries(productId);
-
-    return (
-      entries.length > 0 && (
-        <Grid item sx={{ p: 2, pt: 0 }}>
-          <ButtonGroup variant="outlined" aria-label="outlined button group">
-            {(profile as User).role === Role.MANAGER && (
-              <Button
-                type="submit"
-                variant="outlined"
-                color="warning"
-                sx={{ px: 3 }}
-                onClick={ev => {
-                  ev.preventDefault();
-                  ev.stopPropagation();
-                  setEntries({ status: OrderEntryStatus.DRAFT });
-                }}
-              >
-                Draft
-              </Button>
-            )}
-            {((profile as User).role === Role.MANAGER ||
-              (profile as User).role === Role.FARMER) && (
-              <Button
-                type="submit"
-                variant="outlined"
-                color="error"
-                onClick={ev => {
-                  ev.preventDefault();
-                  ev.stopPropagation();
-                  setEntries({ status: OrderEntryStatus.CONFIRMED });
-                }}
-                sx={{ px: 3 }}
-              >
-                Confirm
-              </Button>
-            )}
-            {((profile as User).role === Role.MANAGER ||
-              (profile as User).role === Role.WAREHOUSE_MANAGER) && (
-              <Button
-                type="submit"
-                variant="outlined"
-                sx={{ px: 3 }}
-                onClick={ev => {
-                  ev.preventDefault();
-                  ev.stopPropagation();
-                  setEntries({ status: OrderEntryStatus.DELIVERED });
-                }}
-              >
-                Delivered
-              </Button>
-            )}
-          </ButtonGroup>
-        </Grid>
-      )
-    );
-  };
-
   const handleChange = (value: any) => {
     setSortedProducts(
-      products.filter(
+      items.filter(
         p =>
-          p.name.toLocaleLowerCase().includes(value.toLocaleLowerCase()) ||
-          p.category.name
-            .toLocaleLowerCase()
-            .includes(value.toLocaleLowerCase()) ||
-          p.category.slug
-            .toLocaleLowerCase()
-            .includes(value.toLocaleLowerCase()),
+          p.name.toLowerCase().includes(value.toLowerCase()) ||
+          p.category.name.toLowerCase().includes(value.toLowerCase()) ||
+          p.category.slug.toLowerCase().includes(value.toLowerCase()),
       ),
     );
   };
@@ -256,9 +179,9 @@ export const AdminProducts = (props: {
     farmer: 'all',
   });
   const [farmers, setFarmers] = useState(null);
-  const { users } = useUsers();
-  const sort = useCategories();
-  const [date] = useVirtualClock();
+  const { data: users } = useUsers();
+  const { data: categories } = useCategories();
+  const { data: date } = useDate();
 
   useEffect(() => {
     if (users) {
@@ -329,6 +252,19 @@ export const AdminProducts = (props: {
           millisecond: 0,
         });
   const toReserved = fromReserved.plus({ hours: 10 });
+  const supplyDeliveryDeadline = toReserved.plus({ hours: 33 });
+  const inPreSalesWindow = date >= fromAvailability && date <= toAvailability;
+  const inConfirmationWindow = date >= fromReserved && date <= toReserved;
+  const inSupplyDeliveryWindow =
+    date >= toReserved && date <= supplyDeliveryDeadline;
+  const showConfirmEntriesAction =
+    profile &&
+    inConfirmationWindow &&
+    [Role.MANAGER, Role.FARMER].includes(profile.role);
+  const showDeliveredEntriesAction =
+    profile &&
+    inSupplyDeliveryWindow &&
+    [(Role.MANAGER, Role.WAREHOUSE_MANAGER)].includes(profile.role);
 
   return (
     <>
@@ -368,7 +304,7 @@ export const AdminProducts = (props: {
           href="/admin/products/new"
           startIcon={<Add />}
         >
-          <Typography display="inline" sx={{ textTransform: 'none' }}>
+          <Typography display="inline" fontWeight="bold">
             Create product
           </Typography>
         </Button>
@@ -399,10 +335,7 @@ export const AdminProducts = (props: {
             </Button>
           </Grid>
         </Grid>
-        <TableContainer
-          component={Paper}
-          sx={{ width: '100%', height: '100%' }}
-        >
+        <TableContainer component={Paper} sx={{ width: '100%' }}>
           <Table aria-label="Products table" stickyHeader>
             <TableHead>
               <TableRow>
@@ -499,7 +432,7 @@ export const AdminProducts = (props: {
                               <MenuItem key="all" value="all">
                                 All
                               </MenuItem>
-                              {sort.categories.map(option => (
+                              {categories.map(option => (
                                 <MenuItem key={option.id} value={option.slug}>
                                   {option.name}
                                 </MenuItem>
@@ -579,22 +512,18 @@ export const AdminProducts = (props: {
                     <TableCell>{product.price}</TableCell>
                     <TableCell>{product.category.name}</TableCell>
                     {props.profile.role === 'farmer' ? (
-                      <>
-                        <TableCell>
-                          {product.available === 0 &&
-                            date >= fromAvailability &&
-                            date <= toAvailability && (
-                              <Alert severity="warning">
-                                {'Remember to update the availability field'}
-                              </Alert>
-                            )}
-                          {date >= fromReserved && date <= toReserved && (
-                            <Alert severity="warning">
-                              {"Remember to confirm orders' booking"}
-                            </Alert>
-                          )}
-                        </TableCell>
-                      </>
+                      <TableCell width={300} padding="none">
+                        {product.available === 0 && inPreSalesWindow && (
+                          <Alert severity="warning" sx={{ py: 0.5 }}>
+                            Availability not provided
+                          </Alert>
+                        )}
+                        {inConfirmationWindow && (
+                          <Alert severity="warning" sx={{ py: 0.5 }}>
+                            Bookings pending confirmation
+                          </Alert>
+                        )}
+                      </TableCell>
                     ) : (
                       <>
                         <TableCell>
@@ -602,7 +531,48 @@ export const AdminProducts = (props: {
                         </TableCell>
                       </>
                     )}
-                    <TableCell>{<Actions productId={product.id} />}</TableCell>
+                    <TableCell>
+                      {showConfirmEntriesAction && (
+                        <Button
+                          type="submit"
+                          onClick={ev => {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            updateProductOrderEntries({
+                              productId: product.id,
+                              dto: {
+                                status: OrderEntryStatus.CONFIRMED,
+                              },
+                            });
+                          }}
+                          startIcon={<Check />}
+                          color="info"
+                          variant="text"
+                        >
+                          Confirm entries
+                        </Button>
+                      )}
+                      {showDeliveredEntriesAction && (
+                        <Button
+                          type="submit"
+                          onClick={ev => {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            updateProductOrderEntries({
+                              productId: product.id,
+                              dto: {
+                                status: OrderEntryStatus.DELIVERED,
+                              },
+                            });
+                          }}
+                          startIcon={<MoveToInbox />}
+                          color="info"
+                          variant="text"
+                        >
+                          Mark as delivered
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
             </TableBody>

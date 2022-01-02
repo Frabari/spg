@@ -19,6 +19,7 @@ import {
   ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
+import { BasilRequest } from '../../../types';
 import { Crud } from '../../core/decorators/crud.decorator';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { LoginDto } from './dtos/login.dto';
@@ -39,6 +40,9 @@ import { UsersService } from './users.service';
     join: {
       notifications: {},
       address: {},
+      orders: {
+        eager: true,
+      },
     },
   },
   dto: {
@@ -58,9 +62,11 @@ export class UsersController implements CrudController<User> {
   @Override()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() req) {
-    const user = req.user as User;
-    if (user.role === Role.CUSTOMER) {
+  getMany(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request: BasilRequest,
+  ) {
+    if (request.user.role === Role.CUSTOMER) {
       crudRequest.parsed.search = {
         $and: crudRequest.parsed.search.$and.concat({
           role: Role.FARMER,
@@ -75,7 +81,10 @@ export class UsersController implements CrudController<User> {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: `Gets the current authenticated user's profile` })
-  getMe(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
+  getMe(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request: BasilRequest,
+  ) {
     const { id } = request.user;
     crudRequest.parsed.search.$and = [{ id }];
     crudRequest.parsed.join = [
@@ -96,7 +105,7 @@ export class UsersController implements CrudController<User> {
   @ApiOperation({ summary: `Updates the current authenticated user's profile` })
   async updateMe(
     @ParsedRequest() crudRequest: CrudRequest,
-    @Request() request,
+    @Request() request: BasilRequest,
     @Body() body: UpdateUserDto,
   ) {
     const { id } = request.user;
@@ -124,7 +133,7 @@ export class UsersController implements CrudController<User> {
   @Roles(...ADMINS)
   async updateOne(
     @ParsedRequest() crudRequest: CrudRequest,
-    @Request() request,
+    @Request() request: BasilRequest,
     @ParsedBody() dto: UpdateUserDto,
     @Param('id') id: number,
   ) {
@@ -150,7 +159,7 @@ export class UsersController implements CrudController<User> {
   @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Logs in a user with local credentials' })
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,unused-imports/no-unused-vars
-  login(@Request() req, @Body() dto: LoginDto) {
-    return this.service.login(req.user);
+  login(@Request() request: BasilRequest, @Body() dto: LoginDto) {
+    return this.service.login(request.user);
   }
 }
