@@ -18,6 +18,7 @@ import {
   Collapse,
   Stack,
   Typography,
+  Avatar,
 } from '@mui/material';
 import { Product, User, Role } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
@@ -80,7 +81,7 @@ function ProductCard({
   };
 
   return (
-    <Grid item lg={3} md={4} sm={6} xs={12} height={'425px'}>
+    <>
       <Card sx={{ height: '100%' }}>
         <CardMedia
           component="img"
@@ -129,7 +130,7 @@ function ProductCard({
           ''
         )}
       </Card>
-    </Grid>
+    </>
   );
 }
 
@@ -287,19 +288,49 @@ export default function ProductsByFarmer({
             marginBottom="1rem"
             sx={{ backgroundColor: 'white' }}
           >
-            <Typography align="left" gutterBottom variant="h6" component="div">
-              {'Products by '}
-              <Typography
-                fontWeight="bold"
-                align="left"
-                gutterBottom
-                variant="h6"
-                component="div"
-                display="inline"
+            <Grid container direction="row" spacing={2} padding="2rem">
+              <Grid item xs={12} sm={8}>
+                <Typography
+                  align="left"
+                  fontWeight="bold"
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  fontSize="2rem"
+                >
+                  {'Cascina Perosa'}
+                </Typography>
+              </Grid>
+              <Grid
+                container
+                direction="row"
+                justifyContent="end"
+                alignContent="center"
+                xs={12}
+                sm={4}
               >
-                {f.name + ' ' + f.surname}
-              </Typography>
-            </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  display="inline"
+                  fontSize="1rem"
+                >
+                  {f.name + ' ' + f.surname}
+                </Typography>
+                <Avatar src={f.avatar} sx={{ boxShadow: 2, right: 0, ml: 1 }} />
+              </Grid>
+              <Grid item sx={{ pt: '0!important' }} xs={12} sm={12}>
+                <Typography
+                  align="left"
+                  gutterBottom
+                  component="div"
+                  fontSize="10"
+                >
+                  {'Via Zio Pera 1, Borgoratto, Imperia '}
+                </Typography>
+              </Grid>
+            </Grid>
 
             <Grid
               container
@@ -326,13 +357,29 @@ export default function ProductsByFarmer({
                 ?.filter(p => p.available > 0)
                 ?.sort((a, b) => sortProducts(a, b))
                 .map(p => (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    onSelect={onSelect}
-                    setBalanceWarning={setBalanceWarning}
-                    setBasketListener={setBasketListener}
-                  />
+                  <>
+                    {date >= from && date <= to ? (
+                      <Grid item lg={3} md={4} sm={6} xs={12} height={'425px'}>
+                        <ProductCard
+                          key={p.id}
+                          product={p}
+                          onSelect={onSelect}
+                          setBalanceWarning={setBalanceWarning}
+                          setBasketListener={setBasketListener}
+                        />
+                      </Grid>
+                    ) : (
+                      <Grid item lg={3} md={4} sm={6} xs={12} height={'370px'}>
+                        <ProductCard
+                          key={p.id}
+                          product={p}
+                          onSelect={onSelect}
+                          setBalanceWarning={setBalanceWarning}
+                          setBasketListener={setBasketListener}
+                        />
+                      </Grid>
+                    )}
+                  </>
                 ))}
             </Grid>
           </Grid>
