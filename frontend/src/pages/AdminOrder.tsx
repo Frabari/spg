@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FormikErrors, useFormik } from 'formik';
 import { Add, Save } from '@mui/icons-material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -19,6 +20,7 @@ import {
   FormControl,
   FormHelperText,
   Grid,
+  IconButton,
   InputLabel,
   List,
   ListItem,
@@ -208,6 +210,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
+        <IconButton onClick={() => navigate('/admin/orders')}>
+          <ArrowBackIcon />
+        </IconButton>
         <Typography
           variant="h6"
           noWrap

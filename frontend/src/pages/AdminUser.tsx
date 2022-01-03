@@ -1,9 +1,11 @@
 import { MouseEvent, useEffect, useState } from 'react';
+import * as React from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { Save } from '@mui/icons-material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
@@ -104,6 +106,9 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
+        <IconButton onClick={() => navigate('/admin/users')}>
+          <ArrowBackIcon />
+        </IconButton>
         <Balance open={open} setOpen={setOpen} user={user} change={change} />
         <Typography
           variant="h6"
