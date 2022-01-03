@@ -1,12 +1,12 @@
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Container, LinearProgress } from '@mui/material';
+import { Container } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './Theme';
+import { CustomLinearProgress } from './components/CustomLinearProgress';
 import Notifications from './components/Notification';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { usePendingState } from './hooks/usePendingState';
 import { Admin } from './pages/Admin';
 import Checkout from './pages/Checkout';
 import { Customer } from './pages/Customer';
@@ -24,7 +24,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const { showLoadingIndicator } = usePendingState();
   return (
     <>
       <QueryClientProvider client={queryClient}>
@@ -65,15 +64,10 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route path="/products/*" element={<Products />} />
             </Routes>
           </BrowserRouter>
-          {showLoadingIndicator && (
-            <LinearProgress
-              sx={{ position: 'fixed', width: '100%', top: 0, zIndex: 11000 }}
-            />
-          )}
+          <CustomLinearProgress />
         </ThemeProvider>
       </QueryClientProvider>
     </>
