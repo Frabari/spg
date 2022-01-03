@@ -71,7 +71,7 @@ function OutlinedCard() {
                 <FormControl
                   sx={{ width: 250 }}
                   error={!!form.errors?.email}
-                  disabled={pending}
+                  disabled={!!pending}
                   required
                 >
                   <InputLabel htmlFor="outlined-adornment-email">
@@ -93,7 +93,7 @@ function OutlinedCard() {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.password}
-                  disabled={pending}
+                  disabled={!!pending}
                   required
                 >
                   <InputLabel htmlFor="outlined-adornment-password">
@@ -138,7 +138,7 @@ function OutlinedCard() {
             <Button
               type="submit"
               variant="contained"
-              disabled={pending}
+              disabled={!!pending}
               onClick={form.submitForm}
               sx={{ px: 3 }}
             >

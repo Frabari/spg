@@ -121,7 +121,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
           sx={{ display: { xs: 'flex', md: 'none' } }}
           className="save-icon-button"
           onClick={form.submitForm}
-          disabled={pending}
+          disabled={!!pending}
         >
           <Save />
         </IconButton>
@@ -132,7 +132,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
           }}
           variant="contained"
           onClick={form.submitForm}
-          disabled={pending}
+          disabled={!!pending}
           startIcon={<Save />}
         >
           <Typography display="inline" sx={{ textTransform: 'none' }}>
@@ -171,7 +171,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.name}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="name">Name</InputLabel>
                   <OutlinedInput
@@ -190,7 +190,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.surname}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="surname">Surname</InputLabel>
                   <OutlinedInput
@@ -209,7 +209,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.email}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="email">Email</InputLabel>
                   <OutlinedInput
@@ -228,7 +228,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.password}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="password">Password</InputLabel>
                   <OutlinedInput
@@ -259,7 +259,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.avatar}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="avatar">Avatar</InputLabel>
                   <OutlinedInput
@@ -278,7 +278,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.balance}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="balance">Balance</InputLabel>
                   <OutlinedInput
@@ -328,7 +328,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.address}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Address</InputLabel>
                       <OutlinedInput
@@ -349,7 +349,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.zipCode}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Zip Code</InputLabel>
                       <OutlinedInput
@@ -370,7 +370,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.city}
-                      disabled={pending}
+                      disabled={!!!!pending}
                     >
                       <InputLabel htmlFor="address">City</InputLabel>
                       <OutlinedInput
@@ -391,7 +391,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.province}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Province</InputLabel>
                       <OutlinedInput
@@ -412,7 +412,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.region}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Region</InputLabel>
                       <OutlinedInput

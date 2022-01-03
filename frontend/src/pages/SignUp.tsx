@@ -86,7 +86,7 @@ function OutlinedCard() {
                   fullWidth
                   required
                   error={!!form.errors?.name}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="outlined-adornment-name">
                     Name
@@ -108,7 +108,7 @@ function OutlinedCard() {
                   fullWidth
                   required
                   error={!!form.errors?.surname}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="outlined-adornment-surname">
                     Surname
@@ -130,7 +130,7 @@ function OutlinedCard() {
                   fullWidth
                   required
                   error={!!form.errors?.email}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="outlined-adornment-email">
                     Email
@@ -152,7 +152,7 @@ function OutlinedCard() {
                   fullWidth
                   required
                   error={!!form.errors?.password}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="outlined-adornment-password">
                     Password
@@ -229,7 +229,7 @@ function OutlinedCard() {
                 form.values?.password?.length < 8 ||
                 (form.values?.password?.length >= 8 &&
                   form.values?.password !== passwordCheck) ||
-                pending
+                !!pending
               }
               onClick={form.submitForm}
               variant="contained"

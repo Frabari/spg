@@ -20,6 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 import {
+  Category,
   OrderEntryStatus,
   Product,
   Role,
@@ -294,7 +295,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                     value={form.values?.category?.name ?? ''}
                     onChange={e => handleChangeCategory(e.target.value)}
                   >
-                    {categories.map(c => (
+                    {categories.map((c: Category) => (
                       <MenuItem key={c.id} value={c.name}>
                         {c.name}
                       </MenuItem>

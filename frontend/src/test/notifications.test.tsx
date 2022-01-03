@@ -13,8 +13,8 @@ test('load notifications', async () => {
       result.current.notifications.find(n => n.title === 'notification'),
     ).toBeDefined(),
   );
-  await waitForNextUpdate();
-  expect(
-    result.current.notifications.find(n => n.title === 'notification'),
-  ).toBeDefined();
+  // await waitForNextUpdate();
+  // expect(
+  //   result.current.notifications.find(n => n.title === 'notification'),
+  // ).toBeDefined();
 });
