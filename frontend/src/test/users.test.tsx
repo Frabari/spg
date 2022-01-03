@@ -1,13 +1,19 @@
 import './BasilApi.mock';
 import { act, renderHook } from '@testing-library/react-hooks';
+import { PropsWithChildren } from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { User } from '../api/BasilApi';
 import { useUpsertUser } from '../hooks/useUpsertUser';
 import { useUser } from '../hooks/useUser';
 import { useUsers } from '../hooks/useUsers';
 
-// @ts-ignore
-const wrapper = ({ children }) => <BrowserRouter>{children}</BrowserRouter>;
+const client = new QueryClient();
+const wrapper = ({ children }: PropsWithChildren<{}>) => (
+  <BrowserRouter>
+    <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  </BrowserRouter>
+);
 
 test('get user', async () => {
   const { result, waitFor } = renderHook(() => useUser(1), { wrapper });

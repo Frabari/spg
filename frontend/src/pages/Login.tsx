@@ -26,7 +26,7 @@ import { useProfile } from '../hooks/useProfile';
 
 function OutlinedCard() {
   const [show, setShow] = useState(false);
-  const { pending, setPending } = usePendingState();
+  const { pending } = usePendingState();
   const { mutateAsync: login } = useLogin();
   const form = useFormik({
     initialValues: {

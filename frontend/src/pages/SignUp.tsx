@@ -25,7 +25,7 @@ import { useUpsertUser } from '../hooks/useUpsertUser';
 
 function OutlinedCard() {
   const [passwordCheck, setPasswordCheck] = useState('');
-  const { pending, setPending } = usePendingState();
+  const { pending } = usePendingState();
   const { upsertUser } = useUpsertUser();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
@@ -39,7 +39,6 @@ function OutlinedCard() {
     onSubmit: (values: Partial<User>, { setErrors }) => {
       upsertUser(values)
         .then(u => {
-          setPending(true);
           toast.success(`Welcome ${values.name}!`);
           navigate('/login');
         })
