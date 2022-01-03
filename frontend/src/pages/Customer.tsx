@@ -8,32 +8,24 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { Person, ShoppingCart } from '@mui/icons-material';
-import LogoutIcon from '@mui/icons-material/Logout';
 import {
-  Avatar,
   Box,
-  CssBaseline,
-  Divider,
-  Drawer,
-  IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Toolbar,
-  Typography,
   useMediaQuery,
 } from '@mui/material';
-import { logout, User } from '../api/BasilApi';
+import { logout } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
-import { Logo } from '../components/Logo';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { drawerWidth } from '../constants';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 import { CustomerOrder } from './CustomerOrder';
 import { CustomerOrders } from './CustomerOrders';
+import NavigationBox from './Navigation';
 import Profile from './Profile';
 
 const pages = [
@@ -73,15 +65,6 @@ export const Customer = () => {
 
   const drawer = (
     <div>
-      <Toolbar>
-        <IconButton href="/" sx={{ p: 0 }}>
-          <Logo />
-        </IconButton>
-        <Typography variant="h6" component="h1" marginLeft="10px">
-          Basil
-        </Typography>
-      </Toolbar>
-      <Divider />
       <List>
         {pages.map(page => (
           <ListItem key={page.path} sx={{ py: 0, px: 1 }}>
@@ -99,62 +82,25 @@ export const Customer = () => {
           </ListItem>
         ))}
       </List>
-      <List sx={{ position: 'absolute', bottom: 0 }}>
-        <ListItem>
-          <Avatar src={(profile as User)?.avatar} />
-          <ListItemButton onClick={handleLogout}>
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
-        </ListItem>
-      </List>
+      <List sx={{ position: 'absolute', bottom: 0 }}></List>
     </div>
   );
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
-      <CssBaseline />
+      <NavigationBox.NavBar />
       <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="Customer pages"
+        sx={{
+          marginTop: 15,
+        }}
       >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true,
-          }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth,
-            },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
+        {drawer}
       </Box>
       <Box
         component="main"
         sx={{
+          marginTop: 8,
+          position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           flexGrow: 1,
