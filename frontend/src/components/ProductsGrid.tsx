@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
 import {
-  Alert,
   Box,
   Card,
   CardActions,
@@ -15,8 +13,6 @@ import {
   IconButton,
   MenuItem,
   TextField,
-  Collapse,
-  Stack,
   Typography,
 } from '@mui/material';
 import { Product, User } from '../api/BasilApi';
@@ -202,37 +198,6 @@ export default function ProductsGrid({
   return (
     <>
       <Grid container direction="row">
-        {date < from || date > to ? (
-          <Stack sx={{ width: '100%' }} spacing={2}>
-            <Collapse in={open}>
-              <Alert
-                severity="info"
-                action={
-                  <IconButton
-                    aria-label="close"
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                      setOpen(false);
-                    }}
-                  >
-                    <CloseIcon fontSize="inherit" />
-                  </IconButton>
-                }
-                sx={{ mb: 2 }}
-              >
-                {' Products can be purchased from '}
-                {'Saturday'} {from.day}
-                {' (9:00 am)'}
-                {' to '}
-                {'Sunday'} {to.day}
-                {' (11:00 pm)'}
-              </Alert>
-            </Collapse>
-          </Stack>
-        ) : (
-          ''
-        )}
         <Grid item xs={12} sm={11}>
           {farmer && (
             <Chip

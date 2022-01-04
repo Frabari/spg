@@ -22,10 +22,12 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import { Order, OrderStatus } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { orderStatuses } from '../constants';
 import { useOrders } from '../hooks/useOrders';
+import { useVirtualClock } from '../hooks/useVirtualClock';
 import { DeliveryOption } from './Checkout';
 
 const statusFilters = [
@@ -194,6 +196,17 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
+  const [date] = useVirtualClock();
+
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -217,25 +230,50 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
             onChange={e => handleChange(e.target.value)}
           />
         </Search>
-        <IconButton
-          sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
-          className="add-icon-button"
-          href="/admin/orders/new"
-        >
-          <Add />
-        </IconButton>
-        <Button
-          sx={{
-            display: { xs: 'none', md: 'flex' },
-          }}
-          variant="contained"
-          href="/admin/orders/new"
-          startIcon={<Add />}
-        >
-          <Typography display="inline" sx={{ textTransform: 'none' }}>
-            Create order
-          </Typography>
-        </Button>
+        {date >= from && date <= to ? (
+          <>
+            <IconButton
+              sx={{ ml: 1, display: { xs: 'flex', md: 'none' } }}
+              className="add-icon-button"
+              href="/admin/orders/new"
+            >
+              <Add />
+            </IconButton>
+            <Button
+              sx={{
+                display: { xs: 'none', md: 'flex' },
+              }}
+              variant="contained"
+              href="/admin/orders/new"
+              startIcon={<Add />}
+            >
+              <Typography display="inline" sx={{ textTransform: 'none' }}>
+                Create order
+              </Typography>
+            </Button>
+          </>
+        ) : (
+          <Tooltip
+            arrow
+            title="This function is available from Saturday 9am to Sunday 23pm"
+          >
+            <div>
+              <Button
+                sx={{
+                  display: { xs: 'none', md: 'flex' },
+                }}
+                disabled
+                variant="contained"
+                href="/admin/orders/new"
+                startIcon={<Add />}
+              >
+                <Typography display="inline" sx={{ textTransform: 'none' }}>
+                  Create order
+                </Typography>
+              </Button>
+            </div>
+          </Tooltip>
+        )}
       </AdminAppBar>
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
