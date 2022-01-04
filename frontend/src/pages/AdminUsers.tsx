@@ -5,6 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
+  Chip,
   Grid,
   IconButton,
   InputBase,
@@ -23,6 +24,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { roles } from '../constants';
 import { useUsers } from '../hooks/useUsers';
 
 const columns: { key: keyof User; title: string; sortable: boolean }[] = [
@@ -263,27 +265,48 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                     searchParams.get('role') === 'all' ||
                     u.role === searchParams.get('role'),
                 )
-                ?.map(user => (
-                  <TableRow
-                    hover
-                    key={user.id}
-                    sx={{
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => navigate(`/admin/users/${user.id}`)}
-                  >
-                    <TableCell component="th" scope="row">
-                      {user.name}
-                    </TableCell>
-                    <TableCell>{user.surname}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </TableCell>
-                    <TableCell>€ {user.balance}</TableCell>
-                  </TableRow>
-                ))}
+                ?.map(user => {
+                  const { icon: Icon, color, name } = roles[user.role];
+                  return (
+                    <TableRow
+                      hover
+                      key={user.id}
+                      sx={{
+                        '&:last-child td, &:last-child th': { border: 0 },
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => navigate(`/admin/users/${user.id}`)}
+                    >
+                      <TableCell component="th" scope="row">
+                        {user.name}
+                      </TableCell>
+                      <TableCell>{user.surname}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Chip
+                          icon={
+                            <Icon
+                              sx={{
+                                color: color + '!important',
+                                width: 16,
+                                height: 16,
+                              }}
+                            />
+                          }
+                          label={name}
+                          variant="outlined"
+                          sx={{
+                            borderColor: color,
+                            color: color,
+                            py: '4px',
+                            height: 'unset',
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>€ {user.balance}</TableCell>
+                    </TableRow>
+                  );
+                })}
             </TableBody>
           </Table>
         </TableContainer>

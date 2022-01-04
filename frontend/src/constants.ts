@@ -1,12 +1,65 @@
-import { Build, Lock, Pending } from '@mui/icons-material';
+import {
+  AccountBox,
+  Agriculture,
+  Build,
+  DeliveryDining,
+  Inventory,
+  Inventory2,
+  Lock,
+  Pending,
+  Person,
+} from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import BadgeIcon from '@mui/icons-material/Badge';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
 import DoneIcon from '@mui/icons-material/Done';
 import DraftsIcon from '@mui/icons-material/Drafts';
-import { OrderStatus } from './api/BasilApi';
+import { OrderStatus, Role } from './api/BasilApi';
 
 export const drawerWidth = 240;
+export const roles: Record<
+  Role,
+  { key: string; name: string; color: string; icon: any }
+> = {
+  customer: {
+    color: 'yellowgreen',
+    icon: AccountBox,
+    key: 'customer',
+    name: 'Customer',
+  },
+  employee: {
+    color: 'slategray',
+    icon: BadgeIcon,
+    key: 'employee',
+    name: 'Employee',
+  },
+  farmer: {
+    color: 'forestgreen',
+    icon: Agriculture,
+    key: 'farmer',
+    name: 'Farmer',
+  },
+  manager: { color: 'tomato', icon: Person, key: 'manager', name: 'Manager' },
+  rider: {
+    color: 'goldenrod',
+    icon: DeliveryDining,
+    key: 'rider',
+    name: 'Rider',
+  },
+  warehouse_manager: {
+    color: 'midnightblue',
+    icon: Inventory2,
+    key: 'warehouse_manager',
+    name: 'Warehouse Manager',
+  },
+  warehouse_worker: {
+    color: 'sienna',
+    icon: Inventory,
+    key: 'warehouse_worker',
+    name: 'Warehouse Worker',
+  },
+};
 export const orderStatuses: Record<
   OrderStatus,
   { key: string; name: string; color: string; icon: any }
