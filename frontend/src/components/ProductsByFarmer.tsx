@@ -320,7 +320,7 @@ export default function ProductsByFarmer({
                 </Typography>
                 <Avatar src={f.avatar} sx={{ boxShadow: 2, right: 0, ml: 1 }} />
               </Grid>
-              <Grid item sx={{ pt: '0!important' }} xs={12} sm={12}>
+              <Grid item xs={12} sm={12}>
                 <Typography
                   align="left"
                   gutterBottom
@@ -334,12 +334,10 @@ export default function ProductsByFarmer({
 
             <Grid
               container
-              direction="row"
-              spacing="2rem"
+              display="grid"
+              gap={2.5}
+              gridTemplateColumns="repeat(auto-fill, minmax(16rem, 1fr))"
               padding="1rem"
-              alignItems="center"
-              justifyItems="center"
-              width="auto"
             >
               {products
                 ?.filter(p => p.farmer.id === f.id)
@@ -359,7 +357,7 @@ export default function ProductsByFarmer({
                 .map(p => (
                   <>
                     {date >= from && date <= to ? (
-                      <Grid item lg={3} md={4} sm={6} xs={12} height={'425px'}>
+                      <Grid item>
                         <ProductCard
                           key={p.id}
                           product={p}
@@ -369,7 +367,7 @@ export default function ProductsByFarmer({
                         />
                       </Grid>
                     ) : (
-                      <Grid item lg={3} md={4} sm={6} xs={12} height={'370px'}>
+                      <Grid item>
                         <ProductCard
                           key={p.id}
                           product={p}
