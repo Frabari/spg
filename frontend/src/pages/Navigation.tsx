@@ -1,8 +1,8 @@
 import {
   Fragment,
+  MouseEvent as ReactMouseEvent,
   useEffect,
   useState,
-  MouseEvent as ReactMouseEvent,
 } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -137,6 +137,7 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 }));
 
 function NavBar(props: any) {
+  const [length, setLength] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] =
     useState<null | HTMLElement>(null);
@@ -174,6 +175,7 @@ function NavBar(props: any) {
   };
 
   const handleMenuNotifications = (event: ReactMouseEvent<HTMLElement>) => {
+    notifications.forEach(n => (n.read = true));
     setAnchorElNotifications(event.currentTarget);
   };
 
@@ -421,7 +423,11 @@ function NavBar(props: any) {
                     aria-label="show notifications"
                     onClick={handleMenuNotifications}
                   >
-                    <Badge badgeContent={notifications?.length}>
+                    <Badge
+                      badgeContent={
+                        notifications.filter(n => n.read === false).length
+                      }
+                    >
                       <NotificationsIcon />
                     </Badge>
                   </IconButton>
