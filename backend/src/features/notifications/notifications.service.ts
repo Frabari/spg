@@ -60,7 +60,7 @@ export class NotificationsService {
     if (notification.priority === NotificationPriority.CRITICAL) {
       users?.forEach(u => {
         this.sendgridService.send({
-          from: 'federico.pregliasco98@gmail.com',
+          from: 'basilthestore@gmail.com',
           to: u.email,
           subject: `New ${notification.type} notification from Basil`,
           text: notification.title + '\n\n' + notification.message,
