@@ -13,7 +13,9 @@ import {
   InputBase,
   Menu,
   MenuItem,
+  Tab,
   TableSortLabel,
+  Tabs,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -124,6 +126,13 @@ const Description = styled(Box)({
   overflow: 'hidden',
   maxWidth: 300,
 });
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
 
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
@@ -260,6 +269,12 @@ export const AdminProducts = (props: {
   const { users } = useUsers();
   const sort = useCategories();
   const [date] = useVirtualClock();
+
+  const [value, setValue] = React.useState(0);
+
+  const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
   // category column filter
   const [categoryAnchorEl, categorySetAnchorEl] = useState<null | HTMLElement>(
@@ -401,19 +416,16 @@ export const AdminProducts = (props: {
         </Button>
       </AdminAppBar>
       <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
-        <Grid container direction="column">
-          <Grid item>
-            <Button
-              sx={{ mb: '16px' }}
-              onClick={() => handleStatusSearchParams()}
-            >
-              Show products to be delivered
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button
-              sx={{ mb: '16px' }}
-              color="error"
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: '16px' }}>
+          <Tabs
+            value={value}
+            onChange={handleChangeTab}
+            aria-label="basic tabs example"
+            variant="scrollable"
+          >
+            <Tab
+              label="Show all"
+              {...a11yProps(0)}
               onClick={() =>
                 setSearchParams({
                   category: 'all',
@@ -421,11 +433,15 @@ export const AdminProducts = (props: {
                   status: 'all',
                 })
               }
-            >
-              Reset
-            </Button>
-          </Grid>
-        </Grid>
+            />
+            <Tab
+              label="Show products to be delivered"
+              {...a11yProps(1)}
+              onClick={() => handleStatusSearchParams()}
+            />
+          </Tabs>
+        </Box>
+
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}

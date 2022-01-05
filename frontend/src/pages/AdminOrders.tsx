@@ -13,7 +13,9 @@ import {
   Menu,
   MenuItem,
   styled,
+  Tab,
   TableSortLabel,
+  Tabs,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -126,6 +128,13 @@ const dateDiffInDays = (a: Date, b: Date) => {
   return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 };
 
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
+
 export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { orders } = useOrders();
@@ -139,6 +148,11 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
     dir: 'asc' | 'desc';
     value?: (o: Order) => any;
   }>({ by: null, dir: 'asc' });
+  const [value, setValue] = React.useState(0);
+
+  const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
   // status column filter
   const [statusAnchorEl, statusSetAnchorEl] = useState<null | HTMLElement>(
@@ -304,48 +318,46 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
       <Box
         sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
-        <Grid container direction="column">
-          <Grid item>
-            <Button
-              sx={{ mb: '16px' }}
-              onClick={() =>
-                setSearchParams({
-                  status: OrderStatus.PAID,
-                  delivery: DeliveryOption.PICKUP,
-                })
-              }
-            >
-              Show pick up schedule
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button
-              sx={{ mb: '16px' }}
-              onClick={() =>
-                setSearchParams({
-                  status: OrderStatus.PENDING_CANCELLATION,
-                  delivery: 'all',
-                })
-              }
-            >
-              Show orders pending cancellation
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button
-              sx={{ mb: '16px' }}
-              color="error"
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: '16px' }}>
+          <Tabs
+            value={value}
+            onChange={handleChangeTab}
+            aria-label="basic tabs example"
+            variant="scrollable"
+          >
+            <Tab
+              label="Show all"
+              {...a11yProps(0)}
               onClick={() =>
                 setSearchParams({
                   status: 'all',
                   delivery: 'all',
                 })
               }
-            >
-              Reset
-            </Button>
-          </Grid>
-        </Grid>
+            />
+            <Tab
+              label="Show pick up schedule"
+              {...a11yProps(1)}
+              onClick={() =>
+                setSearchParams({
+                  status: OrderStatus.PAID,
+                  delivery: DeliveryOption.PICKUP,
+                })
+              }
+            />
+            <Tab
+              label="Show orders pending cancellation"
+              {...a11yProps(2)}
+              onClick={() =>
+                setSearchParams({
+                  status: OrderStatus.PENDING_CANCELLATION,
+                  delivery: 'all',
+                })
+              }
+            />
+          </Tabs>
+        </Box>
+
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}
