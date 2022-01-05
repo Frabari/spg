@@ -441,6 +441,12 @@ function NavBar(props: any) {
                         overflow: 'visible',
                         filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
                         mt: 3,
+                        '& .MuiAvatar-root': {
+                          width: 32,
+                          height: 32,
+                          ml: -0.5,
+                          mr: 1,
+                        },
                         '&:before': {
                           content: '""',
                           display: 'block',
@@ -462,12 +468,11 @@ function NavBar(props: any) {
                   >
                     <List
                       sx={{
-                        width: 300,
-                        maxWidth: 360,
+                        maxWidth: 500,
                         bgcolor: 'background.paper',
                         position: 'relative',
                         overflow: 'auto',
-                        maxHeight: 200,
+                        maxHeight: 500,
                         '& ul': { padding: 0 },
                       }}
                     >

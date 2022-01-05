@@ -22,6 +22,17 @@ const avatars = [
   'https://images.unsplash.com/photo-1541647376583-8934aaf3448a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258MTJ8MzIzMzgzODJ8fHx8fDJ8fDE2MzY2NTExNTM&ixlib=rb-1.2.1&q=80&w=1080',
   'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258MTN8MzIzMzgzODJ8fHx8fDJ8fDE2MzY2NTExNTM&ixlib=rb-1.2.1&q=80&w=1080',
   'https://images.unsplash.com/photo-1597223557154-721c1cecc4b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyNzQ4OTV8MHwxfGNvbGxlY3Rpb258MTR8MzIzMzgzODJ8fHx8fDJ8fDE2MzY2NTExNTM&ixlib=rb-1.2.1&q=80&w=1080',
+  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80',
+  'https://images.unsplash.com/photo-1499952127939-9bbf5af6c51c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1176&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
+];
+
+const companyImages = [
+  'https://images.unsplash.com/photo-1444858291040-58f756a3bdd6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1678&q=80',
+  'https://images.unsplash.com/photo-1517817500400-c961b0488325?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
+  'https://images.unsplash.com/photo-1598722818387-cbdaa0dc58d2?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80',
+  'https://images.unsplash.com/photo-1589209296952-203d18b2df4e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80',
+  'https://images.unsplash.com/photo-1614242704479-b7d814cfbabf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
 ];
 
 const regions = [
@@ -47,20 +58,6 @@ const regions = [
   'Veneto',
 ];
 
-let firstN = -1;
-
-function checkFarmer(role: any, n: number, products: Product[]) {
-  let prods = [];
-
-  if (firstN === -1) firstN = n;
-  if (role === Role.FARMER && firstN === n) {
-    prods = products.slice(0, 25);
-  } else if (role === Role.FARMER && firstN !== n)
-    prods = products.slice(25, 50);
-
-  return prods;
-}
-
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
@@ -75,27 +72,53 @@ export default class DbSeeder implements Seeder {
     let i = 0;
 
     for (const role of Object.values(Role)) {
-      for (const n of [1, 2]) {
-        const name = faker.name.firstName();
-        const surname = faker.name.lastName();
-        await entityManager.save(User, {
-          role: role,
-          email: `${role}${n}@example.com`,
-          name: name,
-          surname: surname,
-          password: passwordTest,
-          products: checkFarmer(role, n, products),
-          avatar: avatars[i++ % avatars.length],
-          address: {
+      if (role !== Role.FARMER) {
+        for (const n of [1, 2]) {
+          const name = faker.name.firstName();
+          const surname = faker.name.lastName();
+          await entityManager.save(User, {
+            role: role,
+            email: `${role}${n}@example.com`,
             name: name,
             surname: surname,
-            address: faker.address.streetAddress(),
-            city: faker.address.state(),
-            zipCode: faker.address.zipCode(),
-            province: faker.address.stateAbbr(),
-            region: regions[getRandomInt(20)],
-          },
-        });
+            password: passwordTest,
+            avatar: avatars[i++ % avatars.length],
+            address: {
+              name: name,
+              surname: surname,
+              address: faker.address.streetAddress(),
+              city: faker.address.state(),
+              zipCode: faker.address.zipCode(),
+              province: faker.address.stateAbbr(),
+              region: regions[getRandomInt(20)],
+            },
+          });
+        }
+      } else {
+        for (const n of [1, 2, 3, 4, 5]) {
+          const name = faker.name.firstName();
+          const surname = faker.name.lastName();
+          await entityManager.save(User, {
+            role: role,
+            email: `${role}${n}@example.com`,
+            name: name,
+            surname: surname,
+            password: passwordTest,
+            products: products.slice((n - 1) * 10, n * 10),
+            companyName: faker.company.companyName(),
+            companyImage: companyImages[n - 1],
+            avatar: avatars[i++ % avatars.length],
+            address: {
+              name: name,
+              surname: surname,
+              address: faker.address.streetAddress(),
+              city: faker.address.state(),
+              zipCode: faker.address.zipCode(),
+              province: faker.address.stateAbbr(),
+              region: regions[getRandomInt(20)],
+            },
+          });
+        }
       }
     }
     await entityManager.save(Category, [

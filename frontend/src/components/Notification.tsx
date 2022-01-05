@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Snackbar } from '@mui/material';
-import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import DoneIcon from '@mui/icons-material/Done';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import {
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Slide,
+  SlideProps,
+  Snackbar,
+  SnackbarContent,
+} from '@mui/material';
+import { NotificationType } from '../api/BasilApi';
 import { useNotifications } from '../hooks/useNotifications';
 
 export default function Notifications() {
@@ -15,13 +26,6 @@ export default function Notifications() {
     }
   }, [newNotification]);
 
-  const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
-    props,
-    ref,
-  ) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-  });
-
   const handleClose = (
     event: React.SyntheticEvent | Event,
     reason?: string,
@@ -33,21 +37,44 @@ export default function Notifications() {
     setOpen(false);
   };
 
+  type TransitionProps = Omit<SlideProps, 'direction'>;
+
+  function TransitionLeft(props: TransitionProps) {
+    return <Slide {...props} direction="left" />;
+  }
+
   return (
     <Snackbar
+      key="notification-snackbar"
       onClose={handleClose}
-      autoHideDuration={10000}
+      sx={{ maxWidth: '350px', mt: 5, mr: 10 }}
+      autoHideDuration={6000}
+      TransitionComponent={TransitionLeft}
       open={open}
-      message={notification?.title}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
-      <Alert
-        onClose={handleClose}
-        severity={notification?.type}
-        sx={{ width: '100%' }}
-      >
-        {notification?.title}
-      </Alert>
+      <SnackbarContent
+        sx={{ py: 0, color: 'black', backgroundColor: 'white' }}
+        message={
+          <ListItem alignItems="flex-start">
+            <ListItemIcon>
+              {notification?.type === NotificationType.INFO && (
+                <InfoOutlinedIcon sx={{ color: 'cornflowerblue' }} />
+              )}
+              {notification?.type === NotificationType.ERROR && (
+                <ErrorOutlineIcon color="error" />
+              )}
+              {notification?.type === NotificationType.SUCCESS && (
+                <DoneIcon color="primary" />
+              )}
+            </ListItemIcon>
+            <ListItemText
+              primary={notification?.title}
+              secondary={notification?.message}
+            />
+          </ListItem>
+        }
+      />
     </Snackbar>
   );
 }
