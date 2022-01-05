@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import toast from 'react-hot-toast';
 import {
   Link,
   Navigate,
@@ -17,12 +16,8 @@ import {
   ListItemText,
   useMediaQuery,
 } from '@mui/material';
-import { logout } from '../api/BasilApi';
-import { ApiException } from '../api/createHttpClient';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { drawerWidth } from '../constants';
-import { usePendingState } from '../hooks/usePendingState';
-import { useProfile } from '../hooks/useProfile';
 import { CustomerOrder } from './CustomerOrder';
 import { CustomerOrders } from './CustomerOrders';
 import NavigationBox from './Navigation';
@@ -43,23 +38,11 @@ const pages = [
 
 export const Customer = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { profile, load } = useProfile();
-  const { pending, setPending } = usePendingState();
   const [queryParams] = useSearchParams();
   const isMobile = useMediaQuery('(max-width:760px)');
   const handleDrawerToggle = () => {
     if (isMobile) {
       setMobileOpen(!mobileOpen);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setPending(true);
-      load();
-    } catch (e) {
-      toast.error((e as ApiException).message);
     }
   };
 

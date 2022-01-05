@@ -120,14 +120,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const _MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-const dateDiffInDays = (a: Date, b: Date) => {
-  const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
-  const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
-  return Math.floor((utc2 - utc1) / _MS_PER_DAY);
-};
-
 function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
@@ -298,6 +290,17 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
             title="This function is available from Saturday 9am to Sunday 23pm"
           >
             <div>
+              <IconButton
+                disabled
+                sx={{
+                  ml: 1,
+                  display: { xs: 'flex', md: 'none' },
+                  backgroundColor: 'rgb(220,220,220) !important',
+                }}
+                href="/admin/orders/new"
+              >
+                <Add />
+              </IconButton>
               <Button
                 sx={{
                   display: { xs: 'none', md: 'flex' },
