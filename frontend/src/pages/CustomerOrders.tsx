@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import {
   Box,
   Chip,
   Grid,
+  IconButton,
+  Menu,
   MenuItem,
   TableSortLabel,
-  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -87,12 +89,47 @@ export const CustomerOrders = (props: {
   const [weekFilter, setWeekFilter] = useState(props.week);
   const [deliveryFilter, setDeliveryFilter] = useState(props.delivery);
   const [sortedOrders, setSortedOrders] = useState<Order[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [sorting, setSorting] = useState<{
     by: keyof Order;
     dir: 'asc' | 'desc';
     value?: (o: Order) => any;
   }>({ by: null, dir: 'asc' });
   var data = new Date();
+
+  // status column filter
+  const [statusAnchorEl, statusSetAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const openStatus = Boolean(statusAnchorEl);
+  const statusHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    statusSetAnchorEl(event.currentTarget);
+  };
+  const statusHandleClose = () => {
+    statusSetAnchorEl(null);
+  };
+
+  // deliver column filter
+  const [deliverAnchorEl, deliverSetAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const openDeliver = Boolean(deliverAnchorEl);
+  const deliverHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    deliverSetAnchorEl(event.currentTarget);
+  };
+  const deliverHandleClose = () => {
+    deliverSetAnchorEl(null);
+  };
+
+  // week column filter
+  const [weekAnchorEl, weekSetAnchorEl] = useState<null | HTMLElement>(null);
+  const openWeek = Boolean(weekAnchorEl);
+  const weekHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    weekSetAnchorEl(event.currentTarget);
+  };
+  const weekHandleClose = () => {
+    weekSetAnchorEl(null);
+  };
 
   useEffect(() => {
     const ord = orders.filter(o => o.user.id === (profile as User).id);
@@ -117,22 +154,27 @@ export const CustomerOrders = (props: {
   }, [orders, sorting]);
 
   const handleFilterByStatus = (s: string) => {
-    navigate(
-      `/account/orders?status=${s}&week=${weekFilter}&delivery=${deliveryFilter}`,
-    );
-    setOrderStatus(s);
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      status: s,
+    });
+    statusHandleClose();
   };
 
   const handleFilterByWeek = (s: string) => {
-    navigate(
-      `/account/orders?week=${s}&status=${orderStatus}&delivery=${deliveryFilter}`,
-    );
-    setWeekFilter(s);
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      week: s,
+    });
+    weekHandleClose();
   };
 
   const handleFilterByDelivery = (s: string) => {
-    navigate(`/account/orders?delivery=${s}&week=${s}&status=${orderStatus}`);
-    setDeliveryFilter(s);
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      delivery: s,
+    });
+    deliverHandleClose();
   };
 
   const toggleSorting = (byKey: keyof Order) => () => {
@@ -189,7 +231,13 @@ export const CustomerOrders = (props: {
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
                   >
-                    <Grid container direction="column" spacing={1}>
+                    <Grid
+                      container
+                      direction="row"
+                      spacing={1}
+                      justifyItems="center"
+                      alignItems="center"
+                    >
                       <Grid item>
                         {c.sortable ? (
                           <TableSortLabel
@@ -207,65 +255,98 @@ export const CustomerOrders = (props: {
                       </Grid>
                       <Grid item>
                         {c.key === 'status' ? (
-                          <TextField
-                            id="outlined-select-role"
-                            select
-                            value={orderStatus}
-                            size="small"
-                            label="Filter by status"
-                            sx={{ width: '175px' }}
-                            onChange={e => handleFilterByStatus(e.target.value)}
-                          >
-                            {statusFilters.map(option => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
+                          <>
+                            <IconButton onClick={statusHandleClick}>
+                              <FilterAltIcon />
+                            </IconButton>
+                            <Menu
+                              id="status-menu"
+                              anchorEl={statusAnchorEl}
+                              open={openStatus}
+                              onClose={statusHandleClose}
+                              MenuListProps={{
+                                'aria-labelledby': 'basic-button',
+                              }}
+                            >
+                              {statusFilters.map(option => (
+                                <MenuItem
+                                  key={option}
+                                  value={option}
+                                  onClick={() => handleFilterByStatus(option)}
+                                >
+                                  {option}
+                                </MenuItem>
+                              ))}
+                            </Menu>
+                          </>
                         ) : c.key === 'createdAt' ? (
-                          <TextField
-                            id="outlined-select-role"
-                            select
-                            value={weekFilter}
-                            size="small"
-                            label="Filter by week"
-                            sx={{ width: '175px' }}
-                            onChange={e => handleFilterByWeek(e.target.value)}
-                          >
-                            {week.map(option => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
+                          <>
+                            <IconButton onClick={weekHandleClick}>
+                              <FilterAltIcon />
+                            </IconButton>
+                            <Menu
+                              id="week-menu"
+                              anchorEl={weekAnchorEl}
+                              open={openWeek}
+                              onClose={weekHandleClose}
+                              MenuListProps={{
+                                'aria-labelledby': 'basic-button',
+                              }}
+                            >
+                              {week.map(option => (
+                                <MenuItem
+                                  key={option}
+                                  value={option}
+                                  onClick={() => handleFilterByWeek(option)}
+                                >
+                                  {option}
+                                </MenuItem>
+                              ))}
+                            </Menu>
+                          </>
                         ) : c.key === 'deliverAt' ? (
-                          <TextField
-                            id="outlined-select-deliver"
-                            select
-                            value={deliveryFilter}
-                            size="small"
-                            label="Filter by delivery option"
-                            sx={{ width: '175px' }}
-                            onChange={e =>
-                              handleFilterByDelivery(e.target.value)
-                            }
-                          >
-                            <MenuItem key="all" value="all">
-                              all
-                            </MenuItem>
-                            <MenuItem
-                              key={DeliveryOption.PICKUP}
-                              value={DeliveryOption.PICKUP}
+                          <>
+                            <IconButton onClick={deliverHandleClick}>
+                              <FilterAltIcon />
+                            </IconButton>
+                            <Menu
+                              id="deliver-menu"
+                              anchorEl={deliverAnchorEl}
+                              open={openDeliver}
+                              onClose={deliverHandleClose}
+                              MenuListProps={{
+                                'aria-labelledby': 'basic-button',
+                              }}
                             >
-                              {DeliveryOption.PICKUP}
-                            </MenuItem>
-                            <MenuItem
-                              key={DeliveryOption.DELIVERY}
-                              value={DeliveryOption.DELIVERY}
-                            >
-                              {DeliveryOption.DELIVERY}
-                            </MenuItem>
-                          </TextField>
+                              <MenuItem
+                                key="all"
+                                value="all"
+                                onClick={() => handleFilterByDelivery('all')}
+                              >
+                                all
+                              </MenuItem>
+                              <MenuItem
+                                key={DeliveryOption.PICKUP}
+                                value={DeliveryOption.PICKUP}
+                                onClick={() =>
+                                  handleFilterByDelivery(DeliveryOption.PICKUP)
+                                }
+                              >
+                                {DeliveryOption.PICKUP}
+                              </MenuItem>
+                              <MenuItem
+                                key={DeliveryOption.DELIVERY}
+                                value={DeliveryOption.DELIVERY}
+                                onClick={() =>
+                                  handleFilterByDelivery(
+                                    DeliveryOption.DELIVERY,
+                                  )
+                                }
+                              >
+                                {DeliveryOption.DELIVERY}
+                              </MenuItem>
+                            </Menu>
+                          </>
                         ) : (
                           <></>
                         )}
@@ -279,32 +360,32 @@ export const CustomerOrders = (props: {
               {sortedOrders
                 ?.filter(
                   order =>
-                    weekFilter === 'all' ||
-                    weekFilter === null ||
-                    weekFilter === 'null' ||
-                    (weekFilter === 'thisWeek' &&
+                    searchParams.get('week') === 'all' ||
+                    searchParams.get('week') === null ||
+                    searchParams.get('week') === 'null' ||
+                    (searchParams.get('week') === 'thisWeek' &&
                       new Date(order.createdAt).getDay() <= data.getDay() &&
                       dateDiffInDays(data, new Date(order.createdAt)) < 7) ||
-                    (weekFilter === 'pastWeek' &&
+                    (searchParams.get('week') === 'pastWeek' &&
                       new Date(order.createdAt).getDay() <= data.getDay() &&
                       dateDiffInDays(data, new Date(order.createdAt)) >= 7 &&
                       dateDiffInDays(data, new Date(order.createdAt)) < 14),
                 )
                 ?.filter(
                   order =>
-                    orderStatus === 'all' ||
-                    orderStatus === null ||
-                    orderStatus === 'null' ||
-                    order.status === orderStatus,
+                    searchParams.get('status') === 'all' ||
+                    searchParams.get('status') === null ||
+                    searchParams.get('status') === 'null' ||
+                    order.status === searchParams.get('status'),
                 )
                 ?.filter(
                   order =>
-                    deliveryFilter === null ||
-                    deliveryFilter === 'all' ||
-                    deliveryFilter === 'null' ||
-                    (deliveryFilter === 'pickup' &&
+                    searchParams.get('delivery') === null ||
+                    searchParams.get('delivery') === 'all' ||
+                    searchParams.get('delivery') === 'null' ||
+                    (searchParams.get('delivery') === 'pickup' &&
                       order.deliveryLocation === null) ||
-                    (deliveryFilter === 'delivery' &&
+                    (searchParams.get('delivery') === 'delivery' &&
                       order.deliveryLocation !== null),
                 )
                 .map(order => {
