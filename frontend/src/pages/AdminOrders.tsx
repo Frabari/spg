@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
@@ -9,10 +10,10 @@ import {
   Grid,
   IconButton,
   InputBase,
+  Menu,
   MenuItem,
   styled,
   TableSortLabel,
-  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -138,7 +139,30 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
     dir: 'asc' | 'desc';
     value?: (o: Order) => any;
   }>({ by: null, dir: 'asc' });
-  var data = new Date();
+
+  // status column filter
+  const [statusAnchorEl, statusSetAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const openStatus = Boolean(statusAnchorEl);
+  const statusHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    statusSetAnchorEl(event.currentTarget);
+  };
+  const statusHandleClose = () => {
+    statusSetAnchorEl(null);
+  };
+
+  // deliver column filter
+  const [deliverAnchorEl, deliverSetAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const openDeliver = Boolean(deliverAnchorEl);
+  const deliverHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    deliverSetAnchorEl(event.currentTarget);
+  };
+  const deliverHandleClose = () => {
+    deliverSetAnchorEl(null);
+  };
 
   useEffect(() => {
     if (orders?.length) {
@@ -162,6 +186,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
       ...Object.fromEntries(searchParams.entries()),
       status: status,
     });
+    statusHandleClose();
   };
 
   const handleDeliverySearchParams = (delivery: string) => {
@@ -169,6 +194,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
       ...Object.fromEntries(searchParams.entries()),
       delivery: delivery,
     });
+    deliverHandleClose();
   };
 
   const toggleSorting = (byKey: keyof Order) => () => {
@@ -332,7 +358,13 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
                   >
-                    <Grid container direction="column" spacing={1}>
+                    <Grid
+                      container
+                      direction="row"
+                      spacing={1}
+                      justifyItems="center"
+                      alignItems="center"
+                    >
                       <Grid item>
                         {c.sortable ? (
                           <TableSortLabel
@@ -350,54 +382,84 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
                       </Grid>
                       <Grid item>
                         {c.key === 'status' ? (
-                          <TextField
-                            id="outlined-select-status"
-                            select
-                            value={searchParams.get('status')}
-                            size="small"
-                            label="Filter by status"
-                            sx={{ width: '175px' }}
-                            onChange={e =>
-                              handleStatusSearchParams(e.target.value)
-                            }
-                          >
-                            {statusFilters.map(option => (
-                              <MenuItem key={option} value={option}>
-                                {option.charAt(0).toUpperCase() +
-                                  option.slice(1)}
-                              </MenuItem>
-                            ))}
-                          </TextField>
+                          <>
+                            <IconButton onClick={statusHandleClick}>
+                              <FilterAltIcon />
+                            </IconButton>
+                            <Menu
+                              id="status-menu"
+                              anchorEl={statusAnchorEl}
+                              open={openStatus}
+                              onClose={statusHandleClose}
+                              MenuListProps={{
+                                'aria-labelledby': 'basic-button',
+                              }}
+                            >
+                              {statusFilters.map(option => (
+                                <MenuItem
+                                  key={option}
+                                  value={option}
+                                  onClick={() =>
+                                    handleStatusSearchParams(option)
+                                  }
+                                >
+                                  {option.charAt(0).toUpperCase() +
+                                    option.slice(1)}
+                                </MenuItem>
+                              ))}
+                            </Menu>
+                          </>
                         ) : c.key === 'deliverAt' ? (
-                          <TextField
-                            id="outlined-select-deliver"
-                            select
-                            value={searchParams.get('delivery')}
-                            size="small"
-                            label="Filter by delivery option"
-                            sx={{ width: '175px' }}
-                            onChange={e =>
-                              handleDeliverySearchParams(e.target.value)
-                            }
-                          >
-                            <MenuItem key="all" value="all">
-                              All
-                            </MenuItem>
-                            <MenuItem
-                              key={DeliveryOption.PICKUP}
-                              value={DeliveryOption.PICKUP}
+                          <>
+                            <IconButton onClick={deliverHandleClick}>
+                              <FilterAltIcon />
+                            </IconButton>
+                            <Menu
+                              id="deliver-menu"
+                              anchorEl={deliverAnchorEl}
+                              open={openDeliver}
+                              onClose={deliverHandleClose}
+                              MenuListProps={{
+                                'aria-labelledby': 'basic-button',
+                              }}
                             >
-                              {DeliveryOption.PICKUP.charAt(0).toUpperCase() +
-                                DeliveryOption.PICKUP.slice(1)}
-                            </MenuItem>
-                            <MenuItem
-                              key={DeliveryOption.DELIVERY}
-                              value={DeliveryOption.DELIVERY}
-                            >
-                              {DeliveryOption.DELIVERY.charAt(0).toUpperCase() +
-                                DeliveryOption.DELIVERY.slice(1)}
-                            </MenuItem>
-                          </TextField>
+                              <MenuItem
+                                key="all"
+                                value="all"
+                                onClick={() =>
+                                  handleDeliverySearchParams('all')
+                                }
+                              >
+                                All
+                              </MenuItem>
+                              <MenuItem
+                                key={DeliveryOption.PICKUP}
+                                value={DeliveryOption.PICKUP}
+                                onClick={() =>
+                                  handleDeliverySearchParams(
+                                    DeliveryOption.PICKUP,
+                                  )
+                                }
+                              >
+                                {DeliveryOption.PICKUP.charAt(0).toUpperCase() +
+                                  DeliveryOption.PICKUP.slice(1)}
+                              </MenuItem>
+                              <MenuItem
+                                key={DeliveryOption.DELIVERY}
+                                value={DeliveryOption.DELIVERY}
+                                onClick={() =>
+                                  handleDeliverySearchParams(
+                                    DeliveryOption.DELIVERY,
+                                  )
+                                }
+                              >
+                                {DeliveryOption.DELIVERY.charAt(
+                                  0,
+                                ).toUpperCase() +
+                                  DeliveryOption.DELIVERY.slice(1)}
+                              </MenuItem>
+                            </Menu>
+                          </>
                         ) : (
                           <></>
                         )}

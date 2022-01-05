@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Alert,
@@ -10,9 +11,9 @@ import {
   Grid,
   IconButton,
   InputBase,
+  Menu,
   MenuItem,
   TableSortLabel,
-  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -260,6 +261,30 @@ export const AdminProducts = (props: {
   const sort = useCategories();
   const [date] = useVirtualClock();
 
+  // category column filter
+  const [categoryAnchorEl, categorySetAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const openCategory = Boolean(categoryAnchorEl);
+  const categoryHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    categorySetAnchorEl(event.currentTarget);
+  };
+  const categoryHandleClose = () => {
+    categorySetAnchorEl(null);
+  };
+
+  // farmer column filter
+  const [farmerAnchorEl, farmerSetAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const openFarmer = Boolean(farmerAnchorEl);
+  const farmerHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    farmerSetAnchorEl(event.currentTarget);
+  };
+  const farmerHandleClose = () => {
+    farmerSetAnchorEl(null);
+  };
+
   useEffect(() => {
     if (users) {
       setFarmers(users.filter(u => u.role === Role.FARMER));
@@ -278,6 +303,7 @@ export const AdminProducts = (props: {
       ...Object.fromEntries(searchParams.entries()),
       category: category,
     });
+    categoryHandleClose();
   };
 
   const handleFarmerSearchParams = (f: string) => {
@@ -293,6 +319,7 @@ export const AdminProducts = (props: {
         farmer: farmer.name + ' ' + farmer.surname,
       });
     }
+    farmerHandleClose();
   };
 
   const fromAvailability = date.set({
@@ -411,9 +438,14 @@ export const AdminProducts = (props: {
                     <TableCell
                       key={c.key}
                       sortDirection={sorting.by === c.key ? sorting.dir : false}
-                      sx={{ width: c.width }}
                     >
-                      <Grid container direction="column" spacing={1}>
+                      <Grid
+                        container
+                        direction="row"
+                        spacing={1}
+                        justifyItems="center"
+                        alignItems="center"
+                      >
                         <Grid item>
                           {c.sortable ? (
                             <TableSortLabel
@@ -430,29 +462,42 @@ export const AdminProducts = (props: {
                           )}
                         </Grid>
                         <Grid item>
-                          {c.key === 'farmer' ? (
-                            <TextField
-                              id="outlined-select-farmer"
-                              select
-                              value={searchParams.get('farmer')}
-                              label="Filter by farmer"
-                              size="small"
-                              sx={{ width: '175px' }}
-                              onChange={e =>
-                                handleFarmerSearchParams(e.target.value)
-                              }
-                            >
-                              <MenuItem key="all" value="all">
-                                {'All'}
-                              </MenuItem>
-                              {farmers?.map((option: User) => (
-                                <MenuItem key={option.id} value={option.email}>
-                                  {option.name} {option.surname}
+                          {c.key === 'farmer' && (
+                            <>
+                              <IconButton onClick={farmerHandleClick}>
+                                <FilterAltIcon />
+                              </IconButton>
+                              <Menu
+                                id="farmer-menu"
+                                anchorEl={farmerAnchorEl}
+                                open={openFarmer}
+                                onClose={farmerHandleClose}
+                                MenuListProps={{
+                                  'aria-labelledby': 'basic-button',
+                                }}
+                              >
+                                <MenuItem
+                                  key="all"
+                                  value="all"
+                                  onClick={() =>
+                                    handleFarmerSearchParams('all')
+                                  }
+                                >
+                                  {'All'}
                                 </MenuItem>
-                              ))}
-                            </TextField>
-                          ) : (
-                            <></>
+                                {farmers?.map((option: User) => (
+                                  <MenuItem
+                                    key={option.id}
+                                    value={option.email}
+                                    onClick={() =>
+                                      handleFarmerSearchParams(option.email)
+                                    }
+                                  >
+                                    {option.name} {option.surname}
+                                  </MenuItem>
+                                ))}
+                              </Menu>
+                            </>
                           )}
                         </Grid>
                       </Grid>
@@ -465,9 +510,14 @@ export const AdminProducts = (props: {
                     <TableCell
                       key={c.key}
                       sortDirection={sorting.by === c.key ? sorting.dir : false}
-                      sx={{ width: c.width }}
                     >
-                      <Grid container direction="column" spacing={1}>
+                      <Grid
+                        container
+                        direction="row"
+                        spacing={1}
+                        justifyItems="center"
+                        alignItems="center"
+                      >
                         <Grid item>
                           {c.sortable ? (
                             <TableSortLabel
@@ -484,29 +534,42 @@ export const AdminProducts = (props: {
                           )}
                         </Grid>
                         <Grid item>
-                          {c.key === 'category' ? (
-                            <TextField
-                              id="outlined-select-category"
-                              select
-                              value={searchParams.get('category')}
-                              label="Filter by category"
-                              size="small"
-                              sx={{ width: '175px' }}
-                              onChange={e =>
-                                handleCategorySearchParams(e.target.value)
-                              }
-                            >
-                              <MenuItem key="all" value="all">
-                                All
-                              </MenuItem>
-                              {sort.categories.map(option => (
-                                <MenuItem key={option.id} value={option.slug}>
-                                  {option.name}
+                          {c.key === 'category' && (
+                            <>
+                              <IconButton onClick={categoryHandleClick}>
+                                <FilterAltIcon />
+                              </IconButton>
+                              <Menu
+                                id="category-menu"
+                                anchorEl={categoryAnchorEl}
+                                open={openCategory}
+                                onClose={categoryHandleClose}
+                                MenuListProps={{
+                                  'aria-labelledby': 'basic-button',
+                                }}
+                              >
+                                <MenuItem
+                                  key="all"
+                                  value="all"
+                                  onClick={() =>
+                                    handleCategorySearchParams('all')
+                                  }
+                                >
+                                  All
                                 </MenuItem>
-                              ))}
-                            </TextField>
-                          ) : (
-                            <></>
+                                {sort.categories.map(option => (
+                                  <MenuItem
+                                    key={option.id}
+                                    value={option.slug}
+                                    onClick={() =>
+                                      handleCategorySearchParams(option.slug)
+                                    }
+                                  >
+                                    {option.name}
+                                  </MenuItem>
+                                ))}
+                              </Menu>
+                            </>
                           )}
                         </Grid>
                       </Grid>
