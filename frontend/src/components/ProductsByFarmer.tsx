@@ -5,12 +5,12 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   Alert,
+  Autocomplete,
   Box,
   Card,
   CardActions,
   CardContent,
   CardMedia,
-  Chip,
   Grid,
   IconButton,
   MenuItem,
@@ -140,15 +140,17 @@ export default function ProductsByFarmer({
   onSelect,
   search,
   handleDelete,
+  setSearchParams,
   setBalanceWarning,
   basketListener,
   setBasketListener,
 }: {
-  farmer?: User;
+  farmer?: string;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
+  setSearchParams?: (params: any) => void;
   setBalanceWarning?: (bol: boolean) => void;
   basketListener?: boolean;
   setBasketListener?: (bol: boolean) => void;
@@ -244,17 +246,46 @@ export default function ProductsByFarmer({
         ) : (
           ''
         )}
-        <Grid item xs={12} sm={11}>
-          {farmer && (
-            <Chip
-              sx={{ m: 2 }}
-              onDelete={handleDelete}
-              variant="outlined"
-              label={`Products by ${farmer.name} ${farmer.surname}`}
-            />
-          )}
+        <Grid item xs={3} sx={{ ml: 'auto' }}>
+          <Autocomplete
+            multiple
+            id="tags-outlined"
+            value={users.filter(
+              u => farmer && farmer.split('-').indexOf(String(u.id)) >= 0,
+            )}
+            options={users.filter(u => u.role === Role.FARMER)}
+            getOptionLabel={(option: User) =>
+              option.name + ' ' + option.surname
+            }
+            filterSelectedOptions
+            onChange={(event, newValue) => {
+              if (filter !== '') {
+                setSearchParams({
+                  farmer: newValue
+                    .map(u => {
+                      return String((u as User).id);
+                    })
+                    .join('-')
+                    .toString(),
+                  category: filter,
+                });
+              } else {
+                setSearchParams({
+                  farmer: newValue
+                    .map(u => {
+                      return String((u as User).id);
+                    })
+                    .join('-')
+                    .toString(),
+                });
+              }
+            }}
+            renderInput={params => (
+              <TextField {...params} label="Filter farmers" size="small" />
+            )}
+          />
         </Grid>
-        <Grid item xs={12} sm={1} display={onSelect ? 'none' : 'block'}>
+        <Grid item display={onSelect ? 'none' : 'block'}>
           <TextField
             id="outlined-select-sort"
             select
@@ -342,7 +373,7 @@ export default function ProductsByFarmer({
             >
               {products
                 ?.filter(p => p.farmer.id === f.id)
-                ?.filter(p => !filter || p.category.slug === filter)
+                ?.filter(p => filter === '' || p.category.slug === filter)
                 ?.filter(
                   p =>
                     !search ||
@@ -351,7 +382,8 @@ export default function ProductsByFarmer({
                 ?.filter(
                   p =>
                     !farmer ||
-                    p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
+                    (farmer &&
+                      farmer.split('-').indexOf(String(p.farmer.id)) >= 0),
                 )
                 ?.filter(p => p.available > 0)
                 ?.sort((a, b) => sortProducts(a, b))

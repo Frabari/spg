@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import {
+  Autocomplete,
   Avatar,
   Box,
   Card,
@@ -10,6 +11,7 @@ import {
   CardMedia,
   Grid,
   IconButton,
+  TextField,
   Typography,
 } from '@mui/material';
 import { Product, User, Role, NotificationType } from '../api/BasilApi';
@@ -148,22 +150,23 @@ export default function ProductsGrid({
   onSelect,
   search,
   handleDelete,
+  setSearchParams,
   setBalanceWarning,
   basketListener,
   setBasketListener,
 }: {
-  farmer?: User;
+  farmer?: string;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
+  setSearchParams?: (params: any) => void;
   setBalanceWarning?: (bol: boolean) => void;
   basketListener?: boolean;
   setBasketListener?: (bol: boolean) => void;
 }) {
   const { products, loadProducts } = useProducts();
   const [date] = useVirtualClock();
-
   const [sortOption, setSortOption] = useState('');
   const sort = [
     'Highest price',
@@ -220,6 +223,44 @@ export default function ProductsGrid({
 
   return (
     <>
+      <Grid item xs={3} sx={{ ml: 'auto' }}>
+        <Autocomplete
+          multiple
+          id="tags-outlined"
+          value={users.filter(
+            u => farmer && farmer.split('-').indexOf(String(u.id)) >= 0,
+          )}
+          options={users.filter(u => u.role === Role.FARMER)}
+          getOptionLabel={(option: User) => option.name + ' ' + option.surname}
+          filterSelectedOptions
+          onChange={(event, newValue) => {
+            if (filter !== '') {
+              setSearchParams({
+                farmer: newValue
+                  .map(u => {
+                    return String((u as User).id);
+                  })
+                  .join('-')
+                  .toString(),
+                category: filter,
+              });
+            } else {
+              setSearchParams({
+                farmer: newValue
+                  .map(u => {
+                    return String((u as User).id);
+                  })
+                  .join('-')
+                  .toString(),
+              });
+            }
+          }}
+          renderInput={params => (
+            <TextField {...params} label="Filter farmers" size="small" />
+          )}
+        />
+      </Grid>
+
       {farmers?.map((f: any) => (
         <>
           <Grid
@@ -285,7 +326,7 @@ export default function ProductsGrid({
             >
               {products
                 ?.filter(p => p.farmer.id === f.id)
-                ?.filter(p => !filter || p.category.slug === filter)
+                ?.filter(p => filter === '' || p.category.slug === filter)
                 ?.filter(
                   p =>
                     !search ||
@@ -294,7 +335,8 @@ export default function ProductsGrid({
                 ?.filter(
                   p =>
                     !farmer ||
-                    p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
+                    (farmer &&
+                      farmer.split('-').indexOf(String(p.farmer.id)) >= 0),
                 )
                 ?.filter(p => p.available > 0)
                 ?.sort((a, b) => sortProducts(a, b))
