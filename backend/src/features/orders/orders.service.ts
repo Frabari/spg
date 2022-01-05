@@ -316,8 +316,8 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       relations: ['order', 'order.user'],
     });
     const users = new Set();
-    await this.orderEntriesRepository.remove(orderEntriesDraft).then(result => {
-      result.forEach(element => {
+    await this.orderEntriesRepository.remove(orderEntriesDraft).then(() => {
+      orderEntriesDraft.forEach(element => {
         users.add(element.order.user);
       });
     });
