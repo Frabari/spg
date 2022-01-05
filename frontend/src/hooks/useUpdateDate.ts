@@ -8,6 +8,7 @@ export const useUpdateDate = () => {
     onSuccess(date) {
       Settings.now = () => date.toMillis();
       client.setQueryData('date', date);
+      return client.invalidateQueries();
     },
   });
 };

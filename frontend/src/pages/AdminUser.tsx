@@ -370,7 +370,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.city}
-                      disabled={!!!!pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">City</InputLabel>
                       <OutlinedInput

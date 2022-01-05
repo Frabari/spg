@@ -142,7 +142,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.name}
-                  disabled={!!!!pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="name">Name</InputLabel>
                   <OutlinedInput
