@@ -289,25 +289,13 @@ export default function ProductsByFarmer({
             sx={{ backgroundColor: 'white' }}
           >
             <Grid container direction="row" spacing={2} padding="2rem">
-              <Grid item xs={12} sm={8}>
-                <Typography
-                  align="left"
-                  fontWeight="bold"
-                  gutterBottom
-                  variant="h6"
-                  component="div"
-                  fontSize="2rem"
-                >
-                  {'Cascina Perosa'}
-                </Typography>
-              </Grid>
               <Grid
                 container
                 direction="row"
                 justifyContent="end"
                 alignContent="center"
                 xs={12}
-                sm={4}
+                sm={12}
               >
                 <Typography
                   gutterBottom
@@ -320,6 +308,19 @@ export default function ProductsByFarmer({
                 </Typography>
                 <Avatar src={f.avatar} sx={{ boxShadow: 2, right: 0, ml: 1 }} />
               </Grid>
+              <Grid item xs={12} sm={8}>
+                <Typography
+                  align="left"
+                  fontWeight="bold"
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  fontSize="2rem"
+                >
+                  {'Cascina Perosa'}
+                </Typography>
+              </Grid>
+
               <Grid item xs={12} sm={12}>
                 <Typography
                   align="left"

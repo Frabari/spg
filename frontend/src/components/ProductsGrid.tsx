@@ -3,22 +3,21 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import {
+  Avatar,
   Box,
   Card,
   CardActions,
   CardContent,
   CardMedia,
-  Chip,
   Grid,
   IconButton,
-  MenuItem,
-  TextField,
   Typography,
 } from '@mui/material';
-import { Product, User } from '../api/BasilApi';
+import { Product, Role, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
+import { useUsers } from '../hooks/useUsers';
 import { useVirtualClock } from '../hooks/useVirtualClock';
 
 function ProductCard({
@@ -75,7 +74,7 @@ function ProductCard({
   };
 
   return (
-    <Grid item lg={3} md={4} sm={6} xs={12} height={'425px'}>
+    <>
       <Card sx={{ height: '100%' }}>
         <CardMedia
           component="img"
@@ -124,7 +123,7 @@ function ProductCard({
           ''
         )}
       </Card>
-    </Grid>
+    </>
   );
 }
 
@@ -167,6 +166,15 @@ export default function ProductsGrid({
   });
   const to = from.plus({ hour: 38 });
 
+  const [farmers, setFarmers] = useState(null);
+  const { users } = useUsers();
+
+  useEffect(() => {
+    if (users) {
+      setFarmers(users.filter(u => u.role === Role.FARMER));
+    }
+  }, [users]);
+
   useEffect(() => {
     if (basketListener) {
       loadProducts();
@@ -197,72 +205,113 @@ export default function ProductsGrid({
 
   return (
     <>
-      <Grid container direction="row">
-        <Grid item xs={12} sm={11}>
-          {farmer && (
-            <Chip
-              sx={{ m: 2 }}
-              onDelete={handleDelete}
-              variant="outlined"
-              label={`Product by ${farmer.name} ${farmer.surname}`}
-            />
-          )}
-        </Grid>
-        <Grid item xs={12} sm={1} display={onSelect ? 'none' : 'block'}>
-          <TextField
-            id="outlined-select-sort"
-            select
-            value={sortOption}
-            size="small"
-            label="Sort by"
-            sx={{
-              width: '200px',
-              float: { xs: 'left', sm: 'right' },
-              mr: 2,
-              ml: 2,
-            }}
-            onChange={e => handleChange(e.target.value)}
+      {farmers?.map((f: any) => (
+        <>
+          <Grid
+            borderRadius="16px"
+            spacing="2rem"
+            padding="1rem"
+            width="auto"
+            marginBottom="1rem"
+            marginX="1rem"
+            sx={{ backgroundColor: '#fafafa' }}
           >
-            {sort.map(option => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      </Grid>
+            <Grid container direction="row" spacing={2} padding="2rem">
+              <Grid
+                container
+                direction="row"
+                justifyContent="end"
+                alignContent="center"
+                xs={12}
+                sm={12}
+              >
+                <Typography
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  display="inline"
+                  fontSize="1rem"
+                >
+                  {f.name + ' ' + f.surname}
+                </Typography>
+                <Avatar src={f.avatar} sx={{ boxShadow: 2, right: 0, ml: 1 }} />
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <Typography
+                  align="left"
+                  fontWeight="bold"
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  fontSize="1.5rem"
+                >
+                  {'Cascina Perosa'}
+                </Typography>
+              </Grid>
 
-      <Grid
-        container
-        direction="row"
-        spacing="2rem"
-        padding="1rem"
-        alignItems="center"
-        justifyItems="center"
-        width="auto"
-      >
-        {products
-          ?.filter(p => !filter || p.category.slug === filter)
-          ?.filter(
-            p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
-          )
-          ?.filter(
-            p =>
-              !farmer ||
-              p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
-          )
-          ?.filter(p => p.available > 0)
-          ?.sort((a, b) => sortProducts(a, b))
-          .map(p => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              onSelect={onSelect}
-              setBalanceWarning={setBalanceWarning}
-              setBasketListener={setBasketListener}
-            />
-          ))}
-      </Grid>
+              <Grid item xs={12} sm={12}>
+                <Typography
+                  align="left"
+                  gutterBottom
+                  component="div"
+                  fontSize="9"
+                >
+                  {'Via Zio Pera 1, Borgoratto, Imperia '}
+                </Typography>
+              </Grid>
+            </Grid>
+
+            <Grid
+              container
+              display="grid"
+              gap={2.5}
+              gridTemplateColumns="repeat(auto-fill, minmax(10rem, 1fr))"
+              padding="1rem"
+            >
+              {products
+                ?.filter(p => p.farmer.id === f.id)
+                ?.filter(p => !filter || p.category.slug === filter)
+                ?.filter(
+                  p =>
+                    !search ||
+                    p.name.toLowerCase().includes(search.toLowerCase()),
+                )
+                ?.filter(
+                  p =>
+                    !farmer ||
+                    p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
+                )
+                ?.filter(p => p.available > 0)
+                ?.sort((a, b) => sortProducts(a, b))
+                .map(p => (
+                  <>
+                    {date >= from && date <= to ? (
+                      <Grid item>
+                        <ProductCard
+                          key={p.id}
+                          product={p}
+                          onSelect={onSelect}
+                          setBalanceWarning={setBalanceWarning}
+                          setBasketListener={setBasketListener}
+                        />
+                      </Grid>
+                    ) : (
+                      <Grid item>
+                        <ProductCard
+                          key={p.id}
+                          product={p}
+                          onSelect={onSelect}
+                          setBalanceWarning={setBalanceWarning}
+                          setBasketListener={setBasketListener}
+                        />
+                      </Grid>
+                    )}
+                  </>
+                ))}
+            </Grid>
+          </Grid>
+        </>
+      ))}
     </>
   );
 }
