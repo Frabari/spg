@@ -5,7 +5,7 @@ export const useLogout = () => {
   const client = useQueryClient();
   return useMutation(logout, {
     onSuccess() {
-      return client.invalidateQueries('profile');
+      return client.resetQueries();
     },
   });
 };

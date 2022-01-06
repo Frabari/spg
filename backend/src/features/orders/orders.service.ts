@@ -149,13 +149,17 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     user: User,
     isBasket = false,
   ) {
-    const order = await this.ordersRepository.findOne(id, {
-      relations: ['entries', 'entries.product', 'user'],
+    let order = await this.ordersRepository.findOne(id, {
+      relations: ['entries', 'entries.product', 'user', 'entries.order'],
     });
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
     }
     if (isBasket) {
+      if (![OrderStatus.DRAFT, OrderStatus.LOCKED].includes(order.status)) {
+        order = await this.resolveBasket(user);
+        (dto as any).id = order.id;
+      }
       if (order.user.id !== user.id) {
         throw new ForbiddenException(
           'Order.ForbiddenEdit',
@@ -287,6 +291,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         }
       }
     }
+    console.log(dto);
     return dto;
   }
 
