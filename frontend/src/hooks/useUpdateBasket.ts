@@ -25,7 +25,6 @@ export const useUpdateBasket = () => {
         quantity,
       });
     }
-    console.log(dto);
     return mutation.mutateAsync(dto, {
       onSuccess() {
         return client.invalidateQueries('products');
@@ -41,7 +40,6 @@ export const useUpdateBasket = () => {
     if (existingEntry) {
       dto.entries = dto.entries.filter(e => e.product.id !== product.id);
     }
-    console.log('delete', dto);
     return mutation.mutateAsync(dto, {
       onSuccess() {
         return client.invalidateQueries('products');

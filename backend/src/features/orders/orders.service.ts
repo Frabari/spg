@@ -226,7 +226,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             constraints: {
               entries: {
                 [ei]: {
-                  status: `You cannot edit this field since you are not a manager `,
+                  status: `Only admins can mark entries as delivered`,
                 },
               },
             },
@@ -251,6 +251,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         );
         let delta = 0;
         if (existingEntry) {
+          entry.id = existingEntry.id;
           delta = entry.quantity - existingEntry.quantity;
           if (product.available - delta < 0) {
             throw new BadRequestException({
@@ -264,6 +265,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             });
           }
         } else {
+          delete entry.id;
           if (product.available < entry.quantity) {
             throw new BadRequestException({
               constraints: {
@@ -291,7 +293,6 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         }
       }
     }
-    console.log(dto);
     return dto;
   }
 
