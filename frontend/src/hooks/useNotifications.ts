@@ -13,6 +13,7 @@ export const useNotifications = () => {
     if (profile) {
       socket.off('notification');
       socket.on('notification', (notification: Notification) => {
+        notification.read = false;
         setNotifications(prevNotifications => [
           ...prevNotifications,
           notification,

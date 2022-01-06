@@ -9,7 +9,12 @@ A modern solidarity purchase groups web app
 ## Prerequisites
 
 In order to run this project you'll need a recent version of [Node](https://nodejs.org) and [npm](https://npmjs.org)
-(preferably node@^14 and npm@^7).
+(preferably node@^14 and npm@^7) and a SendGrid API key.
+
+```shell
+cd backend
+cp .env.template .env #Fill in the missing values
+```
 
 ## Project structure
 

@@ -95,7 +95,7 @@ export const CustomerOrders = (props: {
   var data = new Date();
 
   useEffect(() => {
-    const ord = orders.filter(o => o.user.id === (profile as User).id);
+    const ord = orders?.filter(o => o.user.id === (profile as User).id);
     orders = ord;
   }, [orders]);
 

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as DbConfig from '../ormconfig.json';
 import { CategoriesModule } from './features/categories/categories.module';
@@ -18,6 +19,7 @@ const { entities, ...dbConfig } = DbConfig;
       ...(dbConfig as any),
       autoLoadEntities: true,
     }),
+    ConfigModule.forRoot(),
     UsersModule,
     ProductsModule,
     CategoriesModule,

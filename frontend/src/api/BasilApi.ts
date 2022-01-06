@@ -141,6 +141,7 @@ export interface Notification {
   title: string;
   message: string;
   createdAt: Date;
+  read: boolean;
 }
 
 export type Constraints<T> = Record<keyof T, string>;
