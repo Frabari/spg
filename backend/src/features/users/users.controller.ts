@@ -27,6 +27,7 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './roles.decorator';
 import { ADMINS, Role } from './roles.enum';
@@ -73,6 +74,18 @@ export class UsersController implements CrudController<User> {
         }),
       };
     }
+    return this.base.getManyBase(crudRequest) as Promise<User[]>;
+  }
+  @Get('farmers')
+  @UseInterceptors(CrudRequestInterceptor)
+  @ApiBearerAuth()
+  @UseGuards(OptionalJwtAuthGuard)
+  getManyFarmers(@ParsedRequest() crudRequest: CrudRequest) {
+    crudRequest.parsed.search = {
+      $and: crudRequest.parsed.search.$and.concat({
+        role: Role.FARMER,
+      }),
+    };
     return this.base.getManyBase(crudRequest) as Promise<User[]>;
   }
 
