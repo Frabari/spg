@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -20,8 +19,9 @@ import {
   Typography,
   Avatar,
 } from '@mui/material';
-import { Product, User, Role } from '../api/BasilApi';
+import { Product, User, Role, NotificationType } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
+import { useNotifications } from '../hooks/useNotifications';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUsers } from '../hooks/useUsers';
@@ -42,6 +42,9 @@ function ProductCard({
   const { profile } = useProfile();
   const navigate = useNavigate();
   const [date] = useVirtualClock();
+  const vertical = 'bottom',
+    horizontal = 'center';
+  const { enqueueNotifications } = useNotifications();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
 
@@ -64,16 +67,27 @@ function ProductCard({
 
   const handleSelect = (product: Product) => {
     if (date < from || date > to) {
-      toast.error(
-        `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
-      );
+      enqueueNotifications({
+        id: 0,
+        type: NotificationType.ERROR,
+        title:
+          'You can add products to the basket only from Saturday 9am to Sunday 23pm',
+        message: '',
+        createdAt: new Date(),
+      });
     } else {
       if (onSelect) {
         onSelect(product);
       } else {
         upsertEntry(product, 1).then(o => {
           setBasketListener(true);
-          toast.success(`${product.name} successfully added!`);
+          enqueueNotifications({
+            id: 0,
+            type: NotificationType.SUCCESS,
+            title: product.name + ' successfully added!',
+            message: '',
+            createdAt: new Date(),
+          });
         });
       }
     }
