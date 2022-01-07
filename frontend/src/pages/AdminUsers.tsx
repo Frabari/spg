@@ -95,7 +95,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { users } = useUsers();
+  const { data: users } = useUsers();
   const [sortedUsers, setSortedUsers] = useState<User[]>([]);
   const [searchParams, setSearchParams] = useSearchParams({ role: 'all' });
   const [sorting, setSorting] = useState<{

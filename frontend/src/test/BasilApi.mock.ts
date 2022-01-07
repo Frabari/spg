@@ -115,11 +115,11 @@ jest.mock('../api/BasilApi', () => {
     },
     getUsers: () => Promise.resolve(mockUsers),
     getProduct: (id?: ProductId) => Promise.resolve(mockProduct),
-    createProduct: (_product: Partial<Product>) => {
+    createStockItem: (_product: Partial<Product>) => {
       mockProduct = { ...mockProduct, ..._product };
       return Promise.resolve(mockProduct);
     },
-    updateProduct: (_id: number, _product: Partial<Product>) => {
+    updateStockItem: (_id: number, _product: Partial<Product>) => {
       mockProduct = { ...mockProduct, ..._product };
       return Promise.resolve(mockProduct);
     },

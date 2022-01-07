@@ -15,10 +15,10 @@ import {
   IconButton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { useBasket } from '../hooks/useBasket';
+import { useDate } from '../hooks/useDate';
 import { useProduct } from '../hooks/useProduct';
 import { useProfile } from '../hooks/useProfile';
-import { useVirtualClock } from '../hooks/useVirtualClock';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
 const Img = styled('img')({
   margin: 'auto',
@@ -31,11 +31,11 @@ export default function ProductInfo(props: any) {
   const [counter, setCounter] = useState(1);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { profile } = useProfile();
-  const { product } = useProduct(+id);
-  const { upsertEntry } = useBasket();
+  const { data: profile } = useProfile();
+  const { data: product } = useProduct(+id);
+  const { upsertEntry } = useUpdateBasket();
   const [ready, setReady] = useState(false);
-  const [date] = useVirtualClock();
+  const { data: date } = useDate();
 
   useEffect(() => {
     if (product?.id) {

@@ -149,13 +149,17 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     user: User,
     isBasket = false,
   ) {
-    const order = await this.ordersRepository.findOne(id, {
-      relations: ['entries', 'entries.product', 'user'],
+    let order = await this.ordersRepository.findOne(id, {
+      relations: ['entries', 'entries.product', 'user', 'entries.order'],
     });
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
     }
     if (isBasket) {
+      if (![OrderStatus.DRAFT, OrderStatus.LOCKED].includes(order.status)) {
+        order = await this.resolveBasket(user);
+        (dto as any).id = order.id;
+      }
       if (order.user.id !== user.id) {
         throw new ForbiddenException(
           'Order.ForbiddenEdit',
@@ -222,7 +226,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             constraints: {
               entries: {
                 [ei]: {
-                  status: `You cannot edit this field since you are not a manager `,
+                  status: `Only admins can mark entries as delivered`,
                 },
               },
             },
@@ -247,6 +251,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         );
         let delta = 0;
         if (existingEntry) {
+          entry.id = existingEntry.id;
           delta = entry.quantity - existingEntry.quantity;
           if (product.available - delta < 0) {
             throw new BadRequestException({
@@ -260,6 +265,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             });
           }
         } else {
+          delete entry.id;
           if (product.available < entry.quantity) {
             throw new BadRequestException({
               constraints: {
@@ -325,7 +331,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       {
         type: NotificationType.ERROR,
         title: 'Order modified',
-        message: `Pay attention some entries of your order are deleted`,
+        message: `Some order entries were removed from your order because the producer couldn't confirm the availability.\nPlease log in to the app to see the updated order`,
         priority: NotificationPriority.CRITICAL,
       },
       { id: In([...users].map((element: User) => element.id)) },
@@ -468,7 +474,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * Updates all order entries containing a product
+   * Updates all order entries containing the given product
    */
   async updateProductOrderEntries(
     productId: ProductId,

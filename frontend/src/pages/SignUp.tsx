@@ -21,12 +21,12 @@ import { User } from '../api/BasilApi';
 import { Logo } from '../components/Logo';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
-import { useUser } from '../hooks/useUser';
+import { useUpsertUser } from '../hooks/useUpsertUser';
 
 function OutlinedCard() {
   const [passwordCheck, setPasswordCheck] = useState('');
-  const { pending, setPending } = usePendingState();
-  const { upsertUser } = useUser(null);
+  const { pending } = usePendingState();
+  const { upsertUser } = useUpsertUser();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const form = useFormik({
@@ -39,7 +39,6 @@ function OutlinedCard() {
     onSubmit: (values: Partial<User>, { setErrors }) => {
       upsertUser(values)
         .then(u => {
-          setPending(true);
           toast.success(`Welcome ${values.name}!`);
           navigate('/login');
         })
@@ -87,7 +86,7 @@ function OutlinedCard() {
                   fullWidth
                   required
                   error={!!form.errors?.name}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="outlined-adornment-name">
                     Name
@@ -109,7 +108,7 @@ function OutlinedCard() {
                   fullWidth
                   required
                   error={!!form.errors?.surname}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="outlined-adornment-surname">
                     Surname
@@ -131,7 +130,7 @@ function OutlinedCard() {
                   fullWidth
                   required
                   error={!!form.errors?.email}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="outlined-adornment-email">
                     Email
@@ -153,7 +152,7 @@ function OutlinedCard() {
                   fullWidth
                   required
                   error={!!form.errors?.password}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="outlined-adornment-password">
                     Password
@@ -230,7 +229,7 @@ function OutlinedCard() {
                 form.values?.password?.length < 8 ||
                 (form.values?.password?.length >= 8 &&
                   form.values?.password !== passwordCheck) ||
-                pending
+                !!pending
               }
               onClick={form.submitForm}
               variant="contained"
@@ -246,9 +245,9 @@ function OutlinedCard() {
 }
 
 export default function SignUp() {
-  const { profile } = useProfile();
+  const { data: profile, isLoading, error } = useProfile();
 
-  if (profile !== null && profile !== false) {
+  if (profile && !isLoading && !error) {
     return <Navigate to="/products" />;
   }
   return (

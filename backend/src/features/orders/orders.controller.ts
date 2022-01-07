@@ -1,4 +1,3 @@
-import { Request as ExpressRequest } from 'express';
 import {
   Body,
   Controller,
@@ -19,8 +18,8 @@ import {
   ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
+import { BasilRequest } from '../../../types';
 import { Crud } from '../../core/decorators/crud.decorator';
-import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { RolesGuard } from '../users/guards/roles.guard';
 import { Roles } from '../users/roles.decorator';
@@ -49,7 +48,7 @@ import { OrdersService } from './orders.service';
   },
 })
 @CrudAuth({
-  filter: (req: ExpressRequest & { user: User }) => {
+  filter: (req: BasilRequest) => {
     const filters: any = {};
     if (req.user?.role === Role.CUSTOMER) {
       filters['user.id'] = req.user.id;
@@ -69,7 +68,10 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  getMany(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
+  getMany(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request: BasilRequest,
+  ) {
     crudRequest.parsed.fields = ['id', 'status', 'createdAt', 'deliverAt'];
     return this.base.getManyBase(crudRequest).then((orders: Order[]) => {
       return orders?.map(order =>
@@ -79,7 +81,7 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Get('basket')
-  getBasket(@Request() request) {
+  getBasket(@Request() request: BasilRequest) {
     return this.service
       .resolveBasket(request.user)
       .then(order => this.service.checkOrderBalance(order, request.user));
@@ -89,7 +91,7 @@ export class OrdersController implements CrudController<Order> {
   @UseInterceptors(CrudRequestInterceptor)
   async updateBasket(
     @ParsedRequest() crudRequest: CrudRequest,
-    @Request() request,
+    @Request() request: BasilRequest,
     @Body() dto: UpdateOrderDto,
   ) {
     const basket = await this.service.resolveBasket(request.user);
@@ -113,7 +115,10 @@ export class OrdersController implements CrudController<Order> {
   }
 
   @Override()
-  getOne(@ParsedRequest() crudRequest: CrudRequest, @Request() request) {
+  getOne(
+    @ParsedRequest() crudRequest: CrudRequest,
+    @Request() request: BasilRequest,
+  ) {
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },
@@ -127,7 +132,7 @@ export class OrdersController implements CrudController<Order> {
   @Roles(Role.MANAGER, Role.EMPLOYEE)
   async createOne(
     @ParsedRequest() crudRequest: CrudRequest,
-    @Request() request,
+    @Request() request: BasilRequest,
     @ParsedBody() dto: CreateOrderDto,
   ) {
     crudRequest.parsed.join = [
@@ -144,7 +149,7 @@ export class OrdersController implements CrudController<Order> {
   @Roles(...ADMINS, Role.FARMER)
   async updateOne(
     @ParsedRequest() crudRequest: CrudRequest,
-    @Request() request,
+    @Request() request: BasilRequest,
     @ParsedBody() dto: UpdateOrderDto,
     @Param('id') id: number,
   ) {

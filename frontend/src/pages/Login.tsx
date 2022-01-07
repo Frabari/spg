@@ -18,29 +18,25 @@ import {
   OutlinedInput,
   Typography,
 } from '@mui/material';
-import { login, User } from '../api/BasilApi';
+import { User } from '../api/BasilApi';
 import { Logo } from '../components/Logo';
+import { useLogin } from '../hooks/useLogin';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 
 function OutlinedCard() {
-  const { load } = useProfile();
   const [show, setShow] = useState(false);
-  const { pending, setPending } = usePendingState();
+  const { pending } = usePendingState();
+  const { mutateAsync: login } = useLogin();
   const form = useFormik({
     initialValues: {
       email: null,
       password: null,
     } as Partial<User>,
     onSubmit: (values: Partial<User>, { setErrors }) =>
-      login(values.email, values.password)
-        .then(p => {
-          setPending(true);
-          load();
-        })
-        .catch(e => {
-          setErrors(e.data?.constraints);
-        }),
+      login({ username: values.email, password: values.password }).catch(e => {
+        setErrors(e.data?.constraints);
+      }),
   });
 
   const handleClickShowPassword = () => {
@@ -75,7 +71,7 @@ function OutlinedCard() {
                 <FormControl
                   sx={{ width: 250 }}
                   error={!!form.errors?.email}
-                  disabled={pending}
+                  disabled={!!pending}
                   required
                 >
                   <InputLabel htmlFor="outlined-adornment-email">
@@ -97,7 +93,7 @@ function OutlinedCard() {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.password}
-                  disabled={pending}
+                  disabled={!!pending}
                   required
                 >
                   <InputLabel htmlFor="outlined-adornment-password">
@@ -142,7 +138,7 @@ function OutlinedCard() {
             <Button
               type="submit"
               variant="contained"
-              disabled={pending}
+              disabled={!!pending}
               onClick={form.submitForm}
               sx={{ px: 3 }}
             >
@@ -171,7 +167,7 @@ function OutlinedCard() {
 }
 
 export default function Login(props: any) {
-  const { profile } = useProfile();
+  const { data: profile } = useProfile();
 
   if (profile) {
     return <Navigate to="/products" />;

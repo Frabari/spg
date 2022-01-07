@@ -132,7 +132,7 @@ export const Orders = (props: {
   delivery: string;
 }) => {
   const navigate = useNavigate();
-  const { orders } = useOrders();
+  const { data: orders } = useOrders();
   const [orderStatus, setOrderStatus] = useState(props.status);
   const [weekFilter, setWeekFilter] = useState(props.week);
   const [deliveryFilter, setDeliveryFilter] = useState(props.delivery);

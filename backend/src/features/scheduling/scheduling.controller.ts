@@ -14,7 +14,7 @@ export class SchedulingController {
   }
 
   @Patch('date')
-  setDate(@Body() dto: SetDateDto) {
-    return { date: this.schedulingService.setDate(dto.date) };
+  async setDate(@Body() dto: SetDateDto) {
+    return { date: await this.schedulingService.setDate(dto.date) };
   }
 }

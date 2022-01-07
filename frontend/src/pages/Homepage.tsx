@@ -1,11 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Grid, Typography } from '@mui/material';
-import { useProfile } from '../hooks/useProfile';
 import NavigationBox from './Navigation';
 import { ReactComponent as ImageHome } from './images/image-home.svg';
 
 export default function Homepage() {
-  const { profile } = useProfile();
   const navigate = useNavigate();
 
   return (
@@ -33,6 +31,7 @@ export default function Homepage() {
           </Grid>
           <Grid item>
             <Button variant="contained" onClick={() => navigate('/products')}>
+              {/* TODO replace with href */}
               Take a look to our products!
             </Button>
           </Grid>

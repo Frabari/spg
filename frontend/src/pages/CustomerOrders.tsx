@@ -81,8 +81,8 @@ export const CustomerOrders = (props: {
   delivery: string;
 }) => {
   const navigate = useNavigate();
-  let { orders } = useOrders();
-  const { profile } = useProfile();
+  let { data: orders } = useOrders();
+  const { data: profile } = useProfile();
   const [orderStatus, setOrderStatus] = useState(props.status);
   const [weekFilter, setWeekFilter] = useState(props.week);
   const [deliveryFilter, setDeliveryFilter] = useState(props.delivery);
@@ -95,7 +95,7 @@ export const CustomerOrders = (props: {
   var data = new Date();
 
   useEffect(() => {
-    const ord = orders.filter(o => o.user.id === (profile as User).id);
+    const ord = orders?.filter(o => o.user.id === (profile as User).id);
     orders = ord;
   }, [orders]);
 
