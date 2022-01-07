@@ -56,7 +56,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   async resolveBasket(user: User) {
     const basket = await this.ordersRepository.findOne(
       {
-        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+        status: OrderStatus.DRAFT,
         user,
       },
       {
@@ -155,8 +155,11 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
     }
+    if (order.status === OrderStatus.LOCKED) {
+      delete dto.entries;
+    }
     if (isBasket) {
-      if (![OrderStatus.DRAFT, OrderStatus.LOCKED].includes(order.status)) {
+      if (order.status !== OrderStatus.DRAFT) {
         order = await this.resolveBasket(user);
         (dto as any).id = order.id;
       }
@@ -324,7 +327,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     const users = new Set();
     await this.orderEntriesRepository.remove(orderEntriesDraft).then(() => {
       orderEntriesDraft.forEach(element => {
-        users.add(element.order.user);
+        users.add(element.order?.user);
       });
     });
     await this.notificationsService.sendNotification(
@@ -358,7 +361,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   async closeBaskets() {
     const baskets = await this.ordersRepository.find({
       where: {
-        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+        status: OrderStatus.DRAFT,
       },
       relations: ['entries', 'entries.product', 'user'],
     });
