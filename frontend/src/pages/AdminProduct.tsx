@@ -144,7 +144,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                 marginBottom: '40px',
               }}
             >
-              <Inventory />
+              <Inventory sx={{ width: '102px', height: '102px' }} />
             </Avatar>
             <Grid
               container
