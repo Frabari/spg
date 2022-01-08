@@ -98,6 +98,12 @@ export class OrdersController implements CrudController<Order> {
     crudRequest.parsed.paramsFilter = [
       { field: 'id', operator: '$eq', value: basket.id },
     ];
+    crudRequest.parsed.search.$and.push({
+      id: {
+        $eq: basket.id,
+      },
+    });
+
     crudRequest.parsed.join = [
       { field: 'deliveredBy' },
       { field: 'deliveryLocation' },

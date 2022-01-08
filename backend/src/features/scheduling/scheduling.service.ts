@@ -1,6 +1,6 @@
 import { parseExpression } from 'cron-parser';
 import { DateTime } from 'luxon';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SchedulerOrchestrator } from '@nestjs/schedule/dist/scheduler.orchestrator';
 import {
@@ -24,6 +24,8 @@ const PICKUP_NOTIFICATION = '0 10 * * *';
 
 @Injectable()
 export class SchedulingService {
+  private logger = new Logger(SchedulingService.name);
+
   private jobs = {
     [CLOSE_WEEKLY_SALES]: this.closeWeeklySales,
     [CLOSE_BASKETS]: this.closeBaskets,
@@ -40,12 +42,14 @@ export class SchedulingService {
 
   @Cron(CLOSE_WEEKLY_SALES)
   async closeWeeklySales() {
+    this.logger.log(`Closing weekly sales (@${new Date()})`);
     await this.productsService.resetProductsAvailability();
     await this.ordersService.lockBaskets();
   }
 
   @Cron(CLOSE_BASKETS)
   async closeBaskets() {
+    this.logger.log(`Closing baskets (@${new Date()})`);
     await this.ordersService.removeDraftOrderEntries();
     await this.ordersService.closeBaskets();
     await this.ordersService.payBaskets();
@@ -53,6 +57,7 @@ export class SchedulingService {
 
   @Cron(PAY_PENDING_BASKETS)
   payPendingBaskets() {
+    this.logger.log(`Paying pending baskets (@${new Date()})`);
     return this.ordersService.payBaskets(true);
   }
 

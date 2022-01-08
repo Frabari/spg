@@ -6,6 +6,7 @@ import {
   forwardRef,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -34,6 +35,8 @@ const statuses = Object.values(OrderStatus);
 
 @Injectable()
 export class OrdersService extends TypeOrmCrudService<Order> {
+  private logger = new Logger(OrdersService.name);
+
   constructor(
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
@@ -54,19 +57,21 @@ export class OrdersService extends TypeOrmCrudService<Order> {
    * @param user The authenticated user
    */
   async resolveBasket(user: User) {
+    const options = {
+      relations: ['entries', 'entries.product', 'user', 'deliveryLocation'],
+    };
     const basket = await this.ordersRepository.findOne(
       {
         status: OrderStatus.DRAFT,
         user,
       },
-      {
-        relations: ['entries', 'entries.product', 'user', 'deliveryLocation'],
-      },
+      options,
     );
     if (basket) {
       return basket;
     }
-    return this.ordersRepository.save({ user });
+    const newBasket = await this.ordersRepository.save({ user });
+    return this.ordersRepository.findOne(newBasket.id, options);
   }
 
   /**
@@ -149,7 +154,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     user: User,
     isBasket = false,
   ) {
-    let order = await this.ordersRepository.findOne(id, {
+    const order = await this.ordersRepository.findOne(id, {
       relations: ['entries', 'entries.product', 'user', 'entries.order'],
     });
     if (!order) {
@@ -159,10 +164,6 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       delete dto.entries;
     }
     if (isBasket) {
-      if (order.status !== OrderStatus.DRAFT) {
-        order = await this.resolveBasket(user);
-        (dto as any).id = order.id;
-      }
       if (order.user.id !== user.id) {
         throw new ForbiddenException(
           'Order.ForbiddenEdit',
@@ -325,6 +326,9 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       relations: ['order', 'order.user'],
     });
     const users = new Set();
+    this.logger.log(
+      `Removing draft order entries ${orderEntriesDraft.map(o => o.id)}`,
+    );
     await this.orderEntriesRepository.remove(orderEntriesDraft).then(() => {
       orderEntriesDraft.forEach(element => {
         if (element.order) {
@@ -364,16 +368,21 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   async closeBaskets() {
     const baskets = await this.ordersRepository.find({
       where: {
-        status: OrderStatus.DRAFT,
+        status: OrderStatus.LOCKED,
       },
       relations: ['entries', 'entries.product', 'user'],
     });
+    this.logger.log(`Closing baskets ${baskets.map(b => b.id)}`);
     for (const basket of baskets) {
       if (basket.entries?.length) {
+        this.logger.log(`Setting order #${basket.id} to PENDING_PAYMENT`);
         await this.ordersRepository.update(basket.id, {
           status: OrderStatus.PENDING_PAYMENT,
         });
       } else {
+        this.logger.log(
+          `Setting order #${basket.id} to CANCELED because it has no entries`,
+        );
         await this.ordersRepository.update(basket.id, {
           status: OrderStatus.CANCELED,
         });
@@ -422,7 +431,10 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           });
         } else {
           if (cancelOnInsufficientBalance) {
-            await this.ordersRepository.update(basket, {
+            this.logger.log(
+              `Cancelling basket #${basket.id} due to insufficient balance`,
+            );
+            await this.ordersRepository.update(basket.id, {
               status: OrderStatus.CANCELED,
             });
             await this.notificationsService.sendNotification(
