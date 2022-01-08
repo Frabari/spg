@@ -319,7 +319,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
         )}
       </AdminAppBar>
       <Box
-        sx={{ p: { xs: 2, sm: 3 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+        sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: '16px' }}>
           <Tabs

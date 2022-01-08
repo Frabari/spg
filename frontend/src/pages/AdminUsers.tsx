@@ -26,31 +26,47 @@ import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useUsers } from '../hooks/useUsers';
 
-const columns: { key: keyof User; title: string; sortable: boolean }[] = [
+const columns: {
+  key: keyof User;
+  title: string;
+  sortable: boolean;
+  width: number;
+}[] = [
+  {
+    key: 'avatar',
+    title: 'Image',
+    sortable: false,
+    width: 50,
+  },
   {
     key: 'name',
     title: 'Name',
     sortable: true,
+    width: 100,
   },
   {
     key: 'surname',
     title: 'Surname',
     sortable: true,
+    width: 100,
   },
   {
     key: 'email',
     title: 'Email',
     sortable: true,
+    width: 100,
   },
   {
     key: 'role',
     title: 'Role',
     sortable: false,
+    width: 100,
   },
   {
     key: 'balance',
     title: 'Balance',
     sortable: true,
+    width: 100,
   },
 ];
 
@@ -207,7 +223,9 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
           </Typography>
         </Button>
       </AdminAppBar>
-      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
+      <Box
+        sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+      >
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}
@@ -294,6 +312,18 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                     }}
                     onClick={() => navigate(`/admin/users/${user.id}`)}
                   >
+                    <TableCell sx={{ py: 0, pt: 1 }}>
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </TableCell>
                     <TableCell component="th" scope="row">
                       {user.name}
                     </TableCell>

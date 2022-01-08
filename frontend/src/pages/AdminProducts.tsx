@@ -26,8 +26,13 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import { getProductOrderEntries, Product, Role, User } from '../api/BasilApi';
-import { OrderEntryStatus } from '../api/BasilApi';
+import {
+  getProductOrderEntries,
+  OrderEntryStatus,
+  Product,
+  Role,
+  User,
+} from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
 import { useProductOrderEntries } from '../hooks/useProductOrderEntries';
@@ -415,7 +420,9 @@ export const AdminProducts = (props: {
           </Typography>
         </Button>
       </AdminAppBar>
-      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
+      <Box
+        sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+      >
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: '16px' }}>
           <Tabs
             value={value}
@@ -635,13 +642,13 @@ export const AdminProducts = (props: {
                       navigate(`/admin/products/${product.id}`);
                     }}
                   >
-                    <TableCell sx={{ py: 0 }}>
+                    <TableCell sx={{ py: 0, pt: 1 }}>
                       <img
                         src={product.image}
                         alt={product.name}
                         style={{
-                          width: 50,
-                          height: 50,
+                          width: 40,
+                          height: 40,
                           borderRadius: '50%',
                           objectFit: 'cover',
                         }}
