@@ -30,6 +30,7 @@ import AvatarGroup from '@mui/material/AvatarGroup';
 import { Order, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useProfile } from '../hooks/useProfile';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 import NavigationBox from './Navigation';
 
 export enum DeliveryOption {
@@ -98,8 +99,9 @@ const IOSSwitch = styled((props: any) => (
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { basket, updateBasket, pending } = useBasket();
-  const { profile } = useProfile();
+  const { data: basket, isLoading } = useBasket();
+  const { mutate: updateBasket } = useUpdateBasket();
+  const { data: profile } = useProfile();
   const [check, setCheck] = useState(true);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
@@ -112,15 +114,20 @@ export default function Checkout() {
       total: 0,
       insufficientBalance: false,
     } as Partial<Order>,
-    onSubmit: (values, { setErrors }) => {
-      return updateBasket(values)
-        .then(b => {
+    onSubmit: (values, { setErrors, setSubmitting }) => {
+      setSubmitting(true);
+      updateBasket(values, {
+        onSuccess() {
           toast.success('Basket saved!');
           navigate('/products');
-        })
-        .catch(e => {
-          setErrors(e.data?.constraints);
-        });
+        },
+        onError(error: any) {
+          setErrors(error.data?.constraints);
+        },
+        onSettled() {
+          setSubmitting(false);
+        },
+      });
     },
   });
 
@@ -335,7 +342,7 @@ export default function Checkout() {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.name}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -358,7 +365,7 @@ export default function Checkout() {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.surname}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -381,7 +388,7 @@ export default function Checkout() {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.address}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -404,7 +411,7 @@ export default function Checkout() {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.zipCode}
                   >
                     <InputLabel htmlFor="outlined-adornment-zipcode">
@@ -427,7 +434,7 @@ export default function Checkout() {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.city}
                   >
                     <InputLabel htmlFor="outlined-adornment-city">
@@ -450,7 +457,7 @@ export default function Checkout() {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.province}
                   >
                     <InputLabel htmlFor="outlined-adornment-province">
@@ -473,7 +480,7 @@ export default function Checkout() {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.region}
                   >
                     <InputLabel htmlFor="outlined-adornment-region">

@@ -111,6 +111,21 @@ export class User {
   products: Product[];
 
   /**
+   * Company name
+   */
+  @Column({ default: null })
+  @IsString()
+  companyName: string;
+
+  /**
+   * Url pointing to the company image
+   */
+  @Column({ default: null })
+  @IsUrl()
+  @IsOptional()
+  companyImage: string;
+
+  /**
    * Url pointing to the user avatar
    */
   @Column({ default: null })

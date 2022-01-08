@@ -29,8 +29,8 @@ import Tooltip from '@mui/material/Tooltip';
 import { Order, OrderStatus } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { orderStatuses } from '../constants';
+import { useDate } from '../hooks/useDate';
 import { useOrders } from '../hooks/useOrders';
-import { useVirtualClock } from '../hooks/useVirtualClock';
 import { DeliveryOption } from './Checkout';
 
 const statusFilters = [
@@ -129,7 +129,7 @@ function a11yProps(index: number) {
 
 export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { orders } = useOrders();
+  const { data: orders } = useOrders();
   const [searchParams, setSearchParams] = useSearchParams({
     status: 'all',
     delivery: 'all',
@@ -228,7 +228,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
-  const [date] = useVirtualClock();
+  const { data: date } = useDate();
 
   const from = date.set({
     weekday: 6,

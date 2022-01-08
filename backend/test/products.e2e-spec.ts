@@ -113,7 +113,7 @@ describe('ProductsController (e2e)', () => {
         });
     });
 
-    it('should return the products', async () => {
+    it('should return the public products', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
@@ -232,8 +232,8 @@ describe('ProductsController (e2e)', () => {
     });
   });
 
-  describe('PATCH /product/productId', () => {
-    it('should return the user specified if the requester is authenticated', async () => {
+  describe('PATCH /products/stock/:id', () => {
+    it('should update a stock item if the requester is authenticated', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
       const entityManager = app.get(EntityManager);
@@ -259,7 +259,7 @@ describe('ProductsController (e2e)', () => {
       const authToken = response.body.token;
       const name = 'Name2';
       return request(server)
-        .patch('/products/' + product.id)
+        .patch(`/products/stock/${product.id}`)
         .auth(authToken, { type: 'bearer' })
         .send({ name })
         .expect(response => {
@@ -284,7 +284,7 @@ describe('ProductsController (e2e)', () => {
     });
   });
 
-  describe('POST /products', () => {
+  describe('POST /products/stock', () => {
     it('should create a new product', async () => {
       const email = 'test@example.com';
       const password = 'testpwd';
@@ -313,7 +313,7 @@ describe('ProductsController (e2e)', () => {
         .send({ username: email, password });
       const authToken = response.body.token;
       await request(app.getHttpServer())
-        .post('/products')
+        .post('/products/stock')
         .auth(authToken, { type: 'bearer' })
         .send({
           public: true,
@@ -365,7 +365,7 @@ describe('ProductsController (e2e)', () => {
         .send({ username: email, password });
       const authToken = response.body.token;
       return request(app.getHttpServer())
-        .post('/products')
+        .post('/products/stock')
         .auth(authToken, { type: 'bearer' })
         .send({
           name: 'name',

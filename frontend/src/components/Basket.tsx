@@ -18,9 +18,11 @@ import {
 } from '@mui/material';
 import { Product } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
 function ProductCard(props: any) {
-  const { upsertEntry, deleteEntry, basket } = useBasket();
+  const { data: basket } = useBasket();
+  const { upsertEntry, deleteEntry } = useUpdateBasket();
 
   const handleDeleteEntry = (product: Product) => {
     if (basket?.entries.length === 1) props.setShowBasket(false);
@@ -131,7 +133,7 @@ export default function Basket({
   balanceWarning?: boolean;
   setShowBasket?: any;
 }) {
-  const { basket } = useBasket();
+  const { data: basket } = useBasket();
 
   return (
     <>

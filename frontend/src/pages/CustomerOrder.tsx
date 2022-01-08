@@ -41,6 +41,7 @@ import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
 import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
+import { useUpsertOrder } from '../hooks/useUpsertOrder';
 import { useUsers } from '../hooks/useUsers';
 import { DeliveryOption } from './Checkout';
 
@@ -159,8 +160,9 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const [check, setCheck] = useState(true);
   const id = idParam === 'new' ? null : +idParam;
-  const { order, upsertOrder, pending } = useOrder(id);
-  const { users } = useUsers();
+  const { data: order, isLoading } = useOrder(id);
+  const { upsertOrder } = useUpsertOrder();
+  const { data: users } = useUsers();
   const [user, setUser] = useState<User>();
   const [activeStep, setActiveStep] = useState(0);
   const [date, setDate] = useState<Date | null>(new Date());
@@ -254,7 +256,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           type="submit"
           variant="contained"
-          disabled={pending}
+          disabled={isLoading}
           onClick={form.submitForm}
           startIcon={<Save />}
         >
@@ -329,7 +331,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                 return (
                   <Fragment key={e.product.id}>
                     <ListItem>
-                      <FormControl error={!!quantityError} disabled={pending}>
+                      <FormControl error={!!quantityError} disabled={isLoading}>
                         <TextField
                           sx={{ width: '100px', mr: 2, pb: 0 }}
                           type="number"
@@ -444,7 +446,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.name}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -467,7 +469,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.surname}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -490,7 +492,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.address}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -513,7 +515,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.zipCode}
                   >
                     <InputLabel htmlFor="outlined-adornment-zipcode">
@@ -536,7 +538,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.city}
                   >
                     <InputLabel htmlFor="outlined-adornment-city">
@@ -559,7 +561,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.province}
                   >
                     <InputLabel htmlFor="outlined-adornment-province">
@@ -582,7 +584,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.region}
                   >
                     <InputLabel htmlFor="outlined-adornment-region">

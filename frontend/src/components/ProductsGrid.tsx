@@ -14,32 +14,32 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Product, User, Role, NotificationType } from '../api/BasilApi';
+import { NotificationType, Product, Role, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
+import { useDate } from '../hooks/useDate';
 import { useNotifications } from '../hooks/useNotifications';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 import { useUsers } from '../hooks/useUsers';
-import { useVirtualClock } from '../hooks/useVirtualClock';
 
 function ProductCard({
   product,
   setBalanceWarning,
-  setBasketListener,
   onSelect,
 }: {
   product?: Product;
   setBalanceWarning?: (bol: boolean) => void;
-  setBasketListener?: (bol: boolean) => void;
   onSelect: (product: Product) => void;
 }) {
-  const { basket, upsertEntry } = useBasket();
-  const { profile } = useProfile();
+  const { data: basket } = useBasket();
+  const { upsertEntry } = useUpdateBasket();
+  const { data: profile } = useProfile();
   const navigate = useNavigate();
-  const [date] = useVirtualClock();
+  const { data: date } = useDate();
   const vertical = 'bottom',
     horizontal = 'center';
-  const { enqueueNotifications } = useNotifications();
+  const { enqueueNotification } = useNotifications();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
 
@@ -62,7 +62,7 @@ function ProductCard({
 
   const handleSelect = (product: Product) => {
     if (date < from || date > to) {
-      enqueueNotifications({
+      enqueueNotification({
         id: 0,
         type: NotificationType.ERROR,
         title:
@@ -75,9 +75,8 @@ function ProductCard({
       if (onSelect) {
         onSelect(product);
       } else {
-        upsertEntry(product, 1).then(o => {
-          setBasketListener(true);
-          enqueueNotifications({
+        upsertEntry(product, 1).then(() => {
+          enqueueNotification({
             id: 0,
             type: NotificationType.SUCCESS,
             title: product.name + ' successfully added!',
@@ -125,7 +124,7 @@ function ProductCard({
             align="center"
             fontWeight="bold"
           >
-            € {product.price}/unit
+            € {product.price}/{product.baseUnit}
           </Typography>
         </CardContent>
         {date >= from && date <= to ? (
@@ -152,8 +151,6 @@ export default function ProductsGrid({
   handleDelete,
   setSearchParams,
   setBalanceWarning,
-  basketListener,
-  setBasketListener,
 }: {
   farmer?: string;
   filter?: string;
@@ -162,11 +159,9 @@ export default function ProductsGrid({
   handleDelete?: () => void;
   setSearchParams?: (params: any) => void;
   setBalanceWarning?: (bol: boolean) => void;
-  basketListener?: boolean;
-  setBasketListener?: (bol: boolean) => void;
 }) {
-  const { products, loadProducts } = useProducts();
-  const [date] = useVirtualClock();
+  const { data: products } = useProducts();
+  const { data: date } = useDate();
   const [sortOption, setSortOption] = useState('');
   const sort = [
     'Highest price',
@@ -185,20 +180,13 @@ export default function ProductsGrid({
   const to = from.plus({ hour: 38 });
 
   const [farmers, setFarmers] = useState(null);
-  const { users } = useUsers();
+  const { data: users } = useUsers();
 
   useEffect(() => {
     if (users) {
       setFarmers(users.filter(u => u.role === Role.FARMER));
     }
   }, [users]);
-
-  useEffect(() => {
-    if (basketListener) {
-      loadProducts();
-      setBasketListener(false);
-    }
-  }, [basketListener]);
 
   const handleChange = (s: string) => {
     setSortOption(s);
@@ -349,7 +337,6 @@ export default function ProductsGrid({
                           product={p}
                           onSelect={onSelect}
                           setBalanceWarning={setBalanceWarning}
-                          setBasketListener={setBasketListener}
                         />
                       </Grid>
                     ) : (
@@ -359,7 +346,6 @@ export default function ProductsGrid({
                           product={p}
                           onSelect={onSelect}
                           setBalanceWarning={setBalanceWarning}
-                          setBasketListener={setBasketListener}
                         />
                       </Grid>
                     )}

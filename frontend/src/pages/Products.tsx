@@ -8,7 +8,7 @@ import NavigationBox from './Navigation';
 import ProductInfo from './ProductInfo';
 
 export default function Products() {
-  const { categories } = useCategories();
+  const { data: categories } = useCategories();
   const [category, setCategory] = useState(0);
   const [basketListener, setBasketListener] = useState(false);
   const [search, setSearch] = useState('');
@@ -28,8 +28,6 @@ export default function Products() {
         farmer={queryParams.get('farmer')}
         setSearchParams={setSearchParams}
         balanceWarning={balanceWarning}
-        basketListener={basketListener}
-        setBasketListener={setBasketListener}
         onProducts={true}
         setCategory={setCategory}
       />
@@ -67,8 +65,6 @@ export default function Products() {
                 search={search}
                 onSelect={null}
                 setBalanceWarning={setBalanceWarning}
-                basketListener={basketListener}
-                setBasketListener={setBasketListener}
               />
             </Container>
           }

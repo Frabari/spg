@@ -50,6 +50,7 @@ import ProductsGrid from '../components/ProductsGrid';
 import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
 import { useProfile } from '../hooks/useProfile';
+import { useUpsertOrder } from '../hooks/useUpsertOrder';
 import { useUsers } from '../hooks/useUsers';
 import { DeliveryOption } from './Checkout';
 
@@ -119,10 +120,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const { id: idParam } = useParams();
   const [check, setCheck] = useState(true);
   const id = idParam === 'new' ? null : +idParam;
-  const { order, upsertOrder, pending } = useOrder(id);
+  const { data: order, isLoading } = useOrder(id);
+  const { upsertOrder } = useUpsertOrder();
   const [user, setUser] = useState<User>();
-  const { users } = useUsers();
-  const { profile } = useProfile();
+  const { data: users } = useUsers();
+  const { data: profile } = useProfile();
   const [date, setDate] = useState<Date | null>(new Date());
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
@@ -223,7 +225,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           type="submit"
           variant="contained"
-          disabled={pending}
+          disabled={isLoading}
           onClick={form.submitForm}
           startIcon={<Save />}
         >
@@ -256,7 +258,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                 <FormControl
                   sx={{ width: 250 }}
                   error={!!form.errors?.user}
-                  disabled={pending}
+                  disabled={isLoading}
                 >
                   <InputLabel id="order-user">User</InputLabel>
                   <Select
@@ -285,7 +287,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                 <FormControl
                   sx={{ width: 250 }}
                   error={!!form.errors?.status}
-                  disabled={id == null || pending}
+                  disabled={id == null || isLoading}
                 >
                   <InputLabel id="order-status">Status</InputLabel>
                   <Select
@@ -324,7 +326,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                 return (
                   <Fragment key={e.product.id}>
                     <ListItem>
-                      <FormControl error={!!quantityError} disabled={pending}>
+                      <FormControl error={!!quantityError} disabled={isLoading}>
                         <TextField
                           sx={{ width: '100px', mr: 2, pb: 0 }}
                           type="number"
@@ -447,7 +449,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.name}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -470,7 +472,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.surname}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -493,7 +495,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.address}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -516,7 +518,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.zipCode}
                   >
                     <InputLabel htmlFor="outlined-adornment-zipcode">
@@ -539,7 +541,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.city}
                   >
                     <InputLabel htmlFor="outlined-adornment-city">
@@ -562,7 +564,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.province}
                   >
                     <InputLabel htmlFor="outlined-adornment-province">
@@ -585,7 +587,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.region}
                   >
                     <InputLabel htmlFor="outlined-adornment-region">

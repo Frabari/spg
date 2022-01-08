@@ -23,9 +23,11 @@ import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
+import { useUpdateProfile } from '../hooks/useUpdateProfile';
 
 export default function Profile(props: { handleDrawerToggle: () => void }) {
-  const { profile, updateProfile } = useProfile();
+  const { data: profile } = useProfile();
+  const { mutate: updateProfile } = useUpdateProfile();
   const { pending } = usePendingState();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
@@ -38,18 +40,23 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
       avatar: '',
       address: null,
     } as Partial<User>,
-    onSubmit: (values: Partial<User>, { setErrors }) => {
+    onSubmit: (values: Partial<User>, { setErrors, setSubmitting }) => {
       if (!values.password?.length) {
         delete values.password;
       }
-      updateProfile(values)
-        .then(p => {
+      setSubmitting(true);
+      updateProfile(values, {
+        onSuccess() {
           toast.success('Profile updated!');
           navigate('/products');
-        })
-        .catch(e => {
-          setErrors(e.data?.constraints);
-        });
+        },
+        onError(error: any) {
+          setErrors(error.data?.constraints);
+        },
+        onSettled() {
+          setSubmitting(false);
+        },
+      });
     },
   });
 
@@ -85,7 +92,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
           sx={{ display: { xs: 'flex', md: 'none' } }}
           className="save-icon-button"
           onClick={form.submitForm}
-          disabled={pending}
+          disabled={!!pending}
         >
           <Save />
         </IconButton>
@@ -96,7 +103,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
           }}
           variant="contained"
           onClick={form.submitForm}
-          disabled={pending}
+          disabled={!!pending}
           startIcon={<Save />}
         >
           <Typography display="inline" sx={{ textTransform: 'none' }}>
@@ -135,7 +142,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.name}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="name">Name</InputLabel>
                   <OutlinedInput
@@ -154,7 +161,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.surname}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="surname">Surname</InputLabel>
                   <OutlinedInput
@@ -173,7 +180,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.email}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="email">Email</InputLabel>
                   <OutlinedInput
@@ -192,7 +199,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.password}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="password">Password</InputLabel>
                   <OutlinedInput
@@ -223,7 +230,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.avatar}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="avatar">Avatar</InputLabel>
                   <OutlinedInput
@@ -260,7 +267,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.address}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Address</InputLabel>
                       <OutlinedInput
@@ -281,7 +288,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.zipCode}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Zip Code</InputLabel>
                       <OutlinedInput
@@ -302,7 +309,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.city}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">City</InputLabel>
                       <OutlinedInput
@@ -323,7 +330,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.province}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Province</InputLabel>
                       <OutlinedInput
@@ -344,7 +351,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.region}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Region</InputLabel>
                       <OutlinedInput

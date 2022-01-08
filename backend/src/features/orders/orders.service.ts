@@ -6,6 +6,7 @@ import {
   forwardRef,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -34,6 +35,8 @@ const statuses = Object.values(OrderStatus);
 
 @Injectable()
 export class OrdersService extends TypeOrmCrudService<Order> {
+  private logger = new Logger(OrdersService.name);
+
   constructor(
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
@@ -54,19 +57,21 @@ export class OrdersService extends TypeOrmCrudService<Order> {
    * @param user The authenticated user
    */
   async resolveBasket(user: User) {
+    const options = {
+      relations: ['entries', 'entries.product', 'user', 'deliveryLocation'],
+    };
     const basket = await this.ordersRepository.findOne(
       {
-        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+        status: OrderStatus.DRAFT,
         user,
       },
-      {
-        relations: ['entries', 'entries.product', 'user', 'deliveryLocation'],
-      },
+      options,
     );
     if (basket) {
       return basket;
     }
-    return this.ordersRepository.save({ user });
+    const newBasket = await this.ordersRepository.save({ user });
+    return this.ordersRepository.findOne(newBasket.id, options);
   }
 
   /**
@@ -150,10 +155,13 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     isBasket = false,
   ) {
     const order = await this.ordersRepository.findOne(id, {
-      relations: ['entries', 'entries.product', 'user'],
+      relations: ['entries', 'entries.product', 'user', 'entries.order'],
     });
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
+    }
+    if (order.status === OrderStatus.LOCKED) {
+      delete dto.entries;
     }
     if (isBasket) {
       if (order.user.id !== user.id) {
@@ -222,7 +230,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             constraints: {
               entries: {
                 [ei]: {
-                  status: `You cannot edit this field since you are not a manager `,
+                  status: `Only admins can mark entries as delivered`,
                 },
               },
             },
@@ -247,6 +255,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         );
         let delta = 0;
         if (existingEntry) {
+          entry.id = existingEntry.id;
           delta = entry.quantity - existingEntry.quantity;
           if (product.available - delta < 0) {
             throw new BadRequestException({
@@ -260,6 +269,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             });
           }
         } else {
+          delete entry.id;
           if (product.available < entry.quantity) {
             throw new BadRequestException({
               constraints: {
@@ -316,16 +326,22 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       relations: ['order', 'order.user'],
     });
     const users = new Set();
-    await this.orderEntriesRepository.remove(orderEntriesDraft).then(result => {
-      result.forEach(element => {
-        users.add(element.order.user);
+    this.logger.log(
+      `Removing draft order entries ${orderEntriesDraft.map(o => o.id)}`,
+    );
+    await this.orderEntriesRepository.remove(orderEntriesDraft).then(() => {
+      orderEntriesDraft.forEach(element => {
+        if (element.order) {
+          users.add(element.order?.user);
+        }
       });
     });
+
     await this.notificationsService.sendNotification(
       {
         type: NotificationType.ERROR,
         title: 'Order modified',
-        message: `Pay attention some entries of your order are deleted`,
+        message: `Some order entries were removed from your order because the producer couldn't confirm the availability.\nPlease log in to the app to see the updated order`,
         priority: NotificationPriority.CRITICAL,
       },
       { id: In([...users].map((element: User) => element.id)) },
@@ -352,16 +368,21 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   async closeBaskets() {
     const baskets = await this.ordersRepository.find({
       where: {
-        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+        status: OrderStatus.LOCKED,
       },
       relations: ['entries', 'entries.product', 'user'],
     });
+    this.logger.log(`Closing baskets ${baskets.map(b => b.id)}`);
     for (const basket of baskets) {
       if (basket.entries?.length) {
+        this.logger.log(`Setting order #${basket.id} to PENDING_PAYMENT`);
         await this.ordersRepository.update(basket.id, {
           status: OrderStatus.PENDING_PAYMENT,
         });
       } else {
+        this.logger.log(
+          `Setting order #${basket.id} to CANCELED because it has no entries`,
+        );
         await this.ordersRepository.update(basket.id, {
           status: OrderStatus.CANCELED,
         });
@@ -410,7 +431,10 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           });
         } else {
           if (cancelOnInsufficientBalance) {
-            await this.ordersRepository.update(basket, {
+            this.logger.log(
+              `Cancelling basket #${basket.id} due to insufficient balance`,
+            );
+            await this.ordersRepository.update(basket.id, {
               status: OrderStatus.CANCELED,
             });
             await this.notificationsService.sendNotification(
@@ -468,7 +492,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * Updates all order entries containing a product
+   * Updates all order entries containing the given product
    */
   async updateProductOrderEntries(
     productId: ProductId,

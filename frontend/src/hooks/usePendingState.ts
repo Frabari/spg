@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useGlobalState } from './useGlobalState';
+import { useIsFetching } from 'react-query';
 
 export const usePendingState = () => {
-  const [pending, setPending] = useGlobalState('pending');
+  const pending = useIsFetching();
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const timerRef = useRef<number>();
 
@@ -17,5 +17,5 @@ export const usePendingState = () => {
     }
   }, [pending]);
 
-  return { pending, setPending, showLoadingIndicator };
+  return { pending, showLoadingIndicator };
 };

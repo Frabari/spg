@@ -5,46 +5,46 @@ import CloseIcon from '@mui/icons-material/Close';
 import {
   Alert,
   Autocomplete,
+  Avatar,
   Box,
   Card,
   CardActions,
   CardContent,
   CardMedia,
+  Collapse,
   Grid,
   IconButton,
   MenuItem,
-  TextField,
-  Collapse,
   Stack,
+  TextField,
   Typography,
-  Avatar,
 } from '@mui/material';
-import { Product, User, Role, NotificationType } from '../api/BasilApi';
+import { NotificationType, Product, Role, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
+import { useDate } from '../hooks/useDate';
 import { useNotifications } from '../hooks/useNotifications';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 import { useUsers } from '../hooks/useUsers';
-import { useVirtualClock } from '../hooks/useVirtualClock';
 
 function ProductCard({
   product,
   setBalanceWarning,
-  setBasketListener,
   onSelect,
 }: {
   product?: Product;
   setBalanceWarning?: (bol: boolean) => void;
-  setBasketListener?: (bol: boolean) => void;
   onSelect: (product: Product) => void;
 }) {
-  const { basket, upsertEntry } = useBasket();
-  const { profile } = useProfile();
+  const { data: basket } = useBasket();
+  const { upsertEntry } = useUpdateBasket();
+  const { data: profile } = useProfile();
   const navigate = useNavigate();
-  const [date] = useVirtualClock();
+  const { data: date } = useDate();
   const vertical = 'bottom',
     horizontal = 'center';
-  const { enqueueNotifications } = useNotifications();
+  const { enqueueNotification } = useNotifications();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
 
@@ -67,7 +67,7 @@ function ProductCard({
 
   const handleSelect = (product: Product) => {
     if (date < from || date > to) {
-      enqueueNotifications({
+      enqueueNotification({
         id: 0,
         type: NotificationType.ERROR,
         title:
@@ -80,8 +80,7 @@ function ProductCard({
         onSelect(product);
       } else {
         upsertEntry(product, 1).then(o => {
-          setBasketListener(true);
-          enqueueNotifications({
+          enqueueNotification({
             id: 0,
             type: NotificationType.SUCCESS,
             title: product.name + ' successfully added!',
@@ -156,8 +155,6 @@ export default function ProductsByFarmer({
   handleDelete,
   setSearchParams,
   setBalanceWarning,
-  basketListener,
-  setBasketListener,
 }: {
   farmer?: string;
   filter?: string;
@@ -166,11 +163,9 @@ export default function ProductsByFarmer({
   handleDelete?: () => void;
   setSearchParams?: (params: any) => void;
   setBalanceWarning?: (bol: boolean) => void;
-  basketListener?: boolean;
-  setBasketListener?: (bol: boolean) => void;
 }) {
-  const { products, loadProducts } = useProducts();
-  const [date] = useVirtualClock();
+  const { data: products } = useProducts();
+  const { data: date } = useDate();
 
   const [sortOption, setSortOption] = useState('');
   const sort = [
@@ -188,13 +183,6 @@ export default function ProductsByFarmer({
     millisecond: 0,
   });
   const to = from.plus({ hour: 38 });
-
-  useEffect(() => {
-    if (basketListener) {
-      loadProducts();
-      setBasketListener(false);
-    }
-  }, [basketListener]);
 
   const handleChange = (s: string) => {
     setSortOption(s);
@@ -218,7 +206,7 @@ export default function ProductsByFarmer({
   const [open, setOpen] = useState(true);
 
   const [farmers, setFarmers] = useState(null);
-  const { users } = useUsers();
+  const { data: users } = useUsers();
 
   useEffect(() => {
     if (users) {
@@ -324,14 +312,15 @@ export default function ProductsByFarmer({
         </Grid>
       </Grid>
       {farmers
-        ?.filter((f: any) => {
+        ?.filter((f: User) => f.products?.length > 0)
+        ?.filter((f: User) => {
           return (
             farmer === null ||
             farmer === '' ||
             farmer.split('-').includes(String(f.id))
           );
         })
-        .map((f: any) => (
+        .map((f: User) => (
           <>
             <Grid
               borderRadius="16px"
@@ -357,10 +346,10 @@ export default function ProductsByFarmer({
                     display="inline"
                     fontSize="1rem"
                   >
-                    {f.name + ' ' + f.surname}
+                    {f?.name + ' ' + f?.surname}
                   </Typography>
                   <Avatar
-                    src={f.avatar}
+                    src={f?.avatar}
                     sx={{ boxShadow: 2, right: 0, ml: 1 }}
                   />
                 </Grid>
@@ -373,7 +362,7 @@ export default function ProductsByFarmer({
                     component="div"
                     fontSize="2rem"
                   >
-                    {'Cascina Perosa'}
+                    {f?.companyName}
                   </Typography>
                 </Grid>
 
@@ -384,7 +373,8 @@ export default function ProductsByFarmer({
                     component="div"
                     fontSize="10"
                   >
-                    {'Via Zio Pera 1, Borgoratto, Imperia '}
+                    {f?.address?.address}, {f?.address?.city},{' '}
+                    {f?.address?.province}
                   </Typography>
                 </Grid>
               </Grid>
@@ -421,7 +411,6 @@ export default function ProductsByFarmer({
                             product={p}
                             onSelect={onSelect}
                             setBalanceWarning={setBalanceWarning}
-                            setBasketListener={setBasketListener}
                           />
                         </Grid>
                       ) : (
@@ -431,7 +420,6 @@ export default function ProductsByFarmer({
                             product={p}
                             onSelect={onSelect}
                             setBalanceWarning={setBalanceWarning}
-                            setBasketListener={setBasketListener}
                           />
                         </Grid>
                       )}
