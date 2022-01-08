@@ -327,9 +327,12 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     const users = new Set();
     await this.orderEntriesRepository.remove(orderEntriesDraft).then(() => {
       orderEntriesDraft.forEach(element => {
-        users.add(element.order?.user);
+        if (element.order) {
+          users.add(element.order?.user);
+        }
       });
     });
+
     await this.notificationsService.sendNotification(
       {
         type: NotificationType.ERROR,

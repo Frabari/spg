@@ -18,12 +18,6 @@ export enum OrderEntryStatus {
   DELIVERED = 'delivered',
 }
 
-export interface OrderEntry {
-  id: OrderEntryId;
-  product: Product;
-  quantity: number;
-  status?: OrderEntryStatus;
-}
 @Entity()
 export class OrderEntry {
   @PrimaryGeneratedColumn()
@@ -38,7 +32,7 @@ export class OrderEntry {
   /**
    * The product
    */
-  @ManyToOne(() => Product)
+  @ManyToOne(() => Product, product => product.orderEntries)
   @IsNotEmpty()
   product: Product;
 

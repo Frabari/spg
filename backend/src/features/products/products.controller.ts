@@ -92,6 +92,9 @@ export class ProductsController implements CrudController<Product> {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...PRODUCTS_STAFF)
   getManyStockProducts(@ParsedRequest() crudRequest: CrudRequest) {
+    crudRequest.parsed.join.push({
+      field: 'orderEntries',
+    });
     return this.base.getManyBase(crudRequest) as Promise<Product[]>;
   }
 
@@ -120,6 +123,9 @@ export class ProductsController implements CrudController<Product> {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(...PRODUCTS_STAFF)
   getOneStockProduct(@ParsedRequest() crudRequest: CrudRequest) {
+    crudRequest.parsed.join.push({
+      field: 'orderEntries',
+    });
     return this.base.getOneBase(crudRequest);
   }
 

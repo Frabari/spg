@@ -22,7 +22,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import { Product, Role, User } from '../api/BasilApi';
+import { Product, Role, StockItem, User } from '../api/BasilApi';
 import { OrderEntryStatus } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { useCategories } from '../hooks/useCategories';
@@ -133,7 +133,7 @@ export const AdminProducts = (props: {
   const { data: items } = useStock();
   const { mutateAsync: updateProductOrderEntries } =
     useUpdateProductOrderEntries();
-  const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
+  const [sortedProducts, setSortedProducts] = useState<StockItem[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Product;
     dir: 'asc' | 'desc';
@@ -532,46 +532,52 @@ export const AdminProducts = (props: {
                       </>
                     )}
                     <TableCell>
-                      {showConfirmEntriesAction && (
-                        <Button
-                          type="submit"
-                          onClick={ev => {
-                            ev.preventDefault();
-                            ev.stopPropagation();
-                            updateProductOrderEntries({
-                              productId: product.id,
-                              dto: {
-                                status: OrderEntryStatus.CONFIRMED,
-                              },
-                            });
-                          }}
-                          startIcon={<Check />}
-                          color="info"
-                          variant="text"
-                        >
-                          Confirm entries
-                        </Button>
-                      )}
-                      {showDeliveredEntriesAction && (
-                        <Button
-                          type="submit"
-                          onClick={ev => {
-                            ev.preventDefault();
-                            ev.stopPropagation();
-                            updateProductOrderEntries({
-                              productId: product.id,
-                              dto: {
-                                status: OrderEntryStatus.DELIVERED,
-                              },
-                            });
-                          }}
-                          startIcon={<MoveToInbox />}
-                          color="info"
-                          variant="text"
-                        >
-                          Mark as delivered
-                        </Button>
-                      )}
+                      {showConfirmEntriesAction &&
+                        product.orderEntries?.some(
+                          e => e.status !== OrderEntryStatus.CONFIRMED,
+                        ) && (
+                          <Button
+                            type="submit"
+                            onClick={ev => {
+                              ev.preventDefault();
+                              ev.stopPropagation();
+                              updateProductOrderEntries({
+                                productId: product.id,
+                                dto: {
+                                  status: OrderEntryStatus.CONFIRMED,
+                                },
+                              });
+                            }}
+                            startIcon={<Check />}
+                            color="info"
+                            variant="text"
+                          >
+                            Confirm entries
+                          </Button>
+                        )}
+                      {showDeliveredEntriesAction &&
+                        product.orderEntries?.some(
+                          e => e.status !== OrderEntryStatus.DELIVERED,
+                        ) && (
+                          <Button
+                            type="submit"
+                            onClick={ev => {
+                              ev.preventDefault();
+                              ev.stopPropagation();
+                              updateProductOrderEntries({
+                                productId: product.id,
+                                dto: {
+                                  status: OrderEntryStatus.DELIVERED,
+                                },
+                              });
+                            }}
+                            startIcon={<MoveToInbox />}
+                            color="info"
+                            variant="text"
+                          >
+                            Mark as delivered
+                          </Button>
+                        )}
                     </TableCell>
                   </TableRow>
                 ))}
