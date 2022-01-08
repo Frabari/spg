@@ -1,26 +1,27 @@
-import { useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import {
+  Autocomplete,
+  Avatar,
   Box,
   Card,
   CardActions,
   CardContent,
   CardMedia,
-  Chip,
   Grid,
   IconButton,
-  MenuItem,
   TextField,
   Typography,
 } from '@mui/material';
-import { Product, User } from '../api/BasilApi';
+import { NotificationType, Product, Role, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useDate } from '../hooks/useDate';
+import { useNotifications } from '../hooks/useNotifications';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
+import { useUsers } from '../hooks/useUsers';
 
 function ProductCard({
   product,
@@ -36,6 +37,9 @@ function ProductCard({
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   const { data: date } = useDate();
+  const vertical = 'bottom',
+    horizontal = 'center';
+  const { enqueueNotification } = useNotifications();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
 
@@ -47,26 +51,38 @@ function ProductCard({
     }
   };
 
-  const handleSelect = (product: Product) => {
-    const from = date.set({
-      weekday: 6,
-      hour: 9,
-      minute: 0,
-      second: 0,
-      millisecond: 0,
-    });
-    const to = from.plus({ hour: 38 });
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
 
+  const handleSelect = (product: Product) => {
     if (date < from || date > to) {
-      toast.error(
-        `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
-      );
+      enqueueNotification({
+        id: 0,
+        type: NotificationType.ERROR,
+        title:
+          'You can add products to the basket only from Saturday 9am to Sunday 23pm',
+        message:
+          'You can add products to the basket only from Saturday 9am to Sunday 23pm',
+        createdAt: new Date(),
+      });
     } else {
       if (onSelect) {
         onSelect(product);
       } else {
         upsertEntry(product, 1).then(() => {
-          toast.success(`${product.name} successfully added!`);
+          enqueueNotification({
+            id: 0,
+            type: NotificationType.SUCCESS,
+            title: product.name + ' successfully added!',
+            message: '',
+            createdAt: new Date(),
+          });
         });
       }
     }
@@ -74,7 +90,7 @@ function ProductCard({
   };
 
   return (
-    <Grid item lg={3} md={4} sm={6} xs={12} height={'425px'}>
+    <>
       <Card sx={{ height: '100%' }}>
         <CardMedia
           component="img"
@@ -111,15 +127,19 @@ function ProductCard({
             € {product.price}/{product.baseUnit}
           </Typography>
         </CardContent>
-        <CardActions sx={{ display: !profile && 'none' }}>
-          <Box marginLeft="auto" padding="0.5rem">
-            <IconButton onClick={() => handleSelect(product)}>
-              <AddIcon />
-            </IconButton>
-          </Box>
-        </CardActions>
+        {date >= from && date <= to ? (
+          <CardActions sx={{ display: !profile && 'none' }}>
+            <Box marginLeft="auto" padding="0.5rem">
+              <IconButton onClick={() => handleSelect(product)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+          </CardActions>
+        ) : (
+          ''
+        )}
       </Card>
-    </Grid>
+    </>
   );
 }
 
@@ -129,16 +149,19 @@ export default function ProductsGrid({
   onSelect,
   search,
   handleDelete,
+  setSearchParams,
   setBalanceWarning,
 }: {
-  farmer?: User;
+  farmer?: string;
   filter?: string;
   search?: string;
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
+  setSearchParams?: (params: any) => void;
   setBalanceWarning?: (bol: boolean) => void;
 }) {
   const { data: products } = useProducts();
+  const { data: date } = useDate();
   const [sortOption, setSortOption] = useState('');
   const sort = [
     'Highest price',
@@ -146,6 +169,24 @@ export default function ProductsGrid({
     'Ascending name',
     'Descending name',
   ];
+
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
+
+  const [farmers, setFarmers] = useState(null);
+  const { data: users } = useUsers();
+
+  useEffect(() => {
+    if (users) {
+      setFarmers(users.filter(u => u.role === Role.FARMER));
+    }
+  }, [users]);
 
   const handleChange = (s: string) => {
     setSortOption(s);
@@ -166,72 +207,154 @@ export default function ProductsGrid({
     }
   };
 
+  const [open, setOpen] = useState(true);
+
   return (
     <>
-      <Grid container direction="row">
-        <Grid item xs={12} sm={11}>
-          {farmer && (
-            <Chip
-              sx={{ m: 2 }}
-              onDelete={handleDelete}
-              variant="outlined"
-              label={`Product by ${farmer.name} ${farmer.surname}`}
-            />
+      <Grid item xs={3} sx={{ ml: 'auto' }}>
+        <Autocomplete
+          multiple
+          id="tags-outlined"
+          value={users.filter(
+            u => farmer && farmer.split('-').indexOf(String(u.id)) >= 0,
           )}
-        </Grid>
-        <Grid item xs={12} sm={1} display={onSelect ? 'none' : 'block'}>
-          <TextField
-            id="outlined-select-sort"
-            select
-            value={sortOption}
-            size="small"
-            label="Sort by"
-            sx={{
-              width: '200px',
-              float: { xs: 'left', sm: 'right' },
-              mr: 2,
-              ml: 2,
-            }}
-            onChange={e => handleChange(e.target.value)}
+          options={users.filter(u => u.role === Role.FARMER)}
+          getOptionLabel={(option: User) => option.name + ' ' + option.surname}
+          filterSelectedOptions
+          onChange={(event, newValue) => {
+            if (filter !== '') {
+              setSearchParams({
+                farmer: newValue
+                  .map(u => {
+                    return String((u as User).id);
+                  })
+                  .join('-')
+                  .toString(),
+                category: filter,
+              });
+            } else {
+              setSearchParams({
+                farmer: newValue
+                  .map(u => {
+                    return String((u as User).id);
+                  })
+                  .join('-')
+                  .toString(),
+              });
+            }
+          }}
+          renderInput={params => (
+            <TextField {...params} label="Filter farmers" size="small" />
+          )}
+        />
+      </Grid>
+
+      {farmers?.map((f: any) => (
+        <>
+          <Grid
+            borderRadius="16px"
+            spacing="2rem"
+            padding="1rem"
+            width="auto"
+            marginBottom="1rem"
+            marginX="1rem"
+            sx={{ backgroundColor: '#fafafa' }}
           >
-            {sort.map(option => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      </Grid>
-      <Grid
-        container
-        direction="row"
-        spacing="2rem"
-        padding="1rem"
-        alignItems="center"
-        justifyItems="center"
-        width="auto"
-      >
-        {products
-          ?.filter(p => !filter || p.category.slug === filter)
-          ?.filter(
-            p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
-          )
-          ?.filter(
-            p =>
-              !farmer ||
-              p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
-          )
-          ?.filter(p => p.available > 0)
-          ?.sort((a, b) => sortProducts(a, b))
-          .map(p => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              onSelect={onSelect}
-              setBalanceWarning={setBalanceWarning}
-            />
-          ))}
-      </Grid>
+            <Grid container direction="row" spacing={2} padding="2rem">
+              <Grid
+                container
+                direction="row"
+                justifyContent="end"
+                alignContent="center"
+                xs={12}
+                sm={12}
+              >
+                <Typography
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  display="inline"
+                  fontSize="1rem"
+                >
+                  {f.name + ' ' + f.surname}
+                </Typography>
+                <Avatar src={f.avatar} sx={{ boxShadow: 2, right: 0, ml: 1 }} />
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <Typography
+                  align="left"
+                  fontWeight="bold"
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  fontSize="1.5rem"
+                >
+                  {'Cascina Perosa'}
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12} sm={12}>
+                <Typography
+                  align="left"
+                  gutterBottom
+                  component="div"
+                  fontSize="9"
+                >
+                  {'Via Zio Pera 1, Borgoratto, Imperia '}
+                </Typography>
+              </Grid>
+            </Grid>
+
+            <Grid
+              container
+              display="grid"
+              gap={2.5}
+              gridTemplateColumns="repeat(auto-fill, minmax(10rem, 1fr))"
+              padding="1rem"
+            >
+              {products
+                ?.filter(p => p.farmer.id === f.id)
+                ?.filter(p => filter === '' || p.category.slug === filter)
+                ?.filter(
+                  p =>
+                    !search ||
+                    p.name.toLowerCase().includes(search.toLowerCase()),
+                )
+                ?.filter(
+                  p =>
+                    !farmer ||
+                    (farmer &&
+                      farmer.split('-').indexOf(String(p.farmer.id)) >= 0),
+                )
+                ?.filter(p => p.available > 0)
+                ?.sort((a, b) => sortProducts(a, b))
+                .map(p => (
+                  <>
+                    {date >= from && date <= to ? (
+                      <Grid item>
+                        <ProductCard
+                          key={p.id}
+                          product={p}
+                          onSelect={onSelect}
+                          setBalanceWarning={setBalanceWarning}
+                        />
+                      </Grid>
+                    ) : (
+                      <Grid item>
+                        <ProductCard
+                          key={p.id}
+                          product={p}
+                          onSelect={onSelect}
+                          setBalanceWarning={setBalanceWarning}
+                        />
+                      </Grid>
+                    )}
+                  </>
+                ))}
+            </Grid>
+          </Grid>
+        </>
+      ))}
     </>
   );
 }

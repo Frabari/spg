@@ -1,11 +1,11 @@
 import { ADMINS } from 'backend/dist/src/features/users/roles.enum';
 import { addDays } from 'date-fns';
-import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FormikErrors, useFormik } from 'formik';
 import { Add, Save } from '@mui/icons-material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -19,6 +19,7 @@ import {
   FormControl,
   FormHelperText,
   Grid,
+  IconButton,
   InputLabel,
   List,
   ListItem,
@@ -638,14 +639,28 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         open={selectingProduct}
         onClose={() => setSelectingProduct(false)}
       >
-        <Box sx={{ width: { xs: '60vw' } }}>
-          <Typography
-            variant="h5"
-            color="primary.main"
-            sx={{ p: 3, fontWeight: 'bold' }}
-          >
-            Select a product
-          </Typography>
+        <Box sx={{ width: { xs: '100%' } }}>
+          <Grid container direction="row" spacing={1}>
+            <Grid item xs={1}>
+              <IconButton
+                sx={{ margin: 1.5 }}
+                onClick={() => {
+                  setSelectingProduct(false);
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </Grid>
+            <Grid item xs={11}>
+              <Typography
+                variant="h5"
+                color="primary.main"
+                sx={{ p: 3, fontWeight: 'bold' }}
+              >
+                Select a product
+              </Typography>
+            </Grid>
+          </Grid>
           <ProductsGrid onSelect={onProductSelected} />
         </Box>
       </Drawer>

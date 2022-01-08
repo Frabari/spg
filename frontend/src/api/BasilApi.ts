@@ -133,6 +133,8 @@ export interface User {
   products: Product[];
   notifications: Notification[];
   address: DeliveryLocation;
+  companyName: string;
+  companyImage: string;
 }
 
 export interface Notification {

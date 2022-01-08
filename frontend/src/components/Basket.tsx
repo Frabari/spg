@@ -171,11 +171,19 @@ export default function Basket({
                 />
               ))}
           </Grid>
-          <Grid container direction="row" alignItems="center" spacing={2}>
+          <Grid
+            container
+            direction="row"
+            alignItems="center"
+            spacing={2}
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+            }}
+          >
             <Grid item xs={6}>
               <Box
                 sx={{
-                  float: 'left',
                   alignItems: 'center',
                   justifyItems: 'center',
                   m: 3,

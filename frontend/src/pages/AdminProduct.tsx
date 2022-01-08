@@ -8,6 +8,11 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
   FormHelperText,
   Grid,
@@ -43,6 +48,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const { upsertStockItem } = useUpsertStockItem();
   const { data: categories } = useCategories();
   const [farmers, setFarmers] = useState(null);
+  const [open, setOpen] = useState(false);
   const entries = [];
   const setEntries = (args: any) => null as any;
   const { data: users } = useUsers();
@@ -56,6 +62,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
       baseUnit: null,
       farmer: null,
       category: null,
+      reserved: null,
     } as Partial<StockItem>,
     onSubmit: (values: Partial<StockItem>, { setErrors }) => {
       return upsertStockItem(values)
@@ -71,6 +78,17 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
         });
     },
   });
+
+  const handleSave = () => {
+    if (form.values?.reserved < item.reserved) {
+      setOpen(true);
+    } else form.submitForm();
+  };
+
+  const handleClose = (save: boolean) => {
+    if (save) form.submitForm();
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (users) {
@@ -100,7 +118,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
     );
   };
 
-  if (error) {
+  if (error && id != null) {
     return (
       <EmptyState
         type="error"
@@ -130,13 +148,39 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
         >
           <Save />
         </IconButton>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Save changes about {item?.name}?
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              The reserved quantity for <b>{item?.name}</b> has been changed
+              <b>
+                {' '}
+                from {item?.reserved} to {form.values?.reserved}.
+              </b>
+              <p>Continue with the changes?</p>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => handleClose(false)}>Cancel</Button>
+            <Button onClick={() => handleClose(true)} autoFocus>
+              Continue
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Button
           sx={{
             display: { xs: 'none', md: 'flex' },
           }}
           variant="contained"
           startIcon={<Save />}
-          onClick={form.submitForm}
+          onClick={handleSave}
           type="submit"
         >
           <Typography display="inline" sx={{ textTransform: 'none' }}>
@@ -163,7 +207,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                 marginBottom: '40px',
               }}
             >
-              <Inventory />
+              <Inventory sx={{ width: '102px', height: '102px' }} />
             </Avatar>
             <Grid
               container
@@ -277,7 +321,9 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                     onChange={form.handleChange}
                     label="Reserved"
                     value={form.values?.reserved ?? ''}
+                    inputProps={{ max: item?.reserved, min: 0 }}
                   />
+                  <FormHelperText>{form.errors?.reserved}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={4}>

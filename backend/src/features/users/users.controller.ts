@@ -74,6 +74,11 @@ export class UsersController implements CrudController<User> {
         }),
       };
     }
+    crudRequest.parsed.join = [
+      {
+        field: 'address',
+      },
+    ];
     return this.base.getManyBase(crudRequest) as Promise<User[]>;
   }
   @Get('farmers')

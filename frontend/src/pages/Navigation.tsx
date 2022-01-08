@@ -71,17 +71,26 @@ interface LinkTabProps {
 }
 
 function LinkTab({ slug, label, ...rest }: LinkTabProps) {
+  const [queryParams] = useSearchParams();
   return (
     <Tab
       component={Link}
-      to={`/products${slug ? `?category=${slug}` : ''}`}
+      to={`/products?${
+        queryParams.get('farmer') != null
+          ? `farmer=${queryParams.get('farmer')}`
+          : ''
+      }${
+        slug
+          ? `${(queryParams.get('farmer') && '&') || ''}category=${slug}`
+          : ''
+      }`}
       label={label}
       {...rest}
     />
   );
 }
 
-function NavTabs() {
+function NavTabs(props: any) {
   const [value, setValue] = useState(0);
   const [queryParams] = useSearchParams();
   const { data: categories } = useCategories();
@@ -97,7 +106,12 @@ function NavTabs() {
     <Toolbar
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
-      <Tabs value={value} variant="scrollable" scrollButtons="auto">
+      <Tabs
+        value={value}
+        variant="scrollable"
+        scrollButtons="auto"
+        onChange={props.setCategory(value)}
+      >
         <LinkTab key="all" label="all" />
         {categories?.map(c => (
           <LinkTab key={c.id} label={c.name} slug={c.slug} />
@@ -154,22 +168,6 @@ function NavBar(props: any) {
   const { data: date } = useDate();
   const { mutate } = useUpdateDate();
 
-  useEffect(() => {
-    const u = users
-      .filter(u => u.role === Role.FARMER)
-      .map(user => ({
-        ...user,
-        type: 'Farmers',
-      }));
-    const p = products
-      ?.filter(product => product.available > 0)
-      .map(product => ({
-        ...product,
-        type: 'Products',
-      }));
-    setList([...u, ...(p ?? [])]);
-  }, [products, users]);
-
   const handleMenu = (event: ReactMouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -203,6 +201,15 @@ function NavBar(props: any) {
       toast.error((e as ApiException).message);
     }
   };
+
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
 
   return (
     <>
@@ -271,25 +278,10 @@ function NavBar(props: any) {
                 id="free-solo-2-demo"
                 disableClearable
                 freeSolo
-                options={
-                  props.farmer
-                    ? list.filter(
-                        option => option.farmer?.email === props.farmer?.email,
-                      )
-                    : list
-                }
-                groupBy={(option: any) => option?.type}
-                getOptionLabel={(option: any) =>
-                  option?.type === 'Farmers'
-                    ? option?.name + ' ' + option?.surname
-                    : option?.name
-                }
+                options={products}
+                getOptionLabel={(option: any) => option?.name}
                 onChange={(event, value: any) => {
-                  if (value.type === 'Farmers') {
-                    props.setFarmer(value);
-                  } else {
-                    props.handleSearch(value.name);
-                  }
+                  props.handleSearch(value.name);
                 }}
                 renderOption={(props, option: any) => (
                   <Box
@@ -300,17 +292,8 @@ function NavBar(props: any) {
                     }}
                     {...props}
                   >
-                    <Avatar
-                      sx={{ m: 1 }}
-                      src={
-                        option?.type === 'Farmers'
-                          ? option?.avatar
-                          : option?.image
-                      }
-                    />
-                    {option?.type === 'Farmers'
-                      ? option?.name + ' ' + option?.surname
-                      : option?.name}
+                    <Avatar sx={{ m: 1 }} src={option?.image} />
+                    {option?.name}
                   </Box>
                 )}
                 autoHighlight
@@ -512,16 +495,20 @@ function NavBar(props: any) {
                       )}
                     </List>
                   </Menu>
-                  <IconButton
-                    sx={{ display: !profile && 'none' }}
-                    size="large"
-                    aria-label="show cart"
-                    onClick={() => setShowBasket(true)}
-                  >
-                    <Badge badgeContent={basket?.entries?.length}>
-                      <ShoppingCart />
-                    </Badge>
-                  </IconButton>
+                  {date >= from && date <= to ? (
+                    <IconButton
+                      sx={{ display: !profile && 'none' }}
+                      size="large"
+                      aria-label="show cart"
+                      onClick={() => setShowBasket(true)}
+                    >
+                      <Badge badgeContent={basket?.entries?.length}>
+                        <ShoppingCart />
+                      </Badge>
+                    </IconButton>
+                  ) : (
+                    ''
+                  )}
                   <IconButton
                     sx={{ display: !profile && 'none' }}
                     size="large"
