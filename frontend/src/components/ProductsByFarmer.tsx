@@ -312,7 +312,6 @@ export default function ProductsByFarmer({
         </Grid>
       </Grid>
       {farmers
-        ?.filter((f: User) => f.products?.length > 0)
         ?.filter((f: User) => {
           return (
             farmer === null ||
