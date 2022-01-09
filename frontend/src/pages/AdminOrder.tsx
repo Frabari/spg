@@ -159,7 +159,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
 
   useEffect(() => {
     if (
-      form.values.user.id !== null &&
+      form.values.user.id != null &&
       ADMINS.includes((profile as User).role)
     ) {
       getUser(form.values.user.id).then(u => setUser(u));
@@ -262,17 +262,15 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   error={!!form.errors?.user}
                   disabled={isLoading}
                 >
-                  <InputLabel id="order-user">User</InputLabel>
                   <Select
                     labelId="order-user"
-                    label="User"
                     required
                     value={
-                      users?.length && form.values?.user
+                      users?.length && form.values?.user?.id
                         ? form.values?.user?.id
                         : ''
                     }
-                    name="user"
+                    name="user.id"
                     onChange={form.handleChange}
                   >
                     <MenuItem value="">Select a user</MenuItem>
@@ -282,7 +280,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>{form.errors?.user}</FormHelperText>
+                  <FormHelperText>{form.errors?.user?.id}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
@@ -403,11 +401,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                     : order?.deliveryLocation ?? {
                         name: (user as User).name,
                         surname: (user as User).surname,
-                        address: (user as User)?.address.address,
-                        zipCode: (user as User)?.address.zipCode,
-                        city: (user as User)?.address.city,
-                        province: (user as User)?.address.province,
-                        region: (user as User)?.address.region,
+                        address: (user as User)?.address?.address,
+                        zipCode: (user as User)?.address?.zipCode,
+                        city: (user as User)?.address?.city,
+                        province: (user as User)?.address?.province,
+                        region: (user as User)?.address?.region,
                       },
                 );
               }}
