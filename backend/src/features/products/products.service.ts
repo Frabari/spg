@@ -56,7 +56,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     );
   }
 
-  async checkProduct(dto: CreateProductDto, user: User) {
+  async validateCreateProductDto(dto: CreateProductDto, user: User) {
     if (user.role === Role.FARMER) {
       dto.farmer = user;
       dto.public = false;
@@ -74,7 +74,11 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     return dto;
   }
 
-  async checkProductsUpdate(id: ProductId, dto: UpdateProductDto, user: User) {
+  async validateUpdateProductDto(
+    id: ProductId,
+    dto: UpdateProductDto,
+    user: User,
+  ) {
     const product = await this.productsRepository.findOne(id, {
       relations: ['farmer'],
     });

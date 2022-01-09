@@ -4,16 +4,18 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import { Product } from '../api/BasilApi';
 import { useProduct } from '../hooks/useProduct';
 import { useProducts } from '../hooks/useProducts';
+import { useUpsertStockItem } from '../hooks/useUpsertStockItem';
+import { wrapper } from './wrapper';
 
 test('create product', async () => {
   const product: Partial<Product> = {
     name: 'Kale',
   };
 
-  const { result } = renderHook(() => useProduct());
+  const { result } = renderHook(() => useUpsertStockItem(), { wrapper });
   await act(async () =>
     expect(
-      ((await result.current.upsertProduct(product)) as Product).name,
+      ((await result.current.upsertStockItem(product)) as Product).name,
     ).toEqual('Kale'),
   );
 });
@@ -23,24 +25,22 @@ test('update product', async () => {
     id: 30,
     name: 'Kale',
   };
-  const { result } = renderHook(() => useProduct(30));
+  const { result } = renderHook(() => useUpsertStockItem(), { wrapper });
   await act(async () =>
     expect(
-      ((await result.current.upsertProduct(product)) as Product).name,
+      ((await result.current.upsertStockItem(product)) as Product).name,
     ).toEqual('Kale'),
   );
 });
 
 test('load product', async () => {
-  const { result } = renderHook(() => useProduct(30));
-  await waitFor(() => expect(result.current.product.name).toEqual('Kale'));
+  const { result } = renderHook(() => useProduct(30), { wrapper });
+  await waitFor(() => expect(result.current.data.name).toEqual('Kale'));
 });
 
 test('load products', async () => {
-  const { result } = renderHook(() => useProducts());
+  const { result } = renderHook(() => useProducts(), { wrapper });
   await waitFor(() => {
-    expect(result.current.products.find(p => p.id === 42).name).toEqual(
-      'Ananas',
-    );
+    expect(result.current.data.find(p => p.id === 42).name).toEqual('Ananas');
   });
 });

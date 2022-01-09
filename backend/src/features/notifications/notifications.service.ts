@@ -1,5 +1,4 @@
 import { FindConditions, Repository } from 'typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserId } from '../users/entities/user.entity';
@@ -10,6 +9,7 @@ import {
   NotificationType,
 } from './entities/notification.entity';
 import { NotificationsGateway } from './notifications.gateway';
+import { SendgridService } from './sendgrid.service';
 
 @Injectable()
 export class NotificationsService {
@@ -21,7 +21,7 @@ export class NotificationsService {
     private readonly usersService: UsersService,
     @Inject(forwardRef(() => NotificationsGateway))
     private readonly notificationsGateway: NotificationsGateway,
-    private readonly mailerService: MailerService,
+    private readonly sendgridService: SendgridService,
   ) {}
 
   activateUser(id: UserId) {
@@ -59,7 +59,8 @@ export class NotificationsService {
     notification.deliveredTo = users;
     if (notification.priority === NotificationPriority.CRITICAL) {
       users?.forEach(u => {
-        this.mailerService.sendMail({
+        this.sendgridService.send({
+          from: 'basilthestore@gmail.com',
           to: u.email,
           subject: `New ${notification.type} notification from Basil`,
           text: notification.title + '\n\n' + notification.message,

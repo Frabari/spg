@@ -2,23 +2,27 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Avatar,
+  Alert,
   Box,
   Button,
   Container,
   Chip,
   Grid,
+  Stack,
+  Collapse,
   Typography,
   TextField,
   MenuItem,
   IconButton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { useBasket } from '../hooks/useBasket';
+import { useDate } from '../hooks/useDate';
 import { useProduct } from '../hooks/useProduct';
 import { useProfile } from '../hooks/useProfile';
-import { useVirtualClock } from '../hooks/useVirtualClock';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
 const Img = styled('img')({
   margin: 'auto',
@@ -31,11 +35,11 @@ export default function ProductInfo(props: any) {
   const [counter, setCounter] = useState(1);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { profile } = useProfile();
-  const { product } = useProduct(+id);
-  const { upsertEntry } = useBasket();
+  const { data: profile } = useProfile();
+  const { data: product } = useProduct(+id);
+  const { upsertEntry } = useUpdateBasket();
   const [ready, setReady] = useState(false);
-  const [date] = useVirtualClock();
+  const { data: date } = useDate();
 
   useEffect(() => {
     if (product?.id) {
@@ -79,9 +83,51 @@ export default function ProductInfo(props: any) {
     }
   };
 
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
+
+  const [open, setOpen] = useState(true);
+
   return (
     ready && (
       <Container sx={{ mt: 18, mb: 9 }}>
+        {date < from || date > to ? (
+          <Stack sx={{ width: '100%' }} spacing={2}>
+            <Collapse in={open}>
+              <Alert
+                severity="info"
+                action={
+                  <IconButton
+                    aria-label="close"
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      setOpen(false);
+                    }}
+                  >
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                }
+                sx={{ mb: 2 }}
+              >
+                {' Products can be purchased from '}
+                {'Saturday'} {from.day}
+                {' (9:00 am)'}
+                {' to '}
+                {'Sunday'} {to.day}
+                {' (11:00 pm)'}
+              </Alert>
+            </Collapse>
+          </Stack>
+        ) : (
+          ''
+        )}
         <Box sx={style}>
           <Grid container direction="column" spacing={2}>
             <Grid item xs={12}>
@@ -226,32 +272,38 @@ export default function ProductInfo(props: any) {
                         justifyItems="center"
                         alignItems="center"
                       >
-                        <Grid item xs={12} sm={4}>
-                          <TextField
-                            id="outlined-select-quantity"
-                            select
-                            label="Quantity"
-                            value={counter}
-                            onChange={e =>
-                              handleChange(parseInt(e.target.value))
-                            }
-                            helperText="Select the desired quantity"
-                          >
-                            {Array.from(
-                              { length: product.available },
-                              (v, k) => k + 1,
-                            ).map(option => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </Grid>
-                        <Grid item xs={12} sm={8} mb={5}>
-                          <Button onClick={() => handleClick()}>
-                            Add to basket
-                          </Button>
-                        </Grid>
+                        {date >= from && date <= to ? (
+                          <>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                id="outlined-select-quantity"
+                                select
+                                label="Quantity"
+                                value={counter}
+                                onChange={e =>
+                                  handleChange(parseInt(e.target.value))
+                                }
+                                helperText="Select the desired quantity"
+                              >
+                                {Array.from(
+                                  { length: product.available },
+                                  (v, k) => k + 1,
+                                ).map(option => (
+                                  <MenuItem key={option} value={option}>
+                                    {option}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                            </Grid>
+                            <Grid item xs={12} sm={8} mb={5}>
+                              <Button onClick={() => handleClick()}>
+                                Add to basket
+                              </Button>
+                            </Grid>
+                          </>
+                        ) : (
+                          ''
+                        )}
                       </Grid>
                     </Grid>
                   </Grid>

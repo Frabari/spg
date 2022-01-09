@@ -45,12 +45,16 @@ export const themeOptions = createTheme({
       },
       styleOverrides: {
         root: {
-          borderRadius: '30px',
+          textTransform: 'none',
         },
         contained: {
           color: 'white',
           boxShadow: 'none',
           fontWeight: 'bold',
+          borderRadius: '30px',
+        },
+        outlined: {
+          borderRadius: '30px',
         },
       },
     },

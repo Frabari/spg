@@ -1,10 +1,11 @@
 import { waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
-import { useVirtualClock } from '../hooks/useVirtualClock';
+import { useDate } from '../hooks/useDate';
+import { wrapper } from './wrapper';
 
 test('set date', async () => {
-  const { result } = renderHook(() => useVirtualClock());
+  const { result } = renderHook(() => useDate(), { wrapper });
   await waitFor(() => {
-    expect(result.current[0]).toBeDefined();
+    expect(result.current.data).toBeDefined();
   });
 });

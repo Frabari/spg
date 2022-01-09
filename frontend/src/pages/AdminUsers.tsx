@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
@@ -9,10 +10,10 @@ import {
   Grid,
   IconButton,
   InputBase,
+  Menu,
   MenuItem,
   styled,
   TableSortLabel,
-  TextField,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -27,31 +28,47 @@ import { AdminAppBar } from '../components/AdminAppBar';
 import { roles } from '../constants';
 import { useUsers } from '../hooks/useUsers';
 
-const columns: { key: keyof User; title: string; sortable: boolean }[] = [
+const columns: {
+  key: keyof User;
+  title: string;
+  sortable: boolean;
+  width: number;
+}[] = [
+  {
+    key: 'avatar',
+    title: 'Image',
+    sortable: false,
+    width: 50,
+  },
   {
     key: 'name',
     title: 'Name',
     sortable: true,
+    width: 100,
   },
   {
     key: 'surname',
     title: 'Surname',
     sortable: true,
+    width: 100,
   },
   {
     key: 'email',
     title: 'Email',
     sortable: true,
+    width: 100,
   },
   {
     key: 'role',
     title: 'Role',
     sortable: false,
+    width: 100,
   },
   {
     key: 'balance',
     title: 'Balance',
     sortable: true,
+    width: 100,
   },
 ];
 
@@ -97,13 +114,21 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
-  const { users } = useUsers();
+  const { data: users } = useUsers();
   const [sortedUsers, setSortedUsers] = useState<User[]>([]);
   const [searchParams, setSearchParams] = useSearchParams({ role: 'all' });
   const [sorting, setSorting] = useState<{
     by: keyof User;
     dir: 'asc' | 'desc';
   }>({ by: null, dir: 'asc' });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   useEffect(() => {
     if (users?.length) {
@@ -154,6 +179,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
       ...Object.fromEntries(searchParams.entries()),
       role: role,
     });
+    handleClose();
   };
 
   return (
@@ -199,7 +225,9 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
           </Typography>
         </Button>
       </AdminAppBar>
-      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
+      <Box
+        sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+      >
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}
@@ -212,7 +240,13 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                     key={c.key}
                     sortDirection={sorting.by === c.key ? sorting.dir : false}
                   >
-                    <Grid container direction="column" spacing={1}>
+                    <Grid
+                      container
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      justifyItems="center"
+                    >
                       <Grid item>
                         {c.sortable ? (
                           <TableSortLabel
@@ -229,27 +263,32 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                         )}
                       </Grid>
                       <Grid item>
-                        {c.key === 'role' ? (
-                          <TextField
-                            id="outlined-select-role"
-                            select
-                            value={searchParams.get('role')}
-                            label="Filter by role"
-                            size="small"
-                            sx={{ width: '175px' }}
-                            onChange={e =>
-                              handleRoleSearchParams(e.target.value)
-                            }
-                          >
-                            {sort.map(option => (
-                              <MenuItem key={option} value={option}>
-                                {option.charAt(0).toUpperCase() +
-                                  option.slice(1)}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        ) : (
-                          <></>
+                        {c.key === 'role' && (
+                          <>
+                            <IconButton onClick={handleClick}>
+                              <FilterAltIcon />
+                            </IconButton>
+                            <Menu
+                              id="role-menu"
+                              anchorEl={anchorEl}
+                              open={open}
+                              onClose={handleClose}
+                              MenuListProps={{
+                                'aria-labelledby': 'basic-button',
+                              }}
+                            >
+                              {sort.map(option => (
+                                <MenuItem
+                                  key={option}
+                                  value={option}
+                                  onClick={() => handleRoleSearchParams(option)}
+                                >
+                                  {option.charAt(0).toUpperCase() +
+                                    option.slice(1)}
+                                </MenuItem>
+                              ))}
+                            </Menu>
+                          </>
                         )}
                       </Grid>
                     </Grid>
@@ -277,6 +316,18 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
                       }}
                       onClick={() => navigate(`/admin/users/${user.id}`)}
                     >
+                      <TableCell sx={{ py: 0, pt: 1 }}>
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      </TableCell>
                       <TableCell component="th" scope="row">
                         {user.name}
                       </TableCell>

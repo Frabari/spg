@@ -85,7 +85,7 @@ describe('ProductsService', () => {
         price: 10,
         available: 10,
       } as CreateProductDto;
-      const result = await service.checkProduct(dto, {
+      const result = await service.validateCreateProductDto(dto, {
         id: 1,
         role: Role.FARMER,
       } as User);
@@ -100,7 +100,7 @@ describe('ProductsService', () => {
         available: 10,
         reserved: 5,
       } as CreateProductDto;
-      const result = await service.checkProduct(dto, {
+      const result = await service.validateCreateProductDto(dto, {
         id: 1,
         role: Role.FARMER,
       } as User);
@@ -135,7 +135,7 @@ describe('ProductsService', () => {
         available: 10,
       });
       expect(
-        await service.checkProductsUpdate(
+        await service.validateUpdateProductDto(
           product.id,
           {
             ...product,
@@ -165,7 +165,7 @@ describe('ProductsService', () => {
         available: 10,
       });
       return expect(
-        service.checkProductsUpdate(
+        service.validateUpdateProductDto(
           100,
           {
             ...product,
@@ -196,7 +196,7 @@ describe('ProductsService', () => {
         farmer: user,
       });
       return expect(
-        service.checkProductsUpdate(
+        service.validateUpdateProductDto(
           product.id,
           {
             ...product,
@@ -228,7 +228,7 @@ describe('ProductsService', () => {
         price: 10,
         farmer: user,
       });
-      const updatedProduct = await service.checkProductsUpdate(
+      const updatedProduct = await service.validateUpdateProductDto(
         product.id,
         {
           ...product,
@@ -267,7 +267,7 @@ describe('ProductsService', () => {
         farmer: user,
       });
       return expect(
-        await service.checkProductsUpdate(
+        await service.validateUpdateProductDto(
           product.id,
           {
             ...product,
@@ -306,7 +306,7 @@ describe('ProductsService', () => {
         farmer: user,
       });
       expect(
-        await service.checkProductsUpdate(
+        await service.validateUpdateProductDto(
           product.id,
           {
             ...product,
@@ -383,7 +383,7 @@ describe('ProductsService', () => {
           },
         ],
       });
-      await service.checkProductsUpdate(
+      await service.validateUpdateProductDto(
         product.id,
         {
           reserved: 12,
