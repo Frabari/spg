@@ -193,7 +193,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       }
     }
 
-    if (dto.entries?.length) {
+    if (dto.entries) {
       const now = DateTime.now();
       const from = now.set({
         weekday: 6,
