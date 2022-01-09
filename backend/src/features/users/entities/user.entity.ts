@@ -11,6 +11,7 @@ import {
 import {
   Column,
   Entity,
+  Generated,
   JoinColumn,
   ManyToMany,
   OneToMany,
@@ -147,4 +148,9 @@ export class User {
   @Type(() => DeliveryLocation)
   @ValidateNested()
   address: DeliveryLocation;
+
+  @Column()
+  @IsString()
+  @Generated('uuid')
+  telegramToken: string;
 }
