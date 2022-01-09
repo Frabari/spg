@@ -189,6 +189,8 @@ export const logout = () => {
  * Users
  */
 
+export const getFarmers = () => client.get<User[]>('/users/farmers');
+
 export const getUsers = () => client.get<User[]>('/users');
 
 export const getUser = (id: UserId) => client.get<User>(`/users/${id}`);

@@ -39,6 +39,10 @@ import { UsersService } from './users.service';
   },
   query: {
     join: {
+      products: {
+        eager: true,
+      },
+      'products.category': { eager: true },
       notifications: {},
       address: {},
       orders: {
@@ -81,6 +85,7 @@ export class UsersController implements CrudController<User> {
     ];
     return this.base.getManyBase(crudRequest) as Promise<User[]>;
   }
+
   @Get('farmers')
   @UseInterceptors(CrudRequestInterceptor)
   @ApiBearerAuth()
@@ -91,6 +96,14 @@ export class UsersController implements CrudController<User> {
         role: Role.FARMER,
       }),
     };
+    crudRequest.parsed.join = [
+      {
+        field: 'products',
+      },
+      {
+        field: 'address',
+      },
+    ];
     return this.base.getManyBase(crudRequest) as Promise<User[]>;
   }
 

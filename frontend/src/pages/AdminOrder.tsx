@@ -270,7 +270,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                         ? form.values?.user?.id
                         : ''
                     }
-                    name="user.id"
+                    name="user"
                     onChange={form.handleChange}
                   >
                     <MenuItem value="">Select a user</MenuItem>
@@ -640,10 +640,16 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         onClose={() => setSelectingProduct(false)}
       >
         <Box sx={{ width: { xs: '100%' } }}>
-          <Grid container direction="row" spacing={1}>
+          <Grid
+            container
+            direction="row"
+            spacing={1}
+            justifyItems="center"
+            alignItems="center"
+          >
             <Grid item xs={1}>
               <IconButton
-                sx={{ margin: 1.5 }}
+                sx={{ margin: 1.5, mr: 0 }}
                 onClick={() => {
                   setSelectingProduct(false);
                 }}
@@ -655,7 +661,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               <Typography
                 variant="h5"
                 color="primary.main"
-                sx={{ p: 3, fontWeight: 'bold' }}
+                sx={{ m: 3, ml: 1, fontWeight: 'bold' }}
               >
                 Select a product
               </Typography>
