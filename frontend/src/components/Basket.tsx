@@ -25,7 +25,7 @@ function ProductCard(props: any) {
   const { upsertEntry, deleteEntry } = useUpdateBasket();
 
   const handleDeleteEntry = (product: Product) => {
-    if (basket?.entries.length === 1) props.setShowBasket(false);
+    props.setShowBasket(false);
     deleteEntry(product);
   };
 
@@ -98,16 +98,22 @@ function ProductCard(props: any) {
                     <IconButton
                       disabled={props.quantity === 1}
                       onClick={() => upsertEntry(props.product, -1)}
+                      sx={{ mr: '8px' }}
                     >
                       <RemoveIcon />
                     </IconButton>
-                    <Typography variant="body2" display="inline">
+                    <Typography
+                      variant="body2"
+                      display="inline"
+                      alignSelf="center"
+                      textAlign="center"
+                    >
                       {props.quantity}
                     </Typography>
                     <IconButton
                       disabled={props.product.available === 0}
                       onClick={() => upsertEntry(props.product, 1)}
-                      sx={{ pl: 0 }}
+                      sx={{ ml: 0 }}
                     >
                       <AddIcon />
                     </IconButton>
@@ -177,7 +183,7 @@ export default function Basket({
             alignItems="center"
             spacing={2}
             sx={{
-              position: 'absolute',
+              position: 'relative',
               bottom: 0,
             }}
           >
