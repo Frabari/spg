@@ -135,6 +135,7 @@ export interface User {
   address: DeliveryLocation;
   companyName: string;
   companyImage: string;
+  phoneNumber: string;
 }
 
 export interface Notification {

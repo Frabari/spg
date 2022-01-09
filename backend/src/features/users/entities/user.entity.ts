@@ -147,4 +147,12 @@ export class User {
   @Type(() => DeliveryLocation)
   @ValidateNested()
   address: DeliveryLocation;
+
+  /**
+   * The phone number
+   */
+  @Column({ unique: true, default: null })
+  @IsString()
+  @IsOptional()
+  phoneNumber: string;
 }

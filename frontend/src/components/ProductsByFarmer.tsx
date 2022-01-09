@@ -120,7 +120,7 @@ function ProductCard({
             align="center"
             my={1}
           >
-            {product?.available} units available
+            {product?.available} / units
           </Typography>
           <Typography
             variant="body2"
@@ -128,7 +128,7 @@ function ProductCard({
             align="center"
             fontWeight="bold"
           >
-            € {product.price}/unit
+            € {product.price}/{product?.baseUnit}
           </Typography>
         </CardContent>
         {date >= from && date <= to ? (
@@ -377,7 +377,6 @@ export default function ProductsByFarmer({
                   </Typography>
                 </Grid>
               </Grid>
-
               <Grid
                 container
                 display="grid"
@@ -386,7 +385,7 @@ export default function ProductsByFarmer({
                 padding="1rem"
               >
                 {products
-                  ?.filter(p => p.farmer.id === f.id)
+                  ?.filter(p => p.farmer?.id === f?.id)
                   ?.filter(p => filter === '' || p.category.slug === filter)
                   ?.filter(
                     p =>

@@ -165,7 +165,6 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
   const { data: users } = useUsers();
   const [user, setUser] = useState<User>();
   const [activeStep, setActiveStep] = useState(0);
-  const [date, setDate] = useState<Date | null>(new Date());
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
