@@ -29,6 +29,7 @@ import {
 import AvatarGroup from '@mui/material/AvatarGroup';
 import { Order, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
+import { useDate } from '../hooks/useDate';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
 import NavigationBox from './Navigation';
@@ -102,6 +103,7 @@ export default function Checkout() {
   const { data: basket, isLoading } = useBasket();
   const { mutate: updateBasket } = useUpdateBasket();
   const { data: profile } = useProfile();
+  const { data: date } = useDate();
   const [check, setCheck] = useState(true);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
@@ -109,7 +111,7 @@ export default function Checkout() {
   const form = useFormik({
     initialValues: {
       entries: [],
-      deliverAt: null,
+      deliverAt: new Date(date.toISODate()),
       deliveryLocation: null,
       total: 0,
       insufficientBalance: false,
@@ -291,11 +293,11 @@ export default function Checkout() {
                     : basket.deliveryLocation ?? {
                         name: (profile as User).name,
                         surname: (profile as User).surname,
-                        address: (profile as User)?.address.address,
-                        zipCode: (profile as User)?.address.zipCode,
-                        city: (profile as User)?.address.city,
-                        province: (profile as User)?.address.province,
-                        region: (profile as User)?.address.region,
+                        address: (profile as User)?.address?.address,
+                        zipCode: (profile as User)?.address?.zipCode,
+                        city: (profile as User)?.address?.city,
+                        province: (profile as User)?.address?.province,
+                        region: (profile as User)?.address?.region,
                       },
                 );
               }}
@@ -510,8 +512,8 @@ export default function Checkout() {
                 label="Delivery date and time"
                 value={form.values?.deliverAt}
                 shouldDisableDate={deliveryDay}
-                minDate={new Date()}
-                maxDate={addDays(new Date(), 7)}
+                minDate={new Date(date.toISODate())}
+                maxDate={addDays(new Date(date.toISODate()), 7)}
                 minTime={new Date(0, 0, 0, 9)}
                 maxTime={new Date(0, 0, 0, 18, 0)}
                 onChange={newValue => {

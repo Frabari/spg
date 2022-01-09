@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -15,18 +15,19 @@ import {
   Grid,
   IconButton,
   MenuItem,
+  Paper,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import { NotificationType, Product, Role, User } from '../api/BasilApi';
+import { NotificationType, Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useDate } from '../hooks/useDate';
+import { useFarmers } from '../hooks/useFarmers';
 import { useNotifications } from '../hooks/useNotifications';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
-import { useUsers } from '../hooks/useUsers';
 
 function ProductCard({
   product,
@@ -128,7 +129,7 @@ function ProductCard({
             align="center"
             fontWeight="bold"
           >
-            € {product.price}/unit
+            € {product.price}/{product.baseUnit}
           </Typography>
         </CardContent>
         {date >= from && date <= to ? (
@@ -153,6 +154,7 @@ export default function ProductsByFarmer({
   onSelect,
   search,
   handleDelete,
+  queryParams,
   setSearchParams,
   setBalanceWarning,
 }: {
@@ -161,6 +163,7 @@ export default function ProductsByFarmer({
   search?: string;
   onSelect: (product: Product) => void;
   handleDelete?: () => void;
+  queryParams?: URLSearchParams;
   setSearchParams?: (params: any) => void;
   setBalanceWarning?: (bol: boolean) => void;
 }) {
@@ -205,18 +208,18 @@ export default function ProductsByFarmer({
 
   const [open, setOpen] = useState(true);
 
-  const [farmers, setFarmers] = useState(null);
-  const { data: users } = useUsers();
-
-  useEffect(() => {
-    if (users) {
-      setFarmers(users.filter(u => u.role === Role.FARMER));
-    }
-  }, [users]);
+  const { data: farmers } = useFarmers();
 
   return (
     <>
-      <Grid container direction="row">
+      <Grid
+        container
+        direction="row"
+        spacing={2}
+        justifyItems="left"
+        alignItems="center"
+        paddingX={2}
+      >
         {date < from || date > to ? (
           <Stack sx={{ width: '100%' }} spacing={2}>
             <Collapse in={open}>
@@ -248,38 +251,38 @@ export default function ProductsByFarmer({
         ) : (
           ''
         )}
-        <Grid item xs={3} sx={{ ml: 'auto' }}>
+        <Grid item xs={12} md={3}>
           <Autocomplete
+            sx={{ width: '100%' }}
             multiple
             id="tags-outlined"
-            value={users.filter(
-              u => farmer && farmer.split('-').indexOf(String(u.id)) >= 0,
+            value={farmers.filter(
+              f => farmer && farmer.split('-').indexOf(String(f.id)) >= 0,
             )}
-            options={users.filter(u => u.role === Role.FARMER)}
+            options={farmers}
             getOptionLabel={(option: User) =>
               option.name + ' ' + option.surname
             }
             filterSelectedOptions
             onChange={(event, newValue) => {
-              if (filter !== '') {
+              if (newValue.length > 0) {
                 setSearchParams({
+                  ...Object.fromEntries(queryParams.entries()),
                   farmer: newValue
                     .map(u => {
                       return String((u as User).id);
                     })
                     .join('-')
                     .toString(),
-                  category: filter,
                 });
               } else {
-                setSearchParams({
-                  farmer: newValue
-                    .map(u => {
-                      return String((u as User).id);
-                    })
-                    .join('-')
-                    .toString(),
-                });
+                if (filter) {
+                  setSearchParams({
+                    category: filter,
+                  });
+                } else {
+                  setSearchParams({});
+                }
               }
             }}
             renderInput={params => (
@@ -287,20 +290,14 @@ export default function ProductsByFarmer({
             )}
           />
         </Grid>
-        <Grid item display={onSelect ? 'none' : 'block'}>
+        <Grid item xs={12} md={3}>
           <TextField
+            sx={{ width: '100%' }}
             id="outlined-select-sort"
             select
             value={sortOption}
             size="small"
             label="Sort by"
-            sx={{
-              width: '200px',
-              float: { xs: 'left', sm: 'right' },
-              mr: 2,
-              ml: 2,
-              mt: { xs: 2, sm: 0 },
-            }}
             onChange={e => handleChange(e.target.value)}
           >
             {sort.map(option => (
@@ -310,8 +307,22 @@ export default function ProductsByFarmer({
             ))}
           </TextField>
         </Grid>
+        <Grid item xs={12} md={6}></Grid>
       </Grid>
       {farmers
+        ?.filter(
+          f =>
+            f.products.filter(
+              p =>
+                !search || p.name.toLowerCase().includes(search.toLowerCase()),
+            ).length > 0,
+        )
+        ?.filter(f => f.products.filter(p => p.available > 0).length > 0)
+        ?.filter(f =>
+          filter
+            ? f.products.filter(p => p.category.slug === filter).length > 0
+            : f,
+        )
         ?.filter((f: User) => {
           return (
             farmer === null ||
@@ -319,63 +330,96 @@ export default function ProductsByFarmer({
             farmer.split('-').includes(String(f.id))
           );
         })
-        .map((f: User) => (
+        .map(f => (
           <>
             <Grid
               borderRadius="16px"
               spacing="2rem"
-              padding="1rem"
+              margin="1rem"
               width="auto"
-              marginBottom="1rem"
-              sx={{ backgroundColor: 'white' }}
+              sx={{
+                backgroundColor: 'white',
+              }}
             >
-              <Grid container direction="row" spacing={2} padding="2rem">
-                <Grid
-                  container
-                  direction="row"
-                  justifyContent="end"
-                  alignContent="center"
-                  xs={12}
-                  sm={12}
+              <Grid
+                container
+                direction="row"
+                margin="0"
+                width="100%"
+                spacing={2}
+                sx={{
+                  backgroundImage: `url(${f.companyImage})`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '100%',
+                  backgroundPositionY: '50%',
+                  borderTopLeftRadius: '16px',
+                  borderTopRightRadius: '16px',
+                }}
+              >
+                <Paper
+                  sx={{
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    width: '100%',
+                    padding: '2rem',
+                    borderTopLeftRadius: '16px',
+                    borderTopRightRadius: '16px',
+                    borderBottomLeftRadius: '0px',
+                    borderBottomRightRadius: '0px',
+                  }}
                 >
-                  <Typography
-                    gutterBottom
-                    variant="h6"
-                    component="div"
-                    display="inline"
-                    fontSize="1rem"
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="end"
+                    alignContent="center"
+                    xs={12}
+                    sm={12}
                   >
-                    {f?.name + ' ' + f?.surname}
-                  </Typography>
-                  <Avatar
-                    src={f?.avatar}
-                    sx={{ boxShadow: 2, right: 0, ml: 1 }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={8}>
-                  <Typography
-                    align="left"
-                    fontWeight="bold"
-                    gutterBottom
-                    variant="h6"
-                    component="div"
-                    fontSize="2rem"
-                  >
-                    {f?.companyName}
-                  </Typography>
-                </Grid>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      display="inline"
+                      fontSize="1rem"
+                      color="white"
+                      marginBottom={0}
+                      alignSelf="center"
+                      justifySelf="center"
+                    >
+                      {f?.name + ' ' + f?.surname}
+                    </Typography>
+                    <Avatar
+                      src={f?.avatar}
+                      sx={{ boxShadow: 2, right: 0, ml: 1 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={8}>
+                    <Typography
+                      align="left"
+                      fontWeight="bold"
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      fontSize="2rem"
+                      color="white"
+                    >
+                      {f?.companyName}
+                    </Typography>
+                  </Grid>
 
-                <Grid item xs={12} sm={12}>
-                  <Typography
-                    align="left"
-                    gutterBottom
-                    component="div"
-                    fontSize="10"
-                  >
-                    {f?.address?.address}, {f?.address?.city},{' '}
-                    {f?.address?.province}
-                  </Typography>
-                </Grid>
+                  <Grid item xs={12} sm={12}>
+                    <Typography
+                      align="left"
+                      gutterBottom
+                      component="div"
+                      fontSize="10"
+                      color="white"
+                    >
+                      {f?.address?.address}, {f?.address?.city},{' '}
+                      {f?.address?.province}
+                    </Typography>
+                  </Grid>
+                </Paper>
               </Grid>
 
               <Grid
@@ -388,11 +432,6 @@ export default function ProductsByFarmer({
                 {products
                   ?.filter(p => p.farmer.id === f.id)
                   ?.filter(p => filter === '' || p.category.slug === filter)
-                  ?.filter(
-                    p =>
-                      !search ||
-                      p.name.toLowerCase().includes(search.toLowerCase()),
-                  )
                   ?.filter(
                     p =>
                       !farmer ||
