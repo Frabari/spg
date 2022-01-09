@@ -39,10 +39,8 @@ import { UsersService } from './users.service';
   },
   query: {
     join: {
-      products: {
-        eager: true,
-      },
-      'products.category': { eager: true },
+      products: {},
+      'products.category': {},
       notifications: {},
       address: {},
       orders: {
@@ -99,6 +97,9 @@ export class UsersController implements CrudController<User> {
     crudRequest.parsed.join = [
       {
         field: 'products',
+      },
+      {
+        field: 'products.category',
       },
       {
         field: 'address',
