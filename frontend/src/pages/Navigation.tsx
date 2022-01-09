@@ -257,6 +257,7 @@ function NavBar(props: any) {
                     renderInput={props => <TextField {...props} />}
                     value={date.toJSDate()}
                     label="Virtual clock"
+                    minDate={new Date(date.toISODate())}
                     onChange={newDate => mutate(DateTime.fromJSDate(newDate))}
                   />
                 </LocalizationProvider>

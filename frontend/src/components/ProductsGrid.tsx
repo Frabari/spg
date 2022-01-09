@@ -162,131 +162,133 @@ export default function ProductsGrid({
 
   return (
     <>
-      {farmers?.map((f: any) => (
-        <>
-          <Grid
-            borderRadius="16px"
-            spacing="2rem"
-            margin="1rem"
-            width="auto"
-            sx={{ backgroundColor: '#fafafa' }}
-          >
+      {farmers
+        ?.filter(f => f.products.filter(p => p.available > 0).length > 0)
+        ?.map((f: any) => (
+          <>
             <Grid
-              container
-              direction="row"
-              margin="0"
-              width="100%"
-              spacing={2}
-              sx={{
-                backgroundImage: `url(${f.companyImage})`,
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: '100%',
-                backgroundPositionY: '50%',
-                borderTopLeftRadius: '16px',
-                borderTopRightRadius: '16px',
-              }}
+              borderRadius="16px"
+              spacing="2rem"
+              margin="1rem"
+              width="auto"
+              sx={{ backgroundColor: '#fafafa' }}
             >
-              <Paper
+              <Grid
+                container
+                direction="row"
+                margin="0"
+                width="100%"
+                spacing={2}
                 sx={{
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  width: '100%',
-                  padding: '2rem',
+                  backgroundImage: `url(${f.companyImage})`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '100%',
+                  backgroundPositionY: '50%',
                   borderTopLeftRadius: '16px',
                   borderTopRightRadius: '16px',
-                  borderBottomLeftRadius: '0px',
-                  borderBottomRightRadius: '0px',
                 }}
               >
-                <Grid
-                  container
-                  direction="row"
-                  justifyContent="end"
-                  alignContent="center"
-                  xs={12}
-                  sm={12}
+                <Paper
+                  sx={{
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    width: '100%',
+                    padding: '2rem',
+                    borderTopLeftRadius: '16px',
+                    borderTopRightRadius: '16px',
+                    borderBottomLeftRadius: '0px',
+                    borderBottomRightRadius: '0px',
+                  }}
                 >
-                  <Typography
-                    gutterBottom
-                    variant="h6"
-                    component="div"
-                    display="inline"
-                    fontSize="1rem"
-                    color="white"
-                    alignSelf="center"
-                    justifySelf="center"
-                    marginBottom={0}
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="end"
+                    alignContent="center"
+                    xs={12}
+                    sm={12}
                   >
-                    {f.name + ' ' + f.surname}
-                  </Typography>
-                  <Avatar
-                    src={f.avatar}
-                    sx={{ boxShadow: 2, right: 0, ml: 1 }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={8}>
-                  <Typography
-                    align="left"
-                    fontWeight="bold"
-                    gutterBottom
-                    variant="h6"
-                    component="div"
-                    fontSize="1.5rem"
-                    color="white"
-                  >
-                    {f?.companyName}
-                  </Typography>
-                </Grid>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      display="inline"
+                      fontSize="1rem"
+                      color="white"
+                      alignSelf="center"
+                      justifySelf="center"
+                      marginBottom={0}
+                    >
+                      {f.name + ' ' + f.surname}
+                    </Typography>
+                    <Avatar
+                      src={f.avatar}
+                      sx={{ boxShadow: 2, right: 0, ml: 1 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={8}>
+                    <Typography
+                      align="left"
+                      fontWeight="bold"
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      fontSize="1.5rem"
+                      color="white"
+                    >
+                      {f?.companyName}
+                    </Typography>
+                  </Grid>
 
-                <Grid item xs={12} sm={12}>
-                  <Typography
-                    align="left"
-                    gutterBottom
-                    component="div"
-                    fontSize="9"
-                    color="white"
-                  >
-                    {f?.address?.address}, {f?.address?.city},{' '}
-                    {f?.address?.province}
-                  </Typography>
-                </Grid>
-              </Paper>
-            </Grid>
+                  <Grid item xs={12} sm={12}>
+                    <Typography
+                      align="left"
+                      gutterBottom
+                      component="div"
+                      fontSize="9"
+                      color="white"
+                    >
+                      {f?.address?.address}, {f?.address?.city},{' '}
+                      {f?.address?.province}
+                    </Typography>
+                  </Grid>
+                </Paper>
+              </Grid>
 
-            <Grid
-              container
-              display="grid"
-              gap={2.5}
-              gridTemplateColumns="repeat(auto-fill, minmax(10rem, 1fr))"
-              padding="1rem"
-            >
-              {products
-                ?.filter(p => p.farmer.id === f.id)
-                ?.filter(p => p.available > 0)
-                .map(p => (
-                  <>
-                    {date >= from && date <= to ? (
-                      <Grid item>
-                        <ProductCard
-                          key={p.id}
-                          product={p}
-                          onSelect={onSelect}
-                        />
-                      </Grid>
-                    ) : (
-                      <Grid item>
-                        <ProductCard
-                          key={p.id}
-                          product={p}
-                          onSelect={onSelect}
-                        />
-                      </Grid>
-                    )}
-                  </>
-                ))}
+              <Grid
+                container
+                display="grid"
+                gap={2.5}
+                gridTemplateColumns="repeat(auto-fill, minmax(10rem, 1fr))"
+                padding="1rem"
+              >
+                {products
+                  ?.filter(p => p.farmer.id === f.id)
+                  ?.filter(p => p.available > 0)
+                  .map(p => (
+                    <>
+                      {date >= from && date <= to ? (
+                        <Grid item>
+                          <ProductCard
+                            key={p.id}
+                            product={p}
+                            onSelect={onSelect}
+                          />
+                        </Grid>
+                      ) : (
+                        <Grid item>
+                          <ProductCard
+                            key={p.id}
+                            product={p}
+                            onSelect={onSelect}
+                          />
+                        </Grid>
+                      )}
+                    </>
+                  ))}
+              </Grid>
             </Grid>
-          </Grid>
-        </>
-      ))}
+          </>
+        ))}
     </>
   );
 }

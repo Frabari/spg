@@ -18,6 +18,8 @@ export interface OrderEntry {
   id?: OrderEntryId;
   product: Product;
   quantity: number;
+  orderId?: OrderId;
+  productId?: ProductId;
 }
 
 export type OrderId = number;

@@ -220,28 +220,15 @@ export default function Basket({
               </Box>
             </Grid>
             <Grid item xs={6}>
-              {balanceWarning ? (
-                <Button
-                  disabled
-                  component={Link}
-                  to={'/checkout'}
-                  variant="contained"
-                  sx={{ m: 3, ml: 0, float: 'right' }}
-                  endIcon={<ArrowForwardIcon />}
-                >
-                  Check out
-                </Button>
-              ) : (
-                <Button
-                  component={Link}
-                  to={'/checkout'}
-                  variant="contained"
-                  sx={{ m: 3, ml: 0, float: 'right' }}
-                  endIcon={<ArrowForwardIcon />}
-                >
-                  Check out
-                </Button>
-              )}
+              <Button
+                component={Link}
+                to={'/checkout'}
+                variant="contained"
+                sx={{ m: 3, ml: 0, float: 'right' }}
+                endIcon={<ArrowForwardIcon />}
+              >
+                Check out
+              </Button>
             </Grid>
           </Grid>
         </>

@@ -129,7 +129,7 @@ function ProductCard({
             align="center"
             fontWeight="bold"
           >
-            € {product.price}/unit
+            € {product.price}/{product.baseUnit}
           </Typography>
         </CardContent>
         {date >= from && date <= to ? (
@@ -310,6 +310,14 @@ export default function ProductsByFarmer({
         <Grid item xs={12} md={6}></Grid>
       </Grid>
       {farmers
+        ?.filter(
+          f =>
+            f.products.filter(
+              p =>
+                !search || p.name.toLowerCase().includes(search.toLowerCase()),
+            ).length > 0,
+        )
+        ?.filter(f => f.products.filter(p => p.available > 0).length > 0)
         ?.filter(f =>
           filter
             ? f.products.filter(p => p.category.slug === filter).length > 0
@@ -424,11 +432,6 @@ export default function ProductsByFarmer({
                 {products
                   ?.filter(p => p.farmer.id === f.id)
                   ?.filter(p => filter === '' || p.category.slug === filter)
-                  ?.filter(
-                    p =>
-                      !search ||
-                      p.name.toLowerCase().includes(search.toLowerCase()),
-                  )
                   ?.filter(
                     p =>
                       !farmer ||

@@ -13,6 +13,7 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
   Container,
   Divider,
   Drawer,
@@ -41,6 +42,7 @@ import {
   getUser,
   Order,
   OrderEntry,
+  OrderEntryStatus,
   OrderStatus,
   Product,
   User,
@@ -358,6 +360,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                         primary={e.product.name}
                         secondary={`€ ${e.product.price} - ${e.product.baseUnit}`}
                       />
+                      {e.status === OrderEntryStatus.DRAFT && (
+                        <Chip color="warning" label="Not confirmed" />
+                      )}
                     </ListItem>
                     <Divider />
                   </Fragment>
