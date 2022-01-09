@@ -1,8 +1,9 @@
 import { MouseEvent, useEffect, useState } from 'react';
+import React from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
-import { Save } from '@mui/icons-material';
+import { Save, Info } from '@mui/icons-material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
@@ -16,6 +17,8 @@ import {
   InputLabel,
   OutlinedInput,
   Paper,
+  Popover,
+  TextField,
   Typography,
 } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
@@ -74,6 +77,18 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
     event.preventDefault();
   };
 
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
@@ -130,6 +145,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                 marginBottom: '40px',
               }}
             />
+
             <Grid
               container
               direction="row"
@@ -241,6 +257,59 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                     label="Avatar"
                     name="avatar"
                   />
+                  <FormHelperText>{form.errors?.avatar}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.avatar}
+                  disabled={!!pending}
+                >
+                  <TextField
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: (
+                        <IconButton
+                          color="primary"
+                          aria-label="upload picture"
+                          component="span"
+                          onMouseEnter={handlePopoverOpen}
+                          onMouseLeave={handlePopoverClose}
+                        >
+                          <Info sx={{ fontSize: 27 }}></Info>
+                          <Popover
+                            id="mouse-over-popover"
+                            sx={{
+                              pointerEvents: 'none',
+                            }}
+                            open={open}
+                            anchorEl={anchorEl}
+                            anchorOrigin={{
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                              vertical: 'top',
+                              horizontal: 'left',
+                            }}
+                            onClose={handlePopoverClose}
+                            disableRestoreFocus
+                          >
+                            <Typography sx={{ p: 1 }}>
+                              Use it on telegram
+                            </Typography>
+                          </Popover>
+                        </IconButton>
+                      ),
+                    }}
+                    id="telegram-token"
+                    type="text"
+                    value={form.values.id}
+                    label="Telegram token"
+                    name="Telegram token"
+                  ></TextField>
                   <FormHelperText>{form.errors?.avatar}</FormHelperText>
                 </FormControl>
               </Grid>

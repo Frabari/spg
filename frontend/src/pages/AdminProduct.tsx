@@ -37,6 +37,7 @@ import { EmptyState } from '../components/EmptyState';
 import { useCategories } from '../hooks/useCategories';
 import { useProfile } from '../hooks/useProfile';
 import { useStockItem } from '../hooks/useStockItem';
+import { useUpdateProductOrderEntries } from '../hooks/useUpdateProductOrderEntries';
 import { useUpsertStockItem } from '../hooks/useUpsertStockItem';
 import { useUsers } from '../hooks/useUsers';
 
@@ -49,8 +50,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   const { data: categories } = useCategories();
   const [farmers, setFarmers] = useState(null);
   const [open, setOpen] = useState(false);
-  const entries = [];
-  const setEntries = (args: any) => null as any;
+  const { mutateAsync: setEntries } = useUpdateProductOrderEntries();
   const { data: users } = useUsers();
   const { data: profile } = useProfile();
   const form = useFormik({
@@ -419,7 +419,8 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                   mr: 'auto',
                 }}
               >
-                This product is contained in {entries.length} order entries
+                This product is contained in {item?.orderEntries?.length} order
+                entries
               </Typography>
               <ButtonGroup
                 variant="outlined"
@@ -434,7 +435,10 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                     onClick={ev => {
                       ev.preventDefault();
                       ev.stopPropagation();
-                      setEntries({ status: OrderEntryStatus.DRAFT });
+                      setEntries({
+                        productId: item?.id,
+                        dto: { status: OrderEntryStatus.DRAFT },
+                      });
                     }}
                   >
                     Draft
@@ -449,7 +453,10 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                     onClick={ev => {
                       ev.preventDefault();
                       ev.stopPropagation();
-                      setEntries({ status: OrderEntryStatus.CONFIRMED });
+                      setEntries({
+                        productId: item?.id,
+                        dto: { status: OrderEntryStatus.CONFIRMED },
+                      });
                     }}
                     sx={{ px: 3 }}
                   >
@@ -465,7 +472,10 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                     onClick={ev => {
                       ev.preventDefault();
                       ev.stopPropagation();
-                      setEntries({ status: OrderEntryStatus.DELIVERED });
+                      setEntries({
+                        productId: item?.id,
+                        dto: { status: OrderEntryStatus.DELIVERED },
+                      });
                     }}
                   >
                     Delivered

@@ -26,7 +26,9 @@ export class OrderEntry {
   /**
    * The order to which this entry belongs
    */
-  @ManyToOne(() => Order, order => order.entries)
+  @ManyToOne(() => Order, order => order.entries, {
+    orphanedRowAction: 'delete',
+  })
   order: Order;
 
   /**

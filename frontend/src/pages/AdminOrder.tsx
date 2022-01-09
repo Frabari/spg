@@ -13,6 +13,7 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
   Container,
   Divider,
   Drawer,
@@ -41,6 +42,7 @@ import {
   getUser,
   Order,
   OrderEntry,
+  OrderEntryStatus,
   OrderStatus,
   Product,
   User,
@@ -157,7 +159,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
 
   useEffect(() => {
     if (
-      form.values.user.id !== null &&
+      form.values.user.id != null &&
       ADMINS.includes((profile as User).role)
     ) {
       getUser(form.values.user.id).then(u => setUser(u));
@@ -260,13 +262,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   error={!!form.errors?.user}
                   disabled={isLoading}
                 >
-                  <InputLabel id="order-user">User</InputLabel>
                   <Select
                     labelId="order-user"
-                    label="User"
                     required
                     value={
-                      users?.length && form.values?.user
+                      users?.length && form.values?.user?.id
                         ? form.values?.user?.id
                         : ''
                     }
@@ -280,7 +280,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>{form.errors?.user}</FormHelperText>
+                  <FormHelperText>{form.errors?.user?.id}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
@@ -358,6 +358,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                         primary={e.product.name}
                         secondary={`€ ${e.product.price} - ${e.product.baseUnit}`}
                       />
+                      {e.status === OrderEntryStatus.DRAFT && (
+                        <Chip color="warning" label="Not confirmed" />
+                      )}
                     </ListItem>
                     <Divider />
                   </Fragment>
@@ -398,11 +401,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                     : order?.deliveryLocation ?? {
                         name: (user as User).name,
                         surname: (user as User).surname,
-                        address: (user as User)?.address.address,
-                        zipCode: (user as User)?.address.zipCode,
-                        city: (user as User)?.address.city,
-                        province: (user as User)?.address.province,
-                        region: (user as User)?.address.region,
+                        address: (user as User)?.address?.address,
+                        zipCode: (user as User)?.address?.zipCode,
+                        city: (user as User)?.address?.city,
+                        province: (user as User)?.address?.province,
+                        region: (user as User)?.address?.region,
                       },
                 );
               }}
@@ -640,10 +643,16 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         onClose={() => setSelectingProduct(false)}
       >
         <Box sx={{ width: { xs: '100%' } }}>
-          <Grid container direction="row" spacing={1}>
+          <Grid
+            container
+            direction="row"
+            spacing={1}
+            justifyItems="center"
+            alignItems="center"
+          >
             <Grid item xs={1}>
               <IconButton
-                sx={{ margin: 1.5 }}
+                sx={{ margin: 1.5, mr: 0 }}
                 onClick={() => {
                   setSelectingProduct(false);
                 }}
@@ -655,7 +664,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               <Typography
                 variant="h5"
                 color="primary.main"
-                sx={{ p: 3, fontWeight: 'bold' }}
+                sx={{ m: 3, ml: 1, fontWeight: 'bold' }}
               >
                 Select a product
               </Typography>

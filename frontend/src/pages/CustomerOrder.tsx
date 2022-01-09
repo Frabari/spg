@@ -12,6 +12,7 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
   Container,
   Divider,
   Drawer,
@@ -36,7 +37,14 @@ import {
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
-import { Order, OrderEntry, OrderStatus, Product, User } from '../api/BasilApi';
+import {
+  Order,
+  OrderEntry,
+  OrderEntryStatus,
+  OrderStatus,
+  Product,
+  User,
+} from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
 import { orderStatuses } from '../constants';
@@ -363,6 +371,9 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                         primary={e.product.name}
                         secondary={`€ ${e.product.price} - ${e.product.baseUnit}`}
                       />
+                      {e.status === OrderEntryStatus.DRAFT && (
+                        <Chip color="warning" label="Not confirmed" />
+                      )}
                     </ListItem>
                     <Divider />
                   </Fragment>
