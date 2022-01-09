@@ -150,7 +150,9 @@ export class User {
   address: DeliveryLocation;
 
   @Column()
-  @IsString()
   @Generated('uuid')
   telegramToken: string;
+
+  @Column({ nullable: true })
+  telegramId: number;
 }

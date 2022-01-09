@@ -1,14 +1,14 @@
 import { FindConditions, Repository } from 'typeorm';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserId } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
+import { User, UserId } from '../../users/entities/user.entity';
+import { UsersService } from '../../users/users.service';
 import {
   Notification,
   NotificationPriority,
   NotificationType,
-} from './entities/notification.entity';
-import { NotificationsGateway } from './notifications.gateway';
+} from '../entities/notification.entity';
+import { NotificationsGateway } from '../notifications.gateway';
 import { SendgridService } from './sendgrid.service';
 
 @Injectable()

@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/users.module';
 import { Notification } from './entities/notification.entity';
 import { NotificationsGateway } from './notifications.gateway';
-import { NotificationsService } from './notifications.service';
-import { SendgridService } from './sendgrid.service';
+import { NotificationsService } from './services/notifications.service';
+import { SendgridService } from './services/sendgrid.service';
 
 @Module({
   imports: [
