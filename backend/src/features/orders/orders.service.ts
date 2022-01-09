@@ -15,7 +15,7 @@ import {
   NotificationPriority,
   NotificationType,
 } from '../notifications/entities/notification.entity';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsService } from '../notifications/services/notifications.service';
 import { ProductId } from '../products/entities/product.entity';
 import { ProductsService } from '../products/products.service';
 import { TransactionsService } from '../transactions/transactions.service';

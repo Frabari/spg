@@ -6,6 +6,7 @@ import { Notification } from './entities/notification.entity';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationsService } from './services/notifications.service';
 import { SendgridService } from './services/sendgrid.service';
+import { TelegramService } from './services/telegram.service';
 
 @Module({
   imports: [
@@ -13,7 +14,12 @@ import { SendgridService } from './services/sendgrid.service';
     ConfigModule,
     TypeOrmModule.forFeature([Notification]),
   ],
-  providers: [NotificationsGateway, NotificationsService, SendgridService],
+  providers: [
+    NotificationsGateway,
+    NotificationsService,
+    TelegramService,
+    SendgridService,
+  ],
   exports: [NotificationsService],
 })
 export class NotificationsModule {}

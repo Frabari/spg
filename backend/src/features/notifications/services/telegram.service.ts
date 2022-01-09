@@ -39,6 +39,7 @@ export class TelegramService {
         }
       });
       this.bot.start();
+      this.logger.log('Telegram Bot listening');
     } else {
       this.logger.warn('Missing Telegram API Key, cannot setup bot');
     }
