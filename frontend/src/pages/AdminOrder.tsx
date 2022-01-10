@@ -48,6 +48,7 @@ import {
 import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
 import { orderStatuses } from '../constants';
+import { useDate } from '../hooks/useDate';
 import { useOrder } from '../hooks/useOrder';
 import { useProfile } from '../hooks/useProfile';
 import { useUpsertOrder } from '../hooks/useUpsertOrder';
@@ -125,6 +126,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const { upsertOrder } = useUpsertOrder();
   const { data: users } = useUsers();
   const { data: profile } = useProfile();
+  const { data: date } = useDate();
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
@@ -608,8 +610,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   label="Delivery date and time"
                   value={form.values?.deliverAt}
                   shouldDisableDate={deliveryDay}
-                  minDate={new Date()}
-                  maxDate={addDays(new Date(), 7)}
+                  minDate={new Date(date.toISODate())}
+                  maxDate={addDays(new Date(date.toISODate()), 7)}
                   minTime={new Date(0, 0, 0, 9)}
                   maxTime={new Date(0, 0, 0, 18, 0)}
                   onChange={newValue => {

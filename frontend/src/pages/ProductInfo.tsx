@@ -252,7 +252,7 @@ export default function ProductInfo(props: any) {
                         display="inline"
                         fontWeight="bold"
                       >
-                        {product.baseUnit}
+                        /{product.baseUnit}
                       </Typography>
                     </Grid>
                     <Grid item display={!profile && 'none'}>
