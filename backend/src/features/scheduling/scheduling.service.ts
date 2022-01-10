@@ -39,6 +39,7 @@ export class SchedulingService {
 
   @Cron(DAILY_JOB)
   async dailyJob() {
+    this.logger.log(`Daily job (@${new Date()})`);
     await this.ordersService.sendPickupNotifications();
     await this.usersService.unlockUsers();
   }

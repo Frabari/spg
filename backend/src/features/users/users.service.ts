@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { DateTime } from 'luxon';
 import { LessThan, Repository } from 'typeorm';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
@@ -17,6 +17,8 @@ import { User, UserId } from './entities/user.entity';
 
 @Injectable()
 export class UsersService extends TypeOrmCrudService<User> {
+  private logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
@@ -63,6 +65,7 @@ export class UsersService extends TypeOrmCrudService<User> {
   async detectUnretrievedOrders() {
     const result = await this.usersRepository
       .createQueryBuilder(User.name.toLowerCase())
+      .where('user.blockedAt is null')
       .innerJoinAndSelect(
         'user.orders',
         'order',
@@ -77,7 +80,6 @@ export class UsersService extends TypeOrmCrudService<User> {
       u.unretrievedOrdersCount = result.raw[i].unretrievedOrdersCount;
       return u;
     });
-
     for (const user of users) {
       if (user.unretrievedOrdersCount >= 5) {
         await this.usersRepository.update(
@@ -117,6 +119,7 @@ export class UsersService extends TypeOrmCrudService<User> {
     const usersToUnlock = await this.usersRepository.find({
       blockedAt: LessThan(oneMonthAgo.toFormat('yyyy-MM-dd hh:mm:ss')),
     });
+    this.logger.log(`Unlocking users ${usersToUnlock.map(u => u.id)}`);
     for (const user of usersToUnlock) {
       await this.usersRepository.update(
         {

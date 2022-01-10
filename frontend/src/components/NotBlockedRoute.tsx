@@ -7,7 +7,7 @@ export const NotBlockedRoute = ({ children }: PropsWithChildren<{}>) => {
   if (isLoading) {
     return null;
   }
-  if (profile.blockedAt != null) {
+  if (profile?.blockedAt != null) {
     return <Navigate to="/blocked" />;
   }
   return <>{children}</>;

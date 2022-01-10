@@ -10,7 +10,7 @@ export const ProtectedRoute = ({ children }: PropsWithChildren<{}>) => {
   if (error) {
     return <Navigate to="/login" />;
   }
-  if (profile.blockedAt != null) {
+  if (profile?.blockedAt != null) {
     return <Navigate to="/blocked" />;
   }
   return <>{children}</>;
