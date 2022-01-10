@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -143,7 +143,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
           fontWeight="bold"
           sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
         >
-          Products / {item?.name}
+          Products / {id ? item?.id : 'New'}
         </Typography>
         <IconButton
           sx={{ display: { xs: 'flex', md: 'none' } }}
