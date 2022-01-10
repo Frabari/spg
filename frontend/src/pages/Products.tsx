@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import {
-  BottomNavigation,
-  Box,
-  Container,
-  Grid,
-  IconButton,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Container, Grid, IconButton, Typography } from '@mui/material';
 import ProductsByFarmer from '../components/ProductsByFarmer';
 import { useCategories } from '../hooks/useCategories';
 import NavigationBox from './Navigation';
@@ -18,25 +10,34 @@ import ProductInfo from './ProductInfo';
 const Footer = () => {
   return (
     <Box
-      sx={{ width: '100%', position: 'relative', bottom: 0, left: 0, right: 0 }}
+      sx={{
+        width: '100%',
+        background: '#f1f1f1',
+        py: 8,
+        px: 1,
+        marginTop: '50vh',
+      }}
     >
-      <BottomNavigation>
-        <Stack>
-          <Typography textAlign="center">
-            Food images and people photos credits belong to{' '}
-            <a
-              href="https://unsplash.com/@mockupgraphics"
-              title="mockupgraphics"
-            >
-              @mockupgraphics
-            </a>{' '}
-            from{' '}
-            <a href="https://unsplash.com/" title="unsplash">
-              www.unsplash.com
-            </a>
-          </Typography>
-        </Stack>
-      </BottomNavigation>
+      <Container>
+        <Typography textAlign="center" fontSize={11} color="#AAA">
+          Food images and people photos credits belong to{' '}
+          <a
+            href="https://unsplash.com/@mockupgraphics"
+            title="mockupgraphics"
+            style={{ color: '#AAA' }}
+          >
+            @mockupgraphics
+          </a>{' '}
+          from{' '}
+          <a
+            href="https://unsplash.com/"
+            title="unsplash"
+            style={{ color: '#AAA' }}
+          >
+            www.unsplash.com
+          </a>
+        </Typography>
+      </Container>
     </Box>
   );
 };
