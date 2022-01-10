@@ -11,6 +11,7 @@ import { NotificationsService } from '../notifications/services/notifications.se
 import { OrderStatus } from '../orders/entities/order.entity';
 import { OrdersService } from '../orders/orders.service';
 import { ProductsService } from '../products/products.service';
+import { Role } from '../users/roles.enum';
 
 const toFaketimeDate = (date: Date) => {
   const res = date.toISOString().replace('T', ' ');
@@ -21,6 +22,7 @@ const CLOSE_WEEKLY_SALES = '0 23 * * 0';
 const CLOSE_BASKETS = '0 9 * * 1';
 const PAY_PENDING_BASKETS = '0 18 * * 1';
 const PICKUP_NOTIFICATION = '0 10 * * *';
+const OPEN_SALES = '0 9 * * 6';
 
 @Injectable()
 export class SchedulingService {
@@ -31,6 +33,7 @@ export class SchedulingService {
     [CLOSE_BASKETS]: this.closeBaskets,
     [PAY_PENDING_BASKETS]: this.payPendingBaskets,
     [PICKUP_NOTIFICATION]: this.sendPickupNotifications,
+    [OPEN_SALES]: this.openSales,
   };
 
   constructor(
@@ -59,6 +62,20 @@ export class SchedulingService {
   payPendingBaskets() {
     this.logger.log(`Paying pending baskets (@${new Date()})`);
     return this.ordersService.payBaskets(true);
+  }
+
+  @Cron(OPEN_SALES)
+  openSales() {
+    this.logger.log(`Updating products (@${new Date()})`);
+    return this.notificationsService.sendNotification(
+      {
+        type: NotificationType.INFO,
+        priority: NotificationPriority.CRITICAL,
+        title: `Sales are now open`,
+        message: 'New products available',
+      },
+      { role: Role.EMPLOYEE },
+    );
   }
 
   getDate() {
