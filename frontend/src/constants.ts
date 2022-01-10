@@ -1,12 +1,13 @@
 import {
+  Build,
+  Clear,
+  Lock,
+  Pending,
   AccountBox,
   Agriculture,
-  Build,
   DeliveryDining,
   Inventory,
   Inventory2,
-  Lock,
-  Pending,
   Person,
 } from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -99,6 +100,12 @@ export const orderStatuses: Record<
     name: 'Delivering',
     color: 'indigo',
     icon: DeliveryDiningIcon,
+  },
+  unretrieved: {
+    key: 'unretrieved',
+    name: 'Unretrieved',
+    color: 'chocolate',
+    icon: Clear,
   },
   completed: {
     key: 'completed',

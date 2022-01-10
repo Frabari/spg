@@ -141,6 +141,7 @@ export default function ProductsGrid({
   onSelect: (product: Product) => void;
 }) {
   const { data: date } = useDate();
+  const { data: farmers } = useFarmers();
 
   const from = date.set({
     weekday: 6,
@@ -150,8 +151,6 @@ export default function ProductsGrid({
     millisecond: 0,
   });
   const to = from.plus({ hour: 38 });
-
-  const { data: farmers } = useFarmers();
 
   return (
     <>

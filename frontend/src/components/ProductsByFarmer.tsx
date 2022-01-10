@@ -85,7 +85,7 @@ function ProductCard({
         });
       }
     }
-    if (setBalanceWarning) setBalanceWarning(basket.insufficientBalance);
+    if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
   };
 
   return (

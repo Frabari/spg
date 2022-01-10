@@ -31,6 +31,7 @@ export enum OrderStatus {
   PENDING_PAYMENT = 'pending_payment',
   PREPARED = 'prepared',
   DELIVERING = 'delivering',
+  UNRETRIEVED = 'unretrieved',
   COMPLETED = 'completed',
   PENDING_CANCELLATION = 'pending_cancellation',
   CANCELED = 'canceled',
@@ -139,6 +140,7 @@ export interface User {
   companyImage: string;
   telegramToken: string;
   phoneNumber: string;
+  blockedAt?: string;
 }
 
 export interface Notification {
