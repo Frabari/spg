@@ -117,7 +117,7 @@ function ProductCard({
             align="center"
             my={1}
           >
-            {product?.available} / units
+            {product?.available} units
           </Typography>
           <Typography
             variant="body2"
@@ -427,6 +427,11 @@ export default function ProductsByFarmer({
                 padding="1rem"
               >
                 {f.products
+                  ?.filter(
+                    p =>
+                      !search ||
+                      p.name.toLowerCase().includes(search.toLowerCase()),
+                  )
                   ?.filter(p => filter === '' || p.category.slug === filter)
                   ?.sort((a, b) => sortProducts(a, b))
                   .map(p => (
