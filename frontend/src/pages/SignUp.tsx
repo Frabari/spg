@@ -70,7 +70,12 @@ function OutlinedCard() {
           maxWidth: 300,
         }}
       >
-        <Box component="form" noValidate autoComplete="off">
+        <Box
+          component="form"
+          noValidate
+          autoComplete="off"
+          onSubmit={form.handleSubmit}
+        >
           <div>
             <Typography
               variant="h5"
@@ -212,6 +217,7 @@ function OutlinedCard() {
               </Grid>
             </Grid>
           </div>
+          <input type="submit" style={{ display: 'none' }} />
         </Box>
       </CardContent>
       <CardActions>
