@@ -8,7 +8,7 @@ import { UsersService } from '../../users/users.service';
 export class TelegramService {
   private logger = new Logger(TelegramService.name);
   private key = this.configService.get<string>('TELEGRAM_KEY');
-  private bot: Bot;
+  private readonly bot: Bot;
 
   constructor(
     private readonly configService: ConfigService,
@@ -85,6 +85,7 @@ To pair your Basil account, send your token to the /pair command. You can find y
       this.logger.warn('Missing Telegram API Key, cannot setup bot');
     }
   }
+
   async send(message: string, to: User) {
     if (this.key && this.bot && to.telegramId) {
       return this.bot.api.sendMessage(to.telegramId, message, {
