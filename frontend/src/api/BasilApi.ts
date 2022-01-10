@@ -138,6 +138,7 @@ export interface User {
   companyName: string;
   companyImage: string;
   telegramToken: string;
+  phoneNumber: string;
 }
 
 export interface Notification {

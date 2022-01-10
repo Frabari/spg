@@ -1,6 +1,15 @@
 import { createTheme } from '@mui/material/styles';
 
-export const themeOptions = createTheme({
+let themeOptions = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      lg: 1200,
+      xl: 1536,
+    },
+  },
   palette: {
     primary: {
       main: '#5dd886',
@@ -89,3 +98,22 @@ export const themeOptions = createTheme({
     },
   },
 });
+
+themeOptions = createTheme(themeOptions, {
+  components: {
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          [themeOptions.breakpoints.down('md')]: {
+            width: '500px',
+          },
+          [themeOptions.breakpoints.up('md')]: {
+            width: '640px',
+          },
+        },
+      },
+    },
+  },
+});
+
+export default themeOptions;
