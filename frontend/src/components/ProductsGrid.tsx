@@ -12,12 +12,11 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import { NotificationType, Product } from '../api/BasilApi';
+import { NotificationType, Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useDate } from '../hooks/useDate';
 import { useFarmers } from '../hooks/useFarmers';
 import { useNotifications } from '../hooks/useNotifications';
-import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
@@ -35,6 +34,7 @@ function ProductCard({
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   const { data: date } = useDate();
+
   const { enqueueNotification } = useNotifications();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
@@ -59,13 +59,11 @@ function ProductCard({
   const handleSelect = (product: Product) => {
     if (date < from || date > to) {
       enqueueNotification({
-        id: 0,
         type: NotificationType.ERROR,
         title:
           'You can add products to the basket only from Saturday 9am to Sunday 23pm',
         message:
           'You can add products to the basket only from Saturday 9am to Sunday 23pm',
-        createdAt: new Date(),
       });
     } else {
       if (onSelect) {
@@ -73,11 +71,9 @@ function ProductCard({
       } else {
         upsertEntry(product, 1).then(() => {
           enqueueNotification({
-            id: 0,
             type: NotificationType.SUCCESS,
             title: product.name + ' successfully added!',
             message: '',
-            createdAt: new Date(),
           });
         });
       }
@@ -87,7 +83,7 @@ function ProductCard({
 
   return (
     <>
-      <Card sx={{ height: '100%' }}>
+      <Card sx={{ height: '350px' }}>
         <CardMedia
           component="img"
           height="175px"
@@ -144,8 +140,8 @@ export default function ProductsGrid({
 }: {
   onSelect: (product: Product) => void;
 }) {
-  const { data: products } = useProducts();
   const { data: date } = useDate();
+  const { data: farmers } = useFarmers();
 
   const from = date.set({
     weekday: 6,
@@ -156,13 +152,11 @@ export default function ProductsGrid({
   });
   const to = from.plus({ hour: 38 });
 
-  const { data: farmers } = useFarmers();
-
   return (
     <>
       {farmers
         ?.filter(f => f.products.filter(p => p.available > 0).length > 0)
-        ?.map((f: any) => (
+        ?.map((f: User) => (
           <>
             <Grid
               borderRadius="16px"
@@ -259,10 +253,9 @@ export default function ProductsGrid({
                 gridTemplateColumns="repeat(auto-fill, minmax(10rem, 1fr))"
                 padding="1rem"
               >
-                {products
-                  ?.filter(p => p.farmer.id === f.id)
+                {f.products
                   ?.filter(p => p.available > 0)
-                  .map(p => (
+                  ?.map(p => (
                     <>
                       {date >= from && date <= to ? (
                         <Grid item>

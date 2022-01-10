@@ -140,6 +140,11 @@ const steps = (status?: OrderStatus) => [
   status === OrderStatus.CANCELED
     ? [
         {
+          label: 'Unretrieved',
+          status: OrderStatus.UNRETRIEVED,
+          description: `Your order was unretrieved.`,
+        },
+        {
           label: 'Pending Cancellation',
           status: OrderStatus.PENDING_CANCELLATION,
           description: `Your order is in pending cancellation.`,

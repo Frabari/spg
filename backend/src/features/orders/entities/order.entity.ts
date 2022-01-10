@@ -61,6 +61,11 @@ export enum OrderStatus {
   DELIVERING = 'delivering',
 
   /**
+   * The order is unretrieved
+   */
+  UNRETRIEVED = 'unretrieved',
+
+  /**
    * The food was picked up or delivered successfully
    */
   COMPLETED = 'completed',

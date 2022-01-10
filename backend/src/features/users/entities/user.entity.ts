@@ -140,6 +140,9 @@ export class User {
   @ManyToMany(() => Notification, notification => notification.deliveredTo)
   notifications: Notification[];
 
+  /**
+   * The user's delivery address
+   */
   @OneToOne(() => DeliveryLocation, dl => dl.user, {
     cascade: true,
   })
@@ -149,10 +152,43 @@ export class User {
   @ValidateNested()
   address: DeliveryLocation;
 
+  /**
+   * A random token to pair a Telegram account
+   */
   @Column()
   @Generated('uuid')
   telegramToken: string;
 
+  /**
+   * The user's Telegram Id
+   */
   @Column({ nullable: true })
   telegramId: number;
+
+  /**
+   * The phone number
+   */
+  @Column({ nullable: true, default: null })
+  @IsString()
+  @IsOptional()
+  phoneNumber: string;
+
+  /**
+   * The date since when the user is
+   * locked
+   */
+  @Column({ nullable: true, default: null })
+  blockedAt: Date;
+
+  /**
+   * The last date the user was locked
+   */
+  @Column({ nullable: true, default: null })
+  lastBlockedAt: Date;
+
+  /**
+   * The number of unretrieved orders
+   * from the last blocked date
+   */
+  unretrievedOrdersCount?: number;
 }

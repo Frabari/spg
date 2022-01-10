@@ -85,7 +85,7 @@ function ProductCard({
         });
       }
     }
-    if (setBalanceWarning) setBalanceWarning(basket.insufficientBalance);
+    if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
   };
 
   return (
@@ -115,7 +115,7 @@ function ProductCard({
             align="center"
             my={1}
           >
-            {product?.available} units available
+            {product?.available} units
           </Typography>
           <Typography
             variant="body2"
@@ -123,7 +123,7 @@ function ProductCard({
             align="center"
             fontWeight="bold"
           >
-            € {product.price}/{product.baseUnit}
+            € {product.price}/{product?.baseUnit}
           </Typography>
         </CardContent>
         {date >= from && date <= to ? (
@@ -313,7 +313,9 @@ export default function ProductsByFarmer({
         ?.filter(f => f.products.filter(p => p.available > 0).length > 0)
         ?.filter(f =>
           filter
-            ? f.products.filter(p => p.category.slug === filter).length > 0
+            ? f.products.filter(
+                p => p.category.slug === filter && p.available > 0,
+              ).length > 0
             : f,
         )
         ?.filter((f: User) => {
@@ -414,7 +416,6 @@ export default function ProductsByFarmer({
                   </Grid>
                 </Paper>
               </Grid>
-
               <Grid
                 container
                 display="grid"
@@ -422,16 +423,13 @@ export default function ProductsByFarmer({
                 gridTemplateColumns="repeat(auto-fill, minmax(16rem, 1fr))"
                 padding="1rem"
               >
-                {products
-                  ?.filter(p => p.farmer.id === f.id)
-                  ?.filter(p => filter === '' || p.category.slug === filter)
+                {f.products
                   ?.filter(
                     p =>
-                      !farmer ||
-                      (farmer &&
-                        farmer.split('-').indexOf(String(p.farmer.id)) >= 0),
+                      !search ||
+                      p.name.toLowerCase().includes(search.toLowerCase()),
                   )
-                  ?.filter(p => p.available > 0)
+                  ?.filter(p => filter === '' || p.category.slug === filter)
                   ?.sort((a, b) => sortProducts(a, b))
                   .map(p => (
                     <>

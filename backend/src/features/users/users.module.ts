@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { jwtDuration, jwtSecret } from './constants';
 import { User } from './entities/user.entity';
 import { RoleBasedSerializerInterceptor } from './interceptors/role-based-serializer.interceptor';
@@ -21,6 +22,7 @@ import { UsersService } from './users.service';
         expiresIn: jwtDuration,
       },
     }),
+    forwardRef(() => NotificationsModule),
   ],
   controllers: [UsersController],
   providers: [

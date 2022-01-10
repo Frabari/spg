@@ -1,8 +1,10 @@
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { Inventory, Save } from '@mui/icons-material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
   Avatar,
   Box,
@@ -130,6 +132,9 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
+        <IconButton onClick={() => navigate('/admin/products')}>
+          <ArrowBackIcon />
+        </IconButton>
         <Typography
           variant="h6"
           noWrap
@@ -138,7 +143,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
           fontWeight="bold"
           sx={{ fontSize: { sm: 28 }, mr: 'auto' }}
         >
-          Products / {item?.name}
+          Products / {id ? item?.id : 'New'}
         </Typography>
         <IconButton
           sx={{ display: { xs: 'flex', md: 'none' } }}
