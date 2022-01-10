@@ -305,6 +305,25 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   <FormHelperText>{form.errors?.balance}</FormHelperText>
                 </FormControl>
               </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.phoneNumber}
+                  disabled={!!pending}
+                >
+                  <InputLabel htmlFor="phoneNumber">PhoneNumber</InputLabel>
+                  <OutlinedInput
+                    id="phonenumber"
+                    type="text"
+                    onChange={form.handleChange}
+                    value={form.values.phoneNumber ?? ''}
+                    label="PhoneNumber"
+                    name="phoneNumber"
+                  />
+                  <FormHelperText>{form.errors?.phoneNumber}</FormHelperText>
+                </FormControl>
+              </Grid>
               <Grid item xs={12}>
                 <Grid
                   container
@@ -425,27 +444,6 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       />
                       <FormHelperText>
                         {form.errors?.address?.region}
-                      </FormHelperText>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
-                    <FormControl
-                      variant="outlined"
-                      fullWidth
-                      error={!!form.errors?.phoneNumber}
-                      disabled={!!pending}
-                    >
-                      <InputLabel htmlFor="phoneNumber">PhoneNumber</InputLabel>
-                      <OutlinedInput
-                        id="phonenumber"
-                        type="text"
-                        onChange={form.handleChange}
-                        value={form.values.phoneNumber ?? ''}
-                        label="PhoneNumber"
-                        name="phoneNumber"
-                      />
-                      <FormHelperText>
-                        {form.errors?.phoneNumber}
                       </FormHelperText>
                     </FormControl>
                   </Grid>

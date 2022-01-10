@@ -1,5 +1,6 @@
 import { parseExpression } from 'cron-parser';
 import { DateTime } from 'luxon';
+import { In } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SchedulerOrchestrator } from '@nestjs/schedule/dist/scheduler.orchestrator';
@@ -134,6 +135,28 @@ export class SchedulingService {
           );
         }
       }
+    }
+    const os = await this.ordersService.find({
+      where: {
+        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+      },
+      relations: ['user', 'entries'],
+    });
+    const ordersWithEntries = os.filter(
+      o =>
+        o.entries?.length > 0 &&
+        this.ordersService.checkOrderBalance(o, o.user).insufficientBalance,
+    );
+    for (const o of ordersWithEntries) {
+      await this.notificationsService.sendNotification(
+        {
+          type: NotificationType.INFO,
+          priority: NotificationPriority.CRITICAL,
+          title: 'Insufficient Balance',
+          message: `Remind to top-up your wallet in order to pay your order`,
+        },
+        o.user,
+      );
     }
   }
 }

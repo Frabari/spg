@@ -28,6 +28,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
+import { EmptyState } from './EmptyState';
 
 function ProductCard({
   product,
@@ -202,6 +203,10 @@ export default function ProductsByFarmer({
   const [open, setOpen] = useState(true);
 
   const { data: farmers } = useFarmers();
+
+  if (!products?.length) {
+    return <EmptyState type="error" hint="There are no products available" />;
+  }
 
   return (
     <>
