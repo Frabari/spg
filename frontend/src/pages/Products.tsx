@@ -10,7 +10,6 @@ import ProductInfo from './ProductInfo';
 export default function Products() {
   const { data: categories } = useCategories();
   const [category, setCategory] = useState(0);
-  const [basketListener, setBasketListener] = useState(false);
   const [search, setSearch] = useState('');
   const [queryParams, setSearchParams] = useSearchParams();
   const [balanceWarning, setBalanceWarning] = useState(false);
@@ -36,7 +35,13 @@ export default function Products() {
           path="/"
           element={
             <Container sx={{ mt: 18 }}>
-              <Grid container direction="row" spacing={1}>
+              <Grid
+                container
+                direction="row"
+                spacing={1}
+                mb={2}
+                alignItems="center"
+              >
                 {category !== 0 && (
                   <Grid item>
                     <IconButton component={Link} to={`/products`}>
@@ -61,6 +66,7 @@ export default function Products() {
               <ProductsByFarmer
                 farmer={queryParams.get('farmer')}
                 filter={queryParams.get('category') || ''}
+                queryParams={queryParams}
                 setSearchParams={setSearchParams}
                 search={search}
                 onSelect={null}

@@ -1,5 +1,4 @@
 import { MouseEvent, useEffect, useState } from 'react';
-import React from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -34,7 +33,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
   const { pending } = usePendingState();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
-  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
   const form = useFormik({
     initialValues: {
@@ -80,7 +79,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
     event.preventDefault();
   };
 
-  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handlePopoverOpen = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -144,6 +143,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                 marginBottom: '40px',
               }}
             />
+
             <Grid
               container
               direction="row"
@@ -262,6 +262,59 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                 <FormControl
                   variant="outlined"
                   fullWidth
+                  error={!!form.errors?.avatar}
+                  disabled={!!pending}
+                >
+                  <TextField
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: (
+                        <IconButton
+                          color="primary"
+                          aria-label="upload picture"
+                          component="span"
+                          onMouseEnter={handlePopoverOpen}
+                          onMouseLeave={handlePopoverClose}
+                        >
+                          <Info sx={{ fontSize: 27 }}></Info>
+                          <Popover
+                            id="mouse-over-popover"
+                            sx={{
+                              pointerEvents: 'none',
+                            }}
+                            open={open}
+                            anchorEl={anchorEl}
+                            anchorOrigin={{
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                              vertical: 'top',
+                              horizontal: 'left',
+                            }}
+                            onClose={handlePopoverClose}
+                            disableRestoreFocus
+                          >
+                            <Typography sx={{ p: 1 }}>
+                              Use it on telegram
+                            </Typography>
+                          </Popover>
+                        </IconButton>
+                      ),
+                    }}
+                    id="telegram-token"
+                    type="text"
+                    value={form.values.id}
+                    label="Telegram token"
+                    name="Telegram token"
+                  />
+                  <FormHelperText>{form.errors?.avatar}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
                   error={!!form.errors?.telegramToken}
                   disabled={!!pending}
                 >
@@ -308,7 +361,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                     value={form.values.telegramToken}
                     label="Telegram token"
                     name="Telegram token"
-                  ></TextField>
+                  />
                   <FormHelperText>{form.errors?.telegramToken}</FormHelperText>
                 </FormControl>
               </Grid>

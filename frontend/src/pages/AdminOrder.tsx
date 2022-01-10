@@ -13,6 +13,7 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
   Container,
   Divider,
   Drawer,
@@ -38,12 +39,11 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
 import {
-  getUser,
   Order,
   OrderEntry,
+  OrderEntryStatus,
   OrderStatus,
   Product,
-  User,
 } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
@@ -51,6 +51,7 @@ import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
 import { useProfile } from '../hooks/useProfile';
 import { useUpsertOrder } from '../hooks/useUpsertOrder';
+import { useUser } from '../hooks/useUser';
 import { useUsers } from '../hooks/useUsers';
 import { DeliveryOption } from './Checkout';
 
@@ -122,10 +123,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const id = idParam === 'new' ? null : +idParam;
   const { data: order, isLoading } = useOrder(id);
   const { upsertOrder } = useUpsertOrder();
-  const [user, setUser] = useState<User>();
   const { data: users } = useUsers();
   const { data: profile } = useProfile();
-  const [date, setDate] = useState<Date | null>(new Date());
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
@@ -154,24 +153,17 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         });
     },
   });
+  const { data: user } = useUser(form.values?.user?.id);
 
   useEffect(() => {
-    if (
-      form.values.user.id !== null &&
-      ADMINS.includes((profile as User).role)
-    ) {
-      getUser(form.values.user.id).then(u => setUser(u));
+    if (user?.address && deliveryOption === DeliveryOption.DELIVERY) {
+      form.setFieldValue('deliveryLocation', user.address);
     }
-  }, [form.values.user.id]);
+  }, [user]);
 
   useEffect(() => {
-    if (
-      deliveryOption === 'delivery' &&
-      ADMINS.includes((profile as User).role)
-    ) {
-      getUser(form.values.user.id).then(u => {
-        form.setFieldValue('deliveryLocation', u.address);
-      });
+    if (deliveryOption === 'delivery' && ADMINS.includes(profile?.role)) {
+      form.setFieldValue('deliveryLocation', user?.address);
     }
   }, [deliveryOption]);
 
@@ -260,13 +252,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   error={!!form.errors?.user}
                   disabled={isLoading}
                 >
-                  <InputLabel id="order-user">User</InputLabel>
                   <Select
                     labelId="order-user"
-                    label="User"
                     required
                     value={
-                      users?.length && form.values?.user
+                      users?.length && form.values?.user?.id
                         ? form.values?.user?.id
                         : ''
                     }
@@ -280,7 +270,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>{form.errors?.user}</FormHelperText>
+                  <FormHelperText>{form.errors?.user?.id}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
@@ -358,6 +348,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                         primary={e.product.name}
                         secondary={`€ ${e.product.price} - ${e.product.baseUnit}`}
                       />
+                      {e.status === OrderEntryStatus.DRAFT && (
+                        <Chip color="warning" label="Not confirmed" />
+                      )}
                     </ListItem>
                     <Divider />
                   </Fragment>
@@ -396,13 +389,13 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   value === DeliveryOption.PICKUP
                     ? null
                     : order?.deliveryLocation ?? {
-                        name: (user as User).name,
-                        surname: (user as User).surname,
-                        address: (user as User)?.address.address,
-                        zipCode: (user as User)?.address.zipCode,
-                        city: (user as User)?.address.city,
-                        province: (user as User)?.address.province,
-                        region: (user as User)?.address.region,
+                        name: user?.name,
+                        surname: user?.surname,
+                        address: user?.address?.address,
+                        zipCode: user?.address?.zipCode,
+                        city: user?.address?.city,
+                        province: user?.address?.province,
+                        region: user?.address?.region,
                       },
                 );
               }}
@@ -422,10 +415,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       sx={{ m: 1, marginLeft: 10 }}
                       setCheck={() => {
                         if (!check) {
-                          form.setFieldValue(
-                            'deliveryLocation',
-                            (user as User).address,
-                          );
+                          form.setFieldValue('deliveryLocation', user?.address);
                         } else {
                           form.setFieldValue('deliveryLocation', null);
                         }
@@ -640,10 +630,16 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         onClose={() => setSelectingProduct(false)}
       >
         <Box sx={{ width: { xs: '100%' } }}>
-          <Grid container direction="row" spacing={1}>
+          <Grid
+            container
+            direction="row"
+            spacing={1}
+            justifyItems="center"
+            alignItems="center"
+          >
             <Grid item xs={1}>
               <IconButton
-                sx={{ margin: 1.5 }}
+                sx={{ margin: 1.5, mr: 0 }}
                 onClick={() => {
                   setSelectingProduct(false);
                 }}
@@ -655,7 +651,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               <Typography
                 variant="h5"
                 color="primary.main"
-                sx={{ p: 3, fontWeight: 'bold' }}
+                sx={{ m: 3, ml: 1, fontWeight: 'bold' }}
               >
                 Select a product
               </Typography>
