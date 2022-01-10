@@ -598,7 +598,7 @@ describe('OrdersService', () => {
       );
 
       const finalProduct = await entityManager.findOne(Product, product.id);
-      expect(finalProduct.available).toEqual(5);
+      expect(finalProduct.available).toEqual(10);
     });
 
     it('farmer should not modify OrderEntryStatus to delivered status', async () => {
