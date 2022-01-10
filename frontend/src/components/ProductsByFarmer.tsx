@@ -43,8 +43,6 @@ function ProductCard({
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   const { data: date } = useDate();
-  const vertical = 'bottom',
-    horizontal = 'center';
   const { enqueueNotification } = useNotifications();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
@@ -69,12 +67,10 @@ function ProductCard({
   const handleSelect = (product: Product) => {
     if (date < from || date > to) {
       enqueueNotification({
-        id: 0,
         type: NotificationType.ERROR,
         title:
           'You can add products to the basket only from Saturday 9am to Sunday 23pm',
         message: '',
-        createdAt: new Date(),
       });
     } else {
       if (onSelect) {
@@ -82,11 +78,9 @@ function ProductCard({
       } else {
         upsertEntry(product, 1).then(o => {
           enqueueNotification({
-            id: 0,
             type: NotificationType.SUCCESS,
             title: product.name + ' successfully added!',
             message: '',
-            createdAt: new Date(),
           });
         });
       }
@@ -153,7 +147,6 @@ export default function ProductsByFarmer({
   filter,
   onSelect,
   search,
-  handleDelete,
   queryParams,
   setSearchParams,
   setBalanceWarning,

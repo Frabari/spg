@@ -137,6 +137,7 @@ export interface User {
   address: DeliveryLocation;
   companyName: string;
   companyImage: string;
+  telegramToken: string;
 }
 
 export interface Notification {

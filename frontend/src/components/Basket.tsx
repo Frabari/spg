@@ -21,7 +21,6 @@ import { useBasket } from '../hooks/useBasket';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
 function ProductCard(props: any) {
-  const { data: basket } = useBasket();
   const { upsertEntry, deleteEntry } = useUpdateBasket();
 
   const handleDeleteEntry = (product: Product) => {
@@ -129,8 +128,6 @@ function ProductCard(props: any) {
 }
 
 export default function Basket({
-  filter,
-  search,
   balanceWarning,
   setShowBasket,
 }: {

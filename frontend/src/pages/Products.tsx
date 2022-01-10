@@ -10,7 +10,6 @@ import ProductInfo from './ProductInfo';
 export default function Products() {
   const { data: categories } = useCategories();
   const [category, setCategory] = useState(0);
-  const [basketListener, setBasketListener] = useState(false);
   const [search, setSearch] = useState('');
   const [queryParams, setSearchParams] = useSearchParams();
   const [balanceWarning, setBalanceWarning] = useState(false);
