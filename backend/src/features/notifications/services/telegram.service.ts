@@ -1,6 +1,7 @@
 import { Bot } from 'grammy';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { User } from '../../users/entities/user.entity';
 import { UsersService } from '../../users/users.service';
 
 @Injectable()
@@ -82,6 +83,13 @@ To pair your Basil account, send your token to the /pair command. You can find y
       this.logger.log('Telegram Bot listening');
     } else {
       this.logger.warn('Missing Telegram API Key, cannot setup bot');
+    }
+  }
+  async send(message: string, to: User) {
+    if (this.key && this.bot && to.telegramId) {
+      return this.bot.api.sendMessage(to.telegramId, message, {
+        parse_mode: 'Markdown',
+      });
     }
   }
 }

@@ -10,6 +10,13 @@ import {
 } from '../entities/notification.entity';
 import { NotificationsGateway } from '../notifications.gateway';
 import { SendgridService } from './sendgrid.service';
+import { TelegramService } from './telegram.service';
+
+const emojis = {
+  [NotificationType.SUCCESS]: '\u{2705}',
+  [NotificationType.ERROR]: '\u{274C}',
+  [NotificationType.INFO]: '\u{2139}',
+};
 
 @Injectable()
 export class NotificationsService {
@@ -22,6 +29,7 @@ export class NotificationsService {
     @Inject(forwardRef(() => NotificationsGateway))
     private readonly notificationsGateway: NotificationsGateway,
     private readonly sendgridService: SendgridService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   activateUser(id: UserId) {
@@ -65,6 +73,12 @@ export class NotificationsService {
           subject: `New ${notification.type} notification from Basil`,
           text: notification.title + '\n\n' + notification.message,
         });
+        this.telegramService.send(
+          `${emojis[notification.type]} *${notification.title}* \n${
+            notification.message
+          } `,
+          u,
+        );
       });
     }
     if (notification.persistent) {
