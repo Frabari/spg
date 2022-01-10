@@ -43,17 +43,13 @@ import {
   OrderEntryStatus,
   OrderStatus,
   Product,
-  User,
 } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
-import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
+import { useProfile } from '../hooks/useProfile';
 import { useUpsertOrder } from '../hooks/useUpsertOrder';
-import { useUsers } from '../hooks/useUsers';
 import { DeliveryOption } from './Checkout';
-
-const statuses = Object.values(orderStatuses);
 
 const IOSSwitch = styled((props: any) => (
   <Switch
@@ -170,8 +166,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
   const id = idParam === 'new' ? null : +idParam;
   const { data: order, isLoading } = useOrder(id);
   const { upsertOrder } = useUpsertOrder();
-  const { data: users } = useUsers();
-  const [user, setUser] = useState<User>();
+  const { data: profile } = useProfile();
   const [activeStep, setActiveStep] = useState(0);
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
@@ -204,11 +199,11 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
 
   const statuses = steps(order?.status);
 
-  useEffect(() => {}, [order]);
-
   useEffect(() => {
-    if (deliveryOption === 'delivery') {
-      form.setFieldValue('deliveryLocation', order.deliveryLocation);
+    if (deliveryOption === DeliveryOption.DELIVERY) {
+      if (order.deliveryLocation) {
+        form.setFieldValue('deliveryLocation', order.deliveryLocation);
+      }
     }
   }, [deliveryOption]);
 
@@ -403,13 +398,13 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                   value === DeliveryOption.PICKUP
                     ? null
                     : order?.deliveryLocation ?? {
-                        name: (user as User).name,
-                        surname: (user as User).surname,
-                        address: (user as User)?.address.address,
-                        zipCode: (user as User)?.address.zipCode,
-                        city: (user as User)?.address.city,
-                        province: (user as User)?.address.province,
-                        region: (user as User)?.address.region,
+                        name: profile?.name,
+                        surname: profile?.surname,
+                        address: profile?.address?.address,
+                        zipCode: profile?.address?.zipCode,
+                        city: profile?.address?.city,
+                        province: profile?.address?.province,
+                        region: profile?.address?.region,
                       },
                 );
               }}
@@ -431,7 +426,7 @@ export const CustomerOrder = (props: { handleDrawerToggle: () => void }) => {
                         if (!check) {
                           form.setFieldValue(
                             'deliveryLocation',
-                            (user as User).address,
+                            profile.address,
                           );
                         } else {
                           form.setFieldValue('deliveryLocation', null);

@@ -39,13 +39,11 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
 import {
-  getUser,
   Order,
   OrderEntry,
   OrderEntryStatus,
   OrderStatus,
   Product,
-  User,
 } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import ProductsGrid from '../components/ProductsGrid';
@@ -53,6 +51,7 @@ import { orderStatuses } from '../constants';
 import { useOrder } from '../hooks/useOrder';
 import { useProfile } from '../hooks/useProfile';
 import { useUpsertOrder } from '../hooks/useUpsertOrder';
+import { useUser } from '../hooks/useUser';
 import { useUsers } from '../hooks/useUsers';
 import { DeliveryOption } from './Checkout';
 
@@ -124,10 +123,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const id = idParam === 'new' ? null : +idParam;
   const { data: order, isLoading } = useOrder(id);
   const { upsertOrder } = useUpsertOrder();
-  const [user, setUser] = useState<User>();
   const { data: users } = useUsers();
   const { data: profile } = useProfile();
-  const [date, setDate] = useState<Date | null>(new Date());
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
@@ -156,24 +153,17 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         });
     },
   });
+  const { data: user } = useUser(form.values?.user?.id);
 
   useEffect(() => {
-    if (
-      form.values.user.id != null &&
-      ADMINS.includes((profile as User).role)
-    ) {
-      getUser(form.values.user.id).then(u => setUser(u));
+    if (user?.address && deliveryOption === DeliveryOption.DELIVERY) {
+      form.setFieldValue('deliveryLocation', user.address);
     }
-  }, [form.values.user.id]);
+  }, [user]);
 
   useEffect(() => {
-    if (
-      deliveryOption === 'delivery' &&
-      ADMINS.includes((profile as User).role)
-    ) {
-      getUser(form.values.user.id).then(u => {
-        form.setFieldValue('deliveryLocation', u.address);
-      });
+    if (deliveryOption === 'delivery' && ADMINS.includes(profile?.role)) {
+      form.setFieldValue('deliveryLocation', user?.address);
     }
   }, [deliveryOption]);
 
@@ -399,13 +389,13 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   value === DeliveryOption.PICKUP
                     ? null
                     : order?.deliveryLocation ?? {
-                        name: (user as User).name,
-                        surname: (user as User).surname,
-                        address: (user as User)?.address?.address,
-                        zipCode: (user as User)?.address?.zipCode,
-                        city: (user as User)?.address?.city,
-                        province: (user as User)?.address?.province,
-                        region: (user as User)?.address?.region,
+                        name: user?.name,
+                        surname: user?.surname,
+                        address: user?.address?.address,
+                        zipCode: user?.address?.zipCode,
+                        city: user?.address?.city,
+                        province: user?.address?.province,
+                        region: user?.address?.region,
                       },
                 );
               }}
@@ -425,10 +415,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       sx={{ m: 1, marginLeft: 10 }}
                       setCheck={() => {
                         if (!check) {
-                          form.setFieldValue(
-                            'deliveryLocation',
-                            (user as User).address,
-                          );
+                          form.setFieldValue('deliveryLocation', user?.address);
                         } else {
                           form.setFieldValue('deliveryLocation', null);
                         }
