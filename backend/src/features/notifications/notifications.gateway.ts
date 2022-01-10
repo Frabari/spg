@@ -34,7 +34,7 @@ export class NotificationsGateway
     if (!user) {
       client.disconnect();
     }
-    client.join(user.id.toString());
+    client.join(user?.id.toString());
     this.notificationsService.activateUser(user.id);
   }
 
