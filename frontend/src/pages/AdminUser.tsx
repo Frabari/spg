@@ -273,7 +273,13 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   <FormHelperText>{form.errors?.avatar}</FormHelperText>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                sx={{ display: user ? 'block' : 'none' }}
+              >
                 <FormControl
                   variant="outlined"
                   fullWidth

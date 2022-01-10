@@ -30,8 +30,7 @@ export default function Homepage() {
             </Typography>
           </Grid>
           <Grid item>
-            <Button variant="contained" onClick={() => navigate('/products')}>
-              {/* TODO replace with href */}
+            <Button variant="contained" href="/products">
               Take a look to our products!
             </Button>
           </Grid>

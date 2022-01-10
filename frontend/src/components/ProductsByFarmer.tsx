@@ -429,6 +429,7 @@ export default function ProductsByFarmer({
                 padding="1rem"
               >
                 {f.products
+                  ?.filter(p => p.available > 0)
                   ?.filter(
                     p =>
                       !search ||

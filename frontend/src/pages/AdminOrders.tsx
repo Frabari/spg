@@ -354,7 +354,7 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
               {...a11yProps(2)}
               onClick={() =>
                 setSearchParams({
-                  status: OrderStatus.PENDING_CANCELLATION,
+                  status: OrderStatus.PENDING_PAYMENT,
                   delivery: 'all',
                 })
               }

@@ -385,7 +385,10 @@ export const AdminProducts = (props: {
           </Tabs>
         </Box>
 
-        <TableContainer component={Paper} sx={{ width: '100%' }}>
+        <TableContainer
+          component={Paper}
+          sx={{ width: '100%', height: '100%' }}
+        >
           <Table aria-label="Products table" stickyHeader>
             <TableHead>
               <TableRow>
