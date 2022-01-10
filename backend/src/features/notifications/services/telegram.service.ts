@@ -84,7 +84,6 @@ To pair your Basil account, send your token to the /pair command. You can find y
         }
       });
       this.bot.command('balance', async ctx => {
-        console.log('ICIIA');
         const user = await this.usersService.findOne({
           telegramId: ctx.from.id,
         });
