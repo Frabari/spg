@@ -7,8 +7,10 @@ import { Container } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import themeOptions from './Theme';
 import { CustomLinearProgress } from './components/CustomLinearProgress';
+import { NotBlockedRoute } from './components/NotBlockedRoute';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Admin } from './pages/Admin';
+import { Blocked } from './pages/Blocked';
 import Checkout from './pages/Checkout';
 import { Customer } from './pages/Customer';
 import Homepage from './pages/Homepage';
@@ -45,12 +47,16 @@ function App() {
 
                 <Route path="/signup" element={<SignUp />} />
 
+                <Route path="/blocked" element={<Blocked />} />
+
                 <Route
                   path="/checkout"
                   element={
-                    <Container>
-                      <Checkout />
-                    </Container>
+                    <ProtectedRoute>
+                      <Container>
+                        <Checkout />
+                      </Container>
+                    </ProtectedRoute>
                   }
                 />
 
@@ -70,7 +76,14 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/products/*" element={<Products />} />
+                <Route
+                  path="/products/*"
+                  element={
+                    <NotBlockedRoute>
+                      <Products />
+                    </NotBlockedRoute>
+                  }
+                />
               </Routes>
             </BrowserRouter>
             <CustomLinearProgress />

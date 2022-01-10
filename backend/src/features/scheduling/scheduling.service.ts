@@ -1,6 +1,5 @@
 import { parseExpression } from 'cron-parser';
 import { DateTime } from 'luxon';
-import { In } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SchedulerOrchestrator } from '@nestjs/schedule/dist/scheduler.orchestrator';
@@ -9,9 +8,10 @@ import {
   NotificationType,
 } from '../notifications/entities/notification.entity';
 import { NotificationsService } from '../notifications/services/notifications.service';
-import { OrderStatus } from '../orders/entities/order.entity';
 import { OrdersService } from '../orders/orders.service';
 import { ProductsService } from '../products/products.service';
+import { Role } from '../users/roles.enum';
+import { UsersService } from '../users/users.service';
 
 const toFaketimeDate = (date: Date) => {
   const res = date.toISOString().replace('T', ' ');
@@ -21,26 +21,38 @@ const toFaketimeDate = (date: Date) => {
 const CLOSE_WEEKLY_SALES = '0 23 * * 0';
 const CLOSE_BASKETS = '0 9 * * 1';
 const PAY_PENDING_BASKETS = '0 18 * * 1';
-const PICKUP_NOTIFICATION = '0 10 * * *';
+const DAILY_JOB = '0 10 * * *';
 const CLOSE_DELIVERIES = '0 18 * * 5';
+const OPEN_SALES = '0 9 * * 6';
 
 @Injectable()
 export class SchedulingService {
   private logger = new Logger(SchedulingService.name);
 
   private jobs = {
+    [DAILY_JOB]: this.dailyJob,
     [CLOSE_WEEKLY_SALES]: this.closeWeeklySales,
     [CLOSE_BASKETS]: this.closeBaskets,
     [PAY_PENDING_BASKETS]: this.payPendingBaskets,
-    [PICKUP_NOTIFICATION]: this.sendPickupNotifications,
+    [CLOSE_DELIVERIES]: this.closeDeliveries,
+    [OPEN_SALES]: this.openSales,
   };
 
   constructor(
     private readonly productsService: ProductsService,
     private readonly ordersService: OrdersService,
+    private readonly usersService: UsersService,
     private readonly schedulerOrchestrator: SchedulerOrchestrator,
     private readonly notificationsService: NotificationsService,
   ) {}
+
+  @Cron(DAILY_JOB)
+  async dailyJob() {
+    this.logger.log(`Daily job (@${new Date()})`);
+    await this.ordersService.sendPickupNotifications();
+    await this.ordersService.sendInsufficientBalanceReminders();
+    await this.usersService.unlockUsers();
+  }
 
   @Cron(CLOSE_WEEKLY_SALES)
   async closeWeeklySales() {
@@ -50,9 +62,10 @@ export class SchedulingService {
   }
 
   @Cron(CLOSE_DELIVERIES)
-  async closeOrders() {
-    this.logger.log(`Unretrieving orders (@${new Date()})`);
+  async closeDeliveries() {
+    this.logger.log(`Closing deliveries (@${new Date()})`);
     await this.ordersService.closeDeliveries();
+    await this.usersService.detectUnretrievedOrders();
   }
 
   @Cron(CLOSE_BASKETS)
@@ -67,6 +80,20 @@ export class SchedulingService {
   payPendingBaskets() {
     this.logger.log(`Paying pending baskets (@${new Date()})`);
     return this.ordersService.payBaskets(true);
+  }
+
+  @Cron(OPEN_SALES)
+  openSales() {
+    this.logger.log(`Updating products (@${new Date()})`);
+    return this.notificationsService.sendNotification(
+      {
+        type: NotificationType.INFO,
+        priority: NotificationPriority.CRITICAL,
+        title: `Sales are now open`,
+        message: 'New products available',
+      },
+      { role: Role.EMPLOYEE },
+    );
   }
 
   getDate() {
@@ -107,56 +134,5 @@ export class SchedulingService {
     this.schedulerOrchestrator.mountCron();
     process.env.FAKETIME = '@' + toFaketimeDate(newDate);
     return newDate.toISOString();
-  }
-
-  @Cron(PICKUP_NOTIFICATION)
-  async sendPickupNotifications() {
-    const orders = await this.ordersService.find({
-      where: {
-        status: OrderStatus.PAID,
-        deliveryLocation: null,
-      },
-      relations: ['user'],
-    });
-    if (orders?.length) {
-      for (const o of orders) {
-        if (
-          DateTime.fromJSDate(o.deliverAt).day ===
-          DateTime.now().plus({ day: 1 }).day
-        ) {
-          await this.notificationsService.sendNotification(
-            {
-              type: NotificationType.INFO,
-              priority: NotificationPriority.CRITICAL,
-              title: 'Pickup soon',
-              message: `Tomorrow at ${o.deliverAt.toLocaleTimeString()} you have a pickup scheduled`,
-            },
-            o.user,
-          );
-        }
-      }
-    }
-    const os = await this.ordersService.find({
-      where: {
-        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
-      },
-      relations: ['user', 'entries'],
-    });
-    const ordersWithEntries = os.filter(
-      o =>
-        o.entries?.length > 0 &&
-        this.ordersService.checkOrderBalance(o, o.user).insufficientBalance,
-    );
-    for (const o of ordersWithEntries) {
-      await this.notificationsService.sendNotification(
-        {
-          type: NotificationType.INFO,
-          priority: NotificationPriority.CRITICAL,
-          title: 'Insufficient Balance',
-          message: `Remind to top-up your wallet in order to pay your order`,
-        },
-        o.user,
-      );
-    }
   }
 }

@@ -205,6 +205,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
+        <IconButton onClick={() => navigate('/admin/orders')}>
+          <ArrowBackIcon />
+        </IconButton>
         <Typography
           variant="h6"
           noWrap

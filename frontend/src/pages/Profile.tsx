@@ -379,7 +379,6 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                     type="text"
                     value={form.values.telegramToken}
                     label="Telegram token"
-                    name="Telegram token"
                   />
                   <FormHelperText>{form.errors?.telegramToken}</FormHelperText>
                 </FormControl>

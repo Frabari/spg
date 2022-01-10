@@ -140,6 +140,7 @@ export interface User {
   companyImage: string;
   telegramToken: string;
   phoneNumber: string;
+  blockedAt?: string;
 }
 
 export interface Notification {
