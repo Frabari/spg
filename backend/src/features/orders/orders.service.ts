@@ -15,7 +15,7 @@ import {
   NotificationPriority,
   NotificationType,
 } from '../notifications/entities/notification.entity';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsService } from '../notifications/services/notifications.service';
 import { ProductId } from '../products/entities/product.entity';
 import { ProductsService } from '../products/products.service';
 import { TransactionsService } from '../transactions/transactions.service';
@@ -193,7 +193,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       }
     }
 
-    if (dto.entries?.length) {
+    if (dto.entries) {
       const now = DateTime.now();
       const from = now.set({
         weekday: 6,

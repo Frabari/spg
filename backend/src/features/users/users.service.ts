@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
 import { Tokens } from './dtos/tokens.dto';
 import { JwtTokenPayload } from './entities/jwt-token-payload.entity';
-import { User } from './entities/user.entity';
+import { User, UserId } from './entities/user.entity';
 
 @Injectable()
 export class UsersService extends TypeOrmCrudService<User> {
@@ -39,6 +39,12 @@ export class UsersService extends TypeOrmCrudService<User> {
   updateBalance(user: User, amount: number) {
     return this.usersRepository.update(user, {
       balance: user.balance + amount,
+    });
+  }
+
+  setTelegramId(userId: UserId, telegramId: number) {
+    return this.usersRepository.update(userId, {
+      telegramId,
     });
   }
 }

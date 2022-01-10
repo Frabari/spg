@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
 import { NotificationsModule } from '../notifications/notifications.module';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsService } from '../notifications/services/notifications.service';
 import { Product } from '../products/entities/product.entity';
 import { ProductsModule } from '../products/products.module';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -598,7 +598,7 @@ describe('OrdersService', () => {
       );
 
       const finalProduct = await entityManager.findOne(Product, product.id);
-      expect(finalProduct.available).toEqual(5);
+      expect(finalProduct.available).toEqual(10);
     });
 
     it('farmer should not modify OrderEntryStatus to delivered status', async () => {
@@ -763,7 +763,7 @@ describe('OrdersService', () => {
         price: 5,
         available: 20,
       });
-      let order = await entityManager.save(Order, {
+      let order = (await entityManager.save(Order, {
         status: OrderStatus.DRAFT,
         user: { id: user.id },
         entries: [
@@ -782,11 +782,11 @@ describe('OrdersService', () => {
             status: OrderEntryStatus.DELIVERED,
           },
         ],
-      }) as Order;
+      })) as Order;
       await service.removeDraftOrderEntries();
-      order = await entityManager.findOne(Order, order.id, {
+      order = (await entityManager.findOne(Order, order.id, {
         relations: ['entries'],
-      }) as Order;
+      })) as Order;
       expect(order.entries.length).toEqual(1);
     });
   });

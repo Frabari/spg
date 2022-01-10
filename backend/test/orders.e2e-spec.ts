@@ -8,7 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { validation } from '../src/constants';
 import { CategoriesModule } from '../src/features/categories/categories.module';
 import { NotificationsModule } from '../src/features/notifications/notifications.module';
-import { NotificationsService } from '../src/features/notifications/notifications.service';
+import { NotificationsService } from '../src/features/notifications/services/notifications.service';
 import {
   Order,
   OrderStatus,

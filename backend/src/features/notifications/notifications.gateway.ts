@@ -7,7 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { UsersService } from '../users/users.service';
-import { NotificationsService } from './notifications.service';
+import { NotificationsService } from './services/notifications.service';
 
 @WebSocketGateway()
 export class NotificationsGateway
