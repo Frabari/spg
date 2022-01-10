@@ -1,4 +1,5 @@
 import { MouseEvent, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import Visibility from '@mui/icons-material/Visibility';
@@ -33,9 +34,9 @@ function OutlinedCard() {
       email: null,
       password: null,
     } as Partial<User>,
-    onSubmit: (values: Partial<User>, { setErrors }) =>
-      login({ username: values.email, password: values.password }).catch(e => {
-        setErrors(e.data?.constraints);
+    onSubmit: (values: Partial<User>) =>
+      login({ username: values.email, password: values.password }).catch(() => {
+        toast.error('Cannot login, please check your credentials');
       }),
   });
 
