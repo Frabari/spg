@@ -2,7 +2,7 @@ import { MouseEvent, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
-import { Save } from '@mui/icons-material';
+import { Save, Info } from '@mui/icons-material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
@@ -12,6 +12,8 @@ import {
   FormHelperText,
   Grid,
   IconButton,
+  Popover,
+  TextField,
   InputAdornment,
   InputLabel,
   OutlinedInput,
@@ -31,6 +33,8 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
   const { pending } = usePendingState();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const open = Boolean(anchorEl);
   const form = useFormik({
     initialValues: {
       name: '',
@@ -39,6 +43,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
       password: '',
       avatar: '',
       address: null,
+      telegramToken: '',
     } as Partial<User>,
     onSubmit: (values: Partial<User>, { setErrors, setSubmitting }) => {
       if (!values.password?.length) {
@@ -72,6 +77,14 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
 
   const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+  };
+
+  const handlePopoverOpen = (event: MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
   };
 
   return (
@@ -130,6 +143,7 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                 marginBottom: '40px',
               }}
             />
+
             <Grid
               container
               direction="row"
@@ -242,6 +256,59 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                     name="avatar"
                   />
                   <FormHelperText>{form.errors?.avatar}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.telegramToken}
+                  disabled={!!pending}
+                >
+                  <TextField
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: (
+                        <IconButton
+                          color="primary"
+                          aria-label="upload picture"
+                          component="span"
+                          onMouseEnter={handlePopoverOpen}
+                          onMouseLeave={handlePopoverClose}
+                        >
+                          <Info sx={{ fontSize: 27 }}></Info>
+                          <Popover
+                            id="mouse-over-popover"
+                            sx={{
+                              pointerEvents: 'none',
+                            }}
+                            open={open}
+                            anchorEl={anchorEl}
+                            anchorOrigin={{
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                              vertical: 'top',
+                              horizontal: 'left',
+                            }}
+                            onClose={handlePopoverClose}
+                            disableRestoreFocus
+                          >
+                            <Typography sx={{ p: 1 }}>
+                              Text @P11_basilbot on Telegram. He’ll guide you
+                              through how to connect your Telegram account.
+                            </Typography>
+                          </Popover>
+                        </IconButton>
+                      ),
+                    }}
+                    id="telegram-token"
+                    type="text"
+                    value={form.values.telegramToken}
+                    label="Telegram token"
+                  />
+                  <FormHelperText>{form.errors?.telegramToken}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -364,6 +431,27 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                       />
                       <FormHelperText>
                         {form.errors?.address?.region}
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      error={!!form.errors?.phoneNumber}
+                      disabled={!!pending}
+                    >
+                      <InputLabel htmlFor="phonenumber">PhoneNumber</InputLabel>
+                      <OutlinedInput
+                        id="phonenumber"
+                        type="text"
+                        onChange={form.handleChange}
+                        value={form.values.phoneNumber ?? ''}
+                        label="PhoneNumber"
+                        name="phoneNumber"
+                      />
+                      <FormHelperText>
+                        {form.errors?.phoneNumber}
                       </FormHelperText>
                     </FormControl>
                   </Grid>

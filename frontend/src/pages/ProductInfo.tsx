@@ -252,16 +252,7 @@ export default function ProductInfo(props: any) {
                         display="inline"
                         fontWeight="bold"
                       >
-                        /unit
-                      </Typography>
-                      <Typography
-                        ml="16px"
-                        variant="subtitle1"
-                        color="text.secondary"
-                        display="inline"
-                        fontWeight="bold"
-                      >
-                        ({product.baseUnit})
+                        {product.baseUnit}
                       </Typography>
                     </Grid>
                     <Grid item display={!profile && 'none'}>

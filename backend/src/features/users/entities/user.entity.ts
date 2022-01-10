@@ -11,6 +11,7 @@ import {
 import {
   Column,
   Entity,
+  Generated,
   JoinColumn,
   ManyToMany,
   OneToMany,
@@ -139,6 +140,9 @@ export class User {
   @ManyToMany(() => Notification, notification => notification.deliveredTo)
   notifications: Notification[];
 
+  /**
+   * The user's delivery address
+   */
   @OneToOne(() => DeliveryLocation, dl => dl.user, {
     cascade: true,
   })
@@ -147,4 +151,25 @@ export class User {
   @Type(() => DeliveryLocation)
   @ValidateNested()
   address: DeliveryLocation;
+
+  /**
+   * A random token to pair a Telegram account
+   */
+  @Column()
+  @Generated('uuid')
+  telegramToken: string;
+
+  /**
+   * The user's Telegram Id
+   */
+  @Column({ nullable: true })
+  telegramId: number;
+
+  /**
+   * The phone number
+   */
+  @Column({ default: null })
+  @IsString()
+  @IsOptional()
+  phoneNumber: string;
 }

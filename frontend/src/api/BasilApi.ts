@@ -18,6 +18,8 @@ export interface OrderEntry {
   id?: OrderEntryId;
   product: Product;
   quantity: number;
+  orderId?: OrderId;
+  productId?: ProductId;
 }
 
 export type OrderId = number;
@@ -135,6 +137,8 @@ export interface User {
   address: DeliveryLocation;
   companyName: string;
   companyImage: string;
+  telegramToken: string;
+  phoneNumber: string;
 }
 
 export interface Notification {
@@ -188,6 +192,8 @@ export const logout = () => {
 /**
  * Users
  */
+
+export const getFarmers = () => client.get<User[]>('/users/farmers');
 
 export const getUsers = () => client.get<User[]>('/users');
 

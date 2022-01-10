@@ -151,12 +151,10 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 }));
 
 function NavBar(props: any) {
-  const [length, setLength] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] =
     useState<null | HTMLElement>(null);
   const [anchorVC, setAnchorVC] = useState<null | HTMLElement>(null);
-  const [list, setList] = useState([]);
   const { data: profile } = useProfile();
   const { mutateAsync: logout } = useLogout();
   const [showBasket, setShowBasket] = useState(false);
@@ -257,6 +255,7 @@ function NavBar(props: any) {
                     renderInput={props => <TextField {...props} />}
                     value={date.toJSDate()}
                     label="Virtual clock"
+                    minDate={new Date(date.toISODate())}
                     onChange={newDate => mutate(DateTime.fromJSDate(newDate))}
                   />
                 </LocalizationProvider>

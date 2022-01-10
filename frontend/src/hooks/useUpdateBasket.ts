@@ -42,7 +42,8 @@ export const useUpdateBasket = () => {
     }
     return mutation
       .mutateAsync(dto, {
-        onSuccess() {
+        onSuccess(data) {
+          client.setQueryData('basket', data);
           return client.invalidateQueries('products');
         },
       })
@@ -61,7 +62,8 @@ export const useUpdateBasket = () => {
     }
     return mutation
       .mutateAsync(dto, {
-        onSuccess() {
+        onSuccess(data) {
+          client.setQueryData('basket', data);
           return client.invalidateQueries('products');
         },
       })

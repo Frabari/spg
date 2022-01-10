@@ -21,11 +21,10 @@ import { useBasket } from '../hooks/useBasket';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
 function ProductCard(props: any) {
-  const { data: basket } = useBasket();
   const { upsertEntry, deleteEntry } = useUpdateBasket();
 
   const handleDeleteEntry = (product: Product) => {
-    if (basket?.entries.length === 1) props.setShowBasket(false);
+    props.setShowBasket(false);
     deleteEntry(product);
   };
 
@@ -98,16 +97,22 @@ function ProductCard(props: any) {
                     <IconButton
                       disabled={props.quantity === 1}
                       onClick={() => upsertEntry(props.product, -1)}
+                      sx={{ mr: '8px' }}
                     >
                       <RemoveIcon />
                     </IconButton>
-                    <Typography variant="body2" display="inline">
+                    <Typography
+                      variant="body2"
+                      display="inline"
+                      alignSelf="center"
+                      textAlign="center"
+                    >
                       {props.quantity}
                     </Typography>
                     <IconButton
                       disabled={props.product.available === 0}
                       onClick={() => upsertEntry(props.product, 1)}
-                      sx={{ pl: 0 }}
+                      sx={{ ml: 0 }}
                     >
                       <AddIcon />
                     </IconButton>
@@ -123,8 +128,6 @@ function ProductCard(props: any) {
 }
 
 export default function Basket({
-  filter,
-  search,
   balanceWarning,
   setShowBasket,
 }: {
@@ -177,7 +180,7 @@ export default function Basket({
             alignItems="center"
             spacing={2}
             sx={{
-              position: 'absolute',
+              position: 'relative',
               bottom: 0,
             }}
           >
@@ -214,28 +217,15 @@ export default function Basket({
               </Box>
             </Grid>
             <Grid item xs={6}>
-              {balanceWarning ? (
-                <Button
-                  disabled
-                  component={Link}
-                  to={'/checkout'}
-                  variant="contained"
-                  sx={{ m: 3, ml: 0, float: 'right' }}
-                  endIcon={<ArrowForwardIcon />}
-                >
-                  Check out
-                </Button>
-              ) : (
-                <Button
-                  component={Link}
-                  to={'/checkout'}
-                  variant="contained"
-                  sx={{ m: 3, ml: 0, float: 'right' }}
-                  endIcon={<ArrowForwardIcon />}
-                >
-                  Check out
-                </Button>
-              )}
+              <Button
+                component={Link}
+                to={'/checkout'}
+                variant="contained"
+                sx={{ m: 3, ml: 0, float: 'right' }}
+                endIcon={<ArrowForwardIcon />}
+              >
+                Check out
+              </Button>
             </Grid>
           </Grid>
         </>

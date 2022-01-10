@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import {
-  Autocomplete,
   Avatar,
   Box,
   Card,
@@ -11,17 +9,16 @@ import {
   CardMedia,
   Grid,
   IconButton,
-  TextField,
+  Paper,
   Typography,
 } from '@mui/material';
-import { NotificationType, Product, Role, User } from '../api/BasilApi';
+import { NotificationType, Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useDate } from '../hooks/useDate';
+import { useFarmers } from '../hooks/useFarmers';
 import { useNotifications } from '../hooks/useNotifications';
-import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
-import { useUsers } from '../hooks/useUsers';
 
 function ProductCard({
   product,
@@ -62,13 +59,11 @@ function ProductCard({
   const handleSelect = (product: Product) => {
     if (date < from || date > to) {
       enqueueNotification({
-        id: 0,
         type: NotificationType.ERROR,
         title:
           'You can add products to the basket only from Saturday 9am to Sunday 23pm',
         message:
           'You can add products to the basket only from Saturday 9am to Sunday 23pm',
-        createdAt: new Date(),
       });
     } else {
       if (onSelect) {
@@ -76,11 +71,9 @@ function ProductCard({
       } else {
         upsertEntry(product, 1).then(() => {
           enqueueNotification({
-            id: 0,
             type: NotificationType.SUCCESS,
             title: product.name + ' successfully added!',
             message: '',
-            createdAt: new Date(),
           });
         });
       }
@@ -90,7 +83,7 @@ function ProductCard({
 
   return (
     <>
-      <Card sx={{ height: '100%' }}>
+      <Card sx={{ height: '350px' }}>
         <CardMedia
           component="img"
           height="175px"
@@ -143,31 +136,11 @@ function ProductCard({
 }
 
 export default function ProductsGrid({
-  farmer,
-  filter,
   onSelect,
-  search,
-  handleDelete,
-  setSearchParams,
-  setBalanceWarning,
 }: {
-  farmer?: string;
-  filter?: string;
-  search?: string;
   onSelect: (product: Product) => void;
-  handleDelete?: () => void;
-  setSearchParams?: (params: any) => void;
-  setBalanceWarning?: (bol: boolean) => void;
 }) {
-  const { data: products } = useProducts();
   const { data: date } = useDate();
-  const [sortOption, setSortOption] = useState('');
-  const sort = [
-    'Highest price',
-    'Lowest price',
-    'Ascending name',
-    'Descending name',
-  ];
 
   const from = date.set({
     weekday: 6,
@@ -178,182 +151,136 @@ export default function ProductsGrid({
   });
   const to = from.plus({ hour: 38 });
 
-  const [farmers, setFarmers] = useState(null);
-  const { data: users } = useUsers();
-
-  useEffect(() => {
-    if (users) {
-      setFarmers(users.filter(u => u.role === Role.FARMER));
-    }
-  }, [users]);
-
-  const handleChange = (s: string) => {
-    setSortOption(s);
-  };
-
-  const sortProducts = (a: Product, b: Product) => {
-    switch (sortOption) {
-      case 'Lowest price':
-        return a.price - b.price;
-      case 'Highest price':
-        return b.price - a.price;
-      case 'Ascending name':
-        if (a.name < b.name) return -1;
-        else return 1;
-      case 'Descending name':
-        if (b.name < a.name) return -1;
-        else return 1;
-    }
-  };
-
-  const [open, setOpen] = useState(true);
+  const { data: farmers } = useFarmers();
 
   return (
     <>
-      <Grid item xs={3} sx={{ ml: 'auto' }}>
-        <Autocomplete
-          multiple
-          id="tags-outlined"
-          value={users.filter(
-            u => farmer && farmer.split('-').indexOf(String(u.id)) >= 0,
-          )}
-          options={users.filter(u => u.role === Role.FARMER)}
-          getOptionLabel={(option: User) => option.name + ' ' + option.surname}
-          filterSelectedOptions
-          onChange={(event, newValue) => {
-            if (filter !== '') {
-              setSearchParams({
-                farmer: newValue
-                  .map(u => {
-                    return String((u as User).id);
-                  })
-                  .join('-')
-                  .toString(),
-                category: filter,
-              });
-            } else {
-              setSearchParams({
-                farmer: newValue
-                  .map(u => {
-                    return String((u as User).id);
-                  })
-                  .join('-')
-                  .toString(),
-              });
-            }
-          }}
-          renderInput={params => (
-            <TextField {...params} label="Filter farmers" size="small" />
-          )}
-        />
-      </Grid>
-
-      {farmers?.map((f: any) => (
-        <>
-          <Grid
-            borderRadius="16px"
-            spacing="2rem"
-            padding="1rem"
-            width="auto"
-            marginBottom="1rem"
-            marginX="1rem"
-            sx={{ backgroundColor: '#fafafa' }}
-          >
-            <Grid container direction="row" spacing={2} padding="2rem">
+      {farmers
+        ?.filter(f => f.products.filter(p => p.available > 0).length > 0)
+        ?.map((f: User) => (
+          <>
+            <Grid
+              borderRadius="16px"
+              spacing="2rem"
+              margin="1rem"
+              width="auto"
+              sx={{ backgroundColor: '#fafafa' }}
+            >
               <Grid
                 container
                 direction="row"
-                justifyContent="end"
-                alignContent="center"
-                xs={12}
-                sm={12}
+                margin="0"
+                width="100%"
+                spacing={2}
+                sx={{
+                  backgroundImage: `url(${f.companyImage})`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '100%',
+                  backgroundPositionY: '50%',
+                  borderTopLeftRadius: '16px',
+                  borderTopRightRadius: '16px',
+                }}
               >
-                <Typography
-                  gutterBottom
-                  variant="h6"
-                  component="div"
-                  display="inline"
-                  fontSize="1rem"
+                <Paper
+                  sx={{
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    width: '100%',
+                    padding: '2rem',
+                    borderTopLeftRadius: '16px',
+                    borderTopRightRadius: '16px',
+                    borderBottomLeftRadius: '0px',
+                    borderBottomRightRadius: '0px',
+                  }}
                 >
-                  {f.name + ' ' + f.surname}
-                </Typography>
-                <Avatar src={f.avatar} sx={{ boxShadow: 2, right: 0, ml: 1 }} />
-              </Grid>
-              <Grid item xs={12} sm={8}>
-                <Typography
-                  align="left"
-                  fontWeight="bold"
-                  gutterBottom
-                  variant="h6"
-                  component="div"
-                  fontSize="1.5rem"
-                >
-                  {'Cascina Perosa'}
-                </Typography>
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="end"
+                    alignContent="center"
+                    xs={12}
+                    sm={12}
+                  >
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      display="inline"
+                      fontSize="1rem"
+                      color="white"
+                      alignSelf="center"
+                      justifySelf="center"
+                      marginBottom={0}
+                    >
+                      {f.name + ' ' + f.surname}
+                    </Typography>
+                    <Avatar
+                      src={f.avatar}
+                      sx={{ boxShadow: 2, right: 0, ml: 1 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={8}>
+                    <Typography
+                      align="left"
+                      fontWeight="bold"
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      fontSize="1.5rem"
+                      color="white"
+                    >
+                      {f?.companyName}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={12}>
+                    <Typography
+                      align="left"
+                      gutterBottom
+                      component="div"
+                      fontSize="9"
+                      color="white"
+                    >
+                      {f?.address?.address}, {f?.address?.city},{' '}
+                      {f?.address?.province}
+                    </Typography>
+                  </Grid>
+                </Paper>
               </Grid>
 
-              <Grid item xs={12} sm={12}>
-                <Typography
-                  align="left"
-                  gutterBottom
-                  component="div"
-                  fontSize="9"
-                >
-                  {'Via Zio Pera 1, Borgoratto, Imperia '}
-                </Typography>
+              <Grid
+                container
+                display="grid"
+                gap={2.5}
+                gridTemplateColumns="repeat(auto-fill, minmax(10rem, 1fr))"
+                padding="1rem"
+              >
+                {f.products
+                  ?.filter(p => p.available > 0)
+                  ?.map(p => (
+                    <>
+                      {date >= from && date <= to ? (
+                        <Grid item>
+                          <ProductCard
+                            key={p.id}
+                            product={p}
+                            onSelect={onSelect}
+                          />
+                        </Grid>
+                      ) : (
+                        <Grid item>
+                          <ProductCard
+                            key={p.id}
+                            product={p}
+                            onSelect={onSelect}
+                          />
+                        </Grid>
+                      )}
+                    </>
+                  ))}
               </Grid>
             </Grid>
-
-            <Grid
-              container
-              display="grid"
-              gap={2.5}
-              gridTemplateColumns="repeat(auto-fill, minmax(10rem, 1fr))"
-              padding="1rem"
-            >
-              {products
-                ?.filter(p => p.farmer.id === f.id)
-                ?.filter(p => filter === '' || p.category.slug === filter)
-                ?.filter(
-                  p =>
-                    !search ||
-                    p.name.toLowerCase().includes(search.toLowerCase()),
-                )
-                ?.filter(
-                  p =>
-                    !farmer ||
-                    (farmer &&
-                      farmer.split('-').indexOf(String(p.farmer.id)) >= 0),
-                )
-                ?.filter(p => p.available > 0)
-                ?.sort((a, b) => sortProducts(a, b))
-                .map(p => (
-                  <>
-                    {date >= from && date <= to ? (
-                      <Grid item>
-                        <ProductCard
-                          key={p.id}
-                          product={p}
-                          onSelect={onSelect}
-                          setBalanceWarning={setBalanceWarning}
-                        />
-                      </Grid>
-                    ) : (
-                      <Grid item>
-                        <ProductCard
-                          key={p.id}
-                          product={p}
-                          onSelect={onSelect}
-                          setBalanceWarning={setBalanceWarning}
-                        />
-                      </Grid>
-                    )}
-                  </>
-                ))}
-            </Grid>
-          </Grid>
-        </>
-      ))}
+          </>
+        ))}
     </>
   );
 }
