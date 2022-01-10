@@ -520,4 +520,36 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       })),
     );
   }
+
+  /**
+   * Sends a notification to users who have
+   * a scheduled pickup the next day
+   */
+  async sendPickupNotifications() {
+    const orders = await this.ordersRepository.find({
+      where: {
+        status: OrderStatus.PAID,
+        deliveryLocation: null,
+      },
+      relations: ['user'],
+    });
+    if (orders?.length) {
+      for (const o of orders) {
+        if (
+          DateTime.fromJSDate(o.deliverAt).day ===
+          DateTime.now().plus({ day: 1 }).day
+        ) {
+          await this.notificationsService.sendNotification(
+            {
+              type: NotificationType.INFO,
+              priority: NotificationPriority.CRITICAL,
+              title: 'Pickup soon',
+              message: `Tomorrow at ${o.deliverAt.toLocaleTimeString()} you have a pickup scheduled`,
+            },
+            o.user,
+          );
+        }
+      }
+    }
+  }
 }

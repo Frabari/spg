@@ -1,12 +1,13 @@
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
+import { DateTime } from 'luxon';
+import { LessThan, Repository } from 'typeorm';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
 import { NotificationType } from '../notifications/entities/notification.entity';
 import { NotificationsService } from '../notifications/services/notifications.service';
-import { Order, OrderStatus } from '../orders/entities/order.entity';
+import { OrderStatus } from '../orders/entities/order.entity';
 import { Tokens } from './dtos/tokens.dto';
 import { JwtTokenPayload } from './entities/jwt-token-payload.entity';
 import { User, UserId } from './entities/user.entity';
@@ -53,24 +54,83 @@ export class UsersService extends TypeOrmCrudService<User> {
     });
   }
 
+  /**
+   * Detects unretrieved orders
+   */
   async detectUnretrievedOrders() {
-    const users = await this.usersRepository
+    const result = await this.usersRepository
       .createQueryBuilder(User.name.toLowerCase())
-      .select('user.id')
-      .innerJoin(Order.name.toLowerCase(), 'order', 'order.userId = user.id ')
-      .where('order.status = :status', { status: OrderStatus.UNRETRIEVED })
+      .innerJoinAndSelect(
+        'user.orders',
+        'order',
+        'order.status = :orderStatus and (user.lastBlockedAt is null or order.createdAt >= user.lastBlockedAt)',
+        { orderStatus: OrderStatus.UNRETRIEVED },
+      )
       .groupBy('user.id')
+      .addSelect('count(distinct order.id)', 'unretrievedOrdersCount')
       .having('count(*) >= :num', { num: 3 })
-      .getMany();
+      .getRawAndEntities();
+    const users = result.entities.map((u, i) => {
+      u.unretrievedOrdersCount = result.raw[i].unretrievedOrdersCount;
+      return u as User & { unretrievedOrdersCount: number };
+    });
+
     for (const user of users) {
+      if (user.unretrievedOrdersCount >= 5) {
+        await this.usersRepository.update(
+          { id: user.id },
+          { blockedAt: new Date() },
+        );
+        await this.notificationsService.sendNotification(
+          {
+            type: NotificationType.ERROR,
+            title: 'Your Basil account is blocked',
+            message:
+              'You have abandoned 5 or more orders so your account is now blocked for one month',
+          },
+          { id: user.id },
+        );
+      } else {
+        await this.notificationsService.sendNotification(
+          {
+            type: NotificationType.ERROR,
+            title: 'You may be blocked',
+            message:
+              'You have abandoned 3 or more orders. This may result in a one-month suspension of your account',
+          },
+          { id: user.id },
+        );
+      }
+    }
+  }
+
+  /**
+   * Unlocks users after a month
+   */
+  async unlockUsers() {
+    const oneMonthAgo = DateTime.now().minus({ month: 1 });
+    const usersToUnlock = await this.usersRepository.find({
+      blockedAt: LessThan(oneMonthAgo.toFormat('yyyy-MM-dd hh:mm:ss')),
+    });
+    for (const user of usersToUnlock) {
+      await this.usersRepository.update(
+        {
+          id: user.id,
+        },
+        {
+          blockedAt: null,
+          lastBlockedAt: new Date(),
+        },
+      );
       await this.notificationsService.sendNotification(
         {
-          type: NotificationType.ERROR,
-          title: 'You may be blocked',
-          message:
-            'You have abandoned 3 or more orders. This may result in a one-month suspension of your account',
+          type: NotificationType.SUCCESS,
+          title: 'You have been unlocked',
+          message: `Welcome back! Review our policy terms to make good use of the app. Happy buying!`,
         },
-        user,
+        {
+          id: user.id,
+        },
       );
     }
   }

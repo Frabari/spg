@@ -168,8 +168,28 @@ export class User {
   /**
    * The phone number
    */
-  @Column({ default: null })
+  @Column({ nullable: true, default: null })
   @IsString()
   @IsOptional()
   phoneNumber: string;
+
+  /**
+   * The date since when the user is
+   * locked
+   */
+  @Column({ nullable: true, default: null })
+  blockedAt: Date;
+
+  /**
+   * The last date the user was locked
+   */
+  @Column({ nullable: true, default: null })
+  lastBlockedAt: Date;
+
+  /**
+   * The number of unretrieved orders
+   * from the last blocked date
+   */
+  @Column({ select: false, nullable: true })
+  unretrievedOrdersCount?: number;
 }
