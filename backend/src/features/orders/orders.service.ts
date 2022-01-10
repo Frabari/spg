@@ -316,6 +316,19 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
+   * Locks all the draft baskets so that
+   * entries cannot be changed anymore
+   */
+  async closeDeliveries() {
+    const orders = await this.ordersRepository.find({
+      status: OrderStatus.DELIVERING,
+    });
+
+    if (orders?.length) {
+    }
+  }
+
+  /**
    * Removes all the draft (unconfirmed) order entries
    */
   async removeDraftOrderEntries() {
