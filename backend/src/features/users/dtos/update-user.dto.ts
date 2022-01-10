@@ -10,6 +10,7 @@ export class UpdateUserDto extends PickType(User, [
   'password',
   'avatar',
   'address',
+  'phoneNumber',
 ] as const) {
   @IsString()
   @IsNotEmpty()
@@ -28,4 +29,7 @@ export class UpdateUserDto extends PickType(User, [
   @IsNotEmpty()
   @Exclude({ toPlainOnly: true })
   password: string;
+
+  @IsString()
+  phoneNumber: string;
 }

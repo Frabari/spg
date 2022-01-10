@@ -151,7 +151,7 @@ export class User {
   /**
    * The phone number
    */
-  @Column({ unique: true, default: null })
+  @Column({ default: null })
   @IsString()
   @IsOptional()
   phoneNumber: string;

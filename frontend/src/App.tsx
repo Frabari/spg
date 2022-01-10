@@ -7,7 +7,6 @@ import { Container } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { themeOptions } from './Theme';
 import { CustomLinearProgress } from './components/CustomLinearProgress';
-import Notifications from './components/Notification';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Admin } from './pages/Admin';
 import Checkout from './pages/Checkout';
@@ -36,15 +35,7 @@ function App() {
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           maxSnack={3}
           autoHideDuration={3000}
-          style={{
-            maxWidth: '350px',
-            backgroundColor: 'white',
-            color: 'black',
-            alignContent: 'center',
-            marginRight: 50,
-          }}
         >
-          <Notifications />
           <ThemeProvider theme={themeOptions}>
             <BrowserRouter>
               <Routes>
