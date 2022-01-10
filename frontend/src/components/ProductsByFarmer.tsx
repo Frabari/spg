@@ -316,7 +316,9 @@ export default function ProductsByFarmer({
         ?.filter(f => f.products.filter(p => p.available > 0).length > 0)
         ?.filter(f =>
           filter
-            ? f.products.filter(p => p.category.slug === filter).length > 0
+            ? f.products.filter(
+                p => p.category.slug === filter && p.available > 0,
+              ).length > 0
             : f,
         )
         ?.filter((f: User) => {
@@ -424,16 +426,8 @@ export default function ProductsByFarmer({
                 gridTemplateColumns="repeat(auto-fill, minmax(16rem, 1fr))"
                 padding="1rem"
               >
-                {products
-                  ?.filter(p => p.farmer?.id === f?.id)
+                {f.products
                   ?.filter(p => filter === '' || p.category.slug === filter)
-                  ?.filter(
-                    p =>
-                      !farmer ||
-                      (farmer &&
-                        farmer.split('-').indexOf(String(p.farmer.id)) >= 0),
-                  )
-                  ?.filter(p => p.available > 0)
                   ?.sort((a, b) => sortProducts(a, b))
                   .map(p => (
                     <>
