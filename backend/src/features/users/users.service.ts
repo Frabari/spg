@@ -1,9 +1,11 @@
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
+import { NotificationType } from '../notifications/entities/notification.entity';
+import { NotificationsService } from '../notifications/services/notifications.service';
 import { Order, OrderStatus } from '../orders/entities/order.entity';
 import { Tokens } from './dtos/tokens.dto';
 import { JwtTokenPayload } from './entities/jwt-token-payload.entity';
@@ -14,6 +16,8 @@ export class UsersService extends TypeOrmCrudService<User> {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => NotificationsService))
+    private readonly notificationsService: NotificationsService,
   ) {
     super(usersRepository);
   }
@@ -58,6 +62,16 @@ export class UsersService extends TypeOrmCrudService<User> {
       .groupBy('user.id')
       .having('count(*) >= :num', { num: 3 })
       .getMany();
-    console.log(users);
+    for (const user of users) {
+      await this.notificationsService.sendNotification(
+        {
+          type: NotificationType.ERROR,
+          title: 'You may be blocked',
+          message:
+            'You have abandoned 3 or more orders. This may result in a one-month suspension of your account',
+        },
+        user,
+      );
+    }
   }
 }

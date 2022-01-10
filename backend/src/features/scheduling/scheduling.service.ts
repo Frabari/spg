@@ -33,7 +33,7 @@ export class SchedulingService {
     [CLOSE_BASKETS]: this.closeBaskets,
     [PAY_PENDING_BASKETS]: this.payPendingBaskets,
     [PICKUP_NOTIFICATION]: this.sendPickupNotifications,
-    [CLOSE_DELIVERIES]: this.unretrieveOrders,
+    [CLOSE_DELIVERIES]: this.closeDeliveries,
   };
 
   constructor(
@@ -52,8 +52,8 @@ export class SchedulingService {
   }
 
   @Cron(CLOSE_DELIVERIES)
-  async closeOrders() {
-    this.logger.log(`Unretrieving orders (@${new Date()})`);
+  async closeDeliveries() {
+    this.logger.log(`Closing deliveries (@${new Date()})`);
     await this.ordersService.closeDeliveries();
     await this.usersService.detectUnretrievedOrders();
   }

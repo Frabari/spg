@@ -193,22 +193,19 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       }
     }
 
+    const now = DateTime.now();
+    const from = now.set({
+      weekday: 6,
+      hour: 9,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const to = from.plus({ hour: 38 });
+    if (now < from || now > to) {
+      delete dto.entries;
+    }
     if (dto.entries) {
-      const now = DateTime.now();
-      const from = now.set({
-        weekday: 6,
-        hour: 9,
-        minute: 0,
-        second: 0,
-        millisecond: 0,
-      });
-      const to = from.plus({ hour: 38 });
-      if (now < from || now > to) {
-        throw new BadRequestException(
-          'Order.ReserveOutsideOfSales',
-          'Cannot add products to an order while outside the sales window',
-        );
-      }
       for (let ei = 0; ei < dto.entries.length; ei++) {
         const entry = dto.entries[ei];
         if (entry.quantity < 1) {
