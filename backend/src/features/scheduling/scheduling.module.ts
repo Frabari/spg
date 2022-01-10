@@ -7,11 +7,18 @@ import { SchedulerOrchestrator } from '@nestjs/schedule/dist/scheduler.orchestra
 import { NotificationsModule } from '../notifications/notifications.module';
 import { OrdersModule } from '../orders/orders.module';
 import { ProductsModule } from '../products/products.module';
+import { UsersModule } from '../users/users.module';
 import { SchedulingController } from './scheduling.controller';
 import { SchedulingService } from './scheduling.service';
 
 @Module({
-  imports: [ProductsModule, OrdersModule, DiscoveryModule, NotificationsModule],
+  imports: [
+    UsersModule,
+    ProductsModule,
+    OrdersModule,
+    DiscoveryModule,
+    NotificationsModule,
+  ],
   controllers: [SchedulingController],
   providers: [
     SchedulingService,

@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
+import { Order, OrderStatus } from '../orders/entities/order.entity';
 import { Tokens } from './dtos/tokens.dto';
 import { JwtTokenPayload } from './entities/jwt-token-payload.entity';
 import { User, UserId } from './entities/user.entity';
@@ -46,5 +47,17 @@ export class UsersService extends TypeOrmCrudService<User> {
     return this.usersRepository.update(userId, {
       telegramId,
     });
+  }
+
+  async detectUnretrievedOrders() {
+    const users = await this.usersRepository
+      .createQueryBuilder(User.name.toLowerCase())
+      .select('user.id')
+      .innerJoin(Order.name.toLowerCase(), 'order', 'order.userId = user.id ')
+      .where('order.status = :status', { status: OrderStatus.UNRETRIEVED })
+      .groupBy('user.id')
+      .having('count(*) >= :num', { num: 3 })
+      .getMany();
+    console.log(users);
   }
 }

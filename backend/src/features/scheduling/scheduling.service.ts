@@ -11,6 +11,7 @@ import { NotificationsService } from '../notifications/services/notifications.se
 import { OrderStatus } from '../orders/entities/order.entity';
 import { OrdersService } from '../orders/orders.service';
 import { ProductsService } from '../products/products.service';
+import { UsersService } from '../users/users.service';
 
 const toFaketimeDate = (date: Date) => {
   const res = date.toISOString().replace('T', ' ');
@@ -32,11 +33,13 @@ export class SchedulingService {
     [CLOSE_BASKETS]: this.closeBaskets,
     [PAY_PENDING_BASKETS]: this.payPendingBaskets,
     [PICKUP_NOTIFICATION]: this.sendPickupNotifications,
+    [CLOSE_DELIVERIES]: this.unretrieveOrders,
   };
 
   constructor(
     private readonly productsService: ProductsService,
     private readonly ordersService: OrdersService,
+    private readonly usersService: UsersService,
     private readonly schedulerOrchestrator: SchedulerOrchestrator,
     private readonly notificationsService: NotificationsService,
   ) {}
@@ -52,6 +55,7 @@ export class SchedulingService {
   async unretrieveOrders() {
     this.logger.log(`Unretrieving orders (@${new Date()})`);
     await this.ordersService.closeDeliveries();
+    await this.usersService.detectUnretrievedOrders();
   }
 
   @Cron(CLOSE_BASKETS)
