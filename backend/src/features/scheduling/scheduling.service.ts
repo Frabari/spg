@@ -21,6 +21,7 @@ const CLOSE_WEEKLY_SALES = '0 23 * * 0';
 const CLOSE_BASKETS = '0 9 * * 1';
 const PAY_PENDING_BASKETS = '0 18 * * 1';
 const PICKUP_NOTIFICATION = '0 10 * * *';
+const CLOSE_DELIVERIES = '0 18 * * 5';
 
 @Injectable()
 export class SchedulingService {
@@ -45,6 +46,12 @@ export class SchedulingService {
     this.logger.log(`Closing weekly sales (@${new Date()})`);
     await this.productsService.resetProductsAvailability();
     await this.ordersService.lockBaskets();
+  }
+
+  @Cron(CLOSE_DELIVERIES)
+  async unretrieveOrders() {
+    this.logger.log(`Unretrieving orders (@${new Date()})`);
+    await this.ordersService.closeDeliveries();
   }
 
   @Cron(CLOSE_BASKETS)

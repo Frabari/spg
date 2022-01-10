@@ -33,29 +33,42 @@ import { AdminProducts } from './AdminProducts';
 import { AdminUser } from './AdminUser';
 import { AdminUsers } from './AdminUsers';
 
-const pages = [
-  {
-    title: 'Users',
-    path: 'users',
-    icon: <Person />,
-  },
-  {
-    title: 'Products',
-    path: 'products',
-    icon: <Inventory />,
-  },
-  {
-    title: 'Orders',
-    path: 'orders',
-    icon: <ShoppingCart />,
-  },
-];
-
 export const Admin = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: profile } = useProfile();
   const { mutateAsync: logout } = useLogout();
   const isMobile = useMediaQuery('(max-width:760px)');
+
+  const setPages = (role: Role) => {
+    if (role === Role.FARMER) {
+      return [
+        {
+          title: 'Products',
+          path: 'products',
+          icon: <Inventory />,
+        },
+      ];
+    } else {
+      return [
+        {
+          title: 'Users',
+          path: 'users',
+          icon: <Person />,
+        },
+        {
+          title: 'Products',
+          path: 'products',
+          icon: <Inventory />,
+        },
+        {
+          title: 'Orders',
+          path: 'orders',
+          icon: <ShoppingCart />,
+        },
+      ];
+    }
+  };
+
   const handleDrawerToggle = () => {
     if (isMobile) {
       setMobileOpen(!mobileOpen);
@@ -69,6 +82,8 @@ export const Admin = () => {
       toast.error((e as ApiException).message);
     }
   };
+
+  const pages = setPages(profile?.role);
 
   const drawer = (
     <div>
@@ -170,7 +185,13 @@ export const Admin = () => {
             path="/"
             element={
               <ProtectedRoute>
-                <Navigate to="/admin/users" />
+                <Navigate
+                  to={
+                    profile?.role === Role.FARMER
+                      ? '/admin/products'
+                      : '/admin/users'
+                  }
+                />
               </ProtectedRoute>
             }
           />
@@ -178,6 +199,7 @@ export const Admin = () => {
             path="/users"
             element={
               <ProtectedRoute>
+                {profile?.role === Role.FARMER ? <Navigate to="/admin" /> : ''}
                 <AdminUsers handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
@@ -186,6 +208,7 @@ export const Admin = () => {
             path="/users/:id"
             element={
               <ProtectedRoute>
+                {profile?.role === Role.FARMER ? <Navigate to="/admin" /> : ''}
                 <AdminUser handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
@@ -213,6 +236,7 @@ export const Admin = () => {
             path="/orders"
             element={
               <ProtectedRoute>
+                {profile?.role === Role.FARMER ? <Navigate to="/admin" /> : ''}
                 <AdminOrders handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }
@@ -221,6 +245,7 @@ export const Admin = () => {
             path="/orders/:id"
             element={
               <ProtectedRoute>
+                {profile?.role === Role.FARMER ? <Navigate to="/admin" /> : ''}
                 <AdminOrder handleDrawerToggle={handleDrawerToggle} />
               </ProtectedRoute>
             }

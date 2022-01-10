@@ -1,4 +1,4 @@
-import { Build, Lock, Pending } from '@mui/icons-material';
+import { Build, Clear, Lock, Pending } from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
@@ -46,6 +46,12 @@ export const orderStatuses: Record<
     name: 'Delivering',
     color: 'indigo',
     icon: DeliveryDiningIcon,
+  },
+  unretrieved: {
+    key: 'unretrieved',
+    name: 'Unretrieved',
+    color: 'chocolate',
+    icon: Clear,
   },
   completed: {
     key: 'completed',
