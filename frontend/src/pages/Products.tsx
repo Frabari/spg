@@ -36,6 +36,7 @@ const Footer = () => {
           >
             www.unsplash.com
           </a>
+          . Home illustration by Freepik
         </Typography>
       </Container>
     </Box>
