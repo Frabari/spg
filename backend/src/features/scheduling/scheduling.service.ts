@@ -49,7 +49,7 @@ export class SchedulingService {
   }
 
   @Cron(CLOSE_DELIVERIES)
-  async unretrieveOrders() {
+  async closeOrders() {
     this.logger.log(`Unretrieving orders (@${new Date()})`);
     await this.ordersService.closeDeliveries();
   }

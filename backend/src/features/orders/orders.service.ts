@@ -316,16 +316,17 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * Locks all the draft baskets so that
-   * entries cannot be changed anymore
+   * Set unretrieved orders
    */
   async closeDeliveries() {
-    const orders = await this.ordersRepository.find({
-      status: OrderStatus.DELIVERING,
-    });
-
-    if (orders?.length) {
-    }
+    return this.ordersRepository.update(
+      {
+        status: OrderStatus.DELIVERING,
+      },
+      {
+        status: OrderStatus.UNRETRIEVED,
+      },
+    );
   }
 
   /**

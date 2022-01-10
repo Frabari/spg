@@ -39,6 +39,7 @@ const statusFilters = [
   'paid',
   'pending_payment',
   'delivering',
+  'unretrieved',
   'completed',
   'pending_cancellation',
   'canceled',
@@ -354,6 +355,16 @@ export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
               onClick={() =>
                 setSearchParams({
                   status: OrderStatus.PENDING_CANCELLATION,
+                  delivery: 'all',
+                })
+              }
+            />
+            <Tab
+              label="Show orders unretrieved"
+              {...a11yProps(3)}
+              onClick={() =>
+                setSearchParams({
+                  status: OrderStatus.UNRETRIEVED,
                   delivery: 'all',
                 })
               }
