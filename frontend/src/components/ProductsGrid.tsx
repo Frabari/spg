@@ -34,6 +34,7 @@ function ProductCard({
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   const { data: date } = useDate();
+
   const { enqueueNotification } = useNotifications();
 
   if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
