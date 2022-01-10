@@ -26,6 +26,10 @@ export class TelegramService {
           command: 'unpair',
           description: 'Unpair your Telegram account from your Basil account',
         },
+        {
+          command: 'balance',
+          description: 'To see the current balance',
+        },
       ]);
       this.bot.command('start', ctx =>
         ctx.reply(
@@ -78,6 +82,23 @@ To pair your Basil account, send your token to the /pair command. You can find y
           await ctx.reply(
             'There was an error while unpairing your Basil account, try again later',
           );
+        }
+      });
+      this.bot.command('balance', async ctx => {
+        const user = await this.usersService.findOne({
+          telegramId: ctx.from.id,
+        });
+        if (!user) {
+          await ctx.reply(
+            `Your Telegram account is not paired to any Basil account`,
+          );
+          return;
+        } else {
+          try {
+            await ctx.reply(`Your balance is:  ${user.balance}$`);
+          } catch (e) {
+            await ctx.reply(`There was an error while processing your request`);
+          }
         }
       });
       this.bot.start();

@@ -3,8 +3,14 @@ import { DateTime } from 'luxon';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SchedulerOrchestrator } from '@nestjs/schedule/dist/scheduler.orchestrator';
+import {
+  NotificationPriority,
+  NotificationType,
+} from '../notifications/entities/notification.entity';
+import { NotificationsService } from '../notifications/services/notifications.service';
 import { OrdersService } from '../orders/orders.service';
 import { ProductsService } from '../products/products.service';
+import { Role } from '../users/roles.enum';
 import { UsersService } from '../users/users.service';
 
 const toFaketimeDate = (date: Date) => {
@@ -17,6 +23,7 @@ const CLOSE_BASKETS = '0 9 * * 1';
 const PAY_PENDING_BASKETS = '0 18 * * 1';
 const DAILY_JOB = '0 10 * * *';
 const CLOSE_DELIVERIES = '0 18 * * 5';
+const OPEN_SALES = '0 9 * * 6';
 
 @Injectable()
 export class SchedulingService {
@@ -28,6 +35,7 @@ export class SchedulingService {
     [CLOSE_BASKETS]: this.closeBaskets,
     [PAY_PENDING_BASKETS]: this.payPendingBaskets,
     [CLOSE_DELIVERIES]: this.closeDeliveries,
+    [OPEN_SALES]: this.openSales,
   };
 
   constructor(
@@ -35,6 +43,7 @@ export class SchedulingService {
     private readonly ordersService: OrdersService,
     private readonly usersService: UsersService,
     private readonly schedulerOrchestrator: SchedulerOrchestrator,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   @Cron(DAILY_JOB)
@@ -70,6 +79,20 @@ export class SchedulingService {
   payPendingBaskets() {
     this.logger.log(`Paying pending baskets (@${new Date()})`);
     return this.ordersService.payBaskets(true);
+  }
+
+  @Cron(OPEN_SALES)
+  openSales() {
+    this.logger.log(`Updating products (@${new Date()})`);
+    return this.notificationsService.sendNotification(
+      {
+        type: NotificationType.INFO,
+        priority: NotificationPriority.CRITICAL,
+        title: `Sales are now open`,
+        message: 'New products available',
+      },
+      { role: Role.EMPLOYEE },
+    );
   }
 
   getDate() {
