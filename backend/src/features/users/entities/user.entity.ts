@@ -190,6 +190,5 @@ export class User {
    * The number of unretrieved orders
    * from the last blocked date
    */
-  @Column({ select: false, nullable: true })
   unretrievedOrdersCount?: number;
 }

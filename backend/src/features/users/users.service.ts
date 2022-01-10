@@ -5,7 +5,10 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '../../core/services/typeorm-crud.service';
-import { NotificationType } from '../notifications/entities/notification.entity';
+import {
+  NotificationPriority,
+  NotificationType,
+} from '../notifications/entities/notification.entity';
 import { NotificationsService } from '../notifications/services/notifications.service';
 import { OrderStatus } from '../orders/entities/order.entity';
 import { Tokens } from './dtos/tokens.dto';
@@ -72,7 +75,7 @@ export class UsersService extends TypeOrmCrudService<User> {
       .getRawAndEntities();
     const users = result.entities.map((u, i) => {
       u.unretrievedOrdersCount = result.raw[i].unretrievedOrdersCount;
-      return u as User & { unretrievedOrdersCount: number };
+      return u;
     });
 
     for (const user of users) {
@@ -84,6 +87,7 @@ export class UsersService extends TypeOrmCrudService<User> {
         await this.notificationsService.sendNotification(
           {
             type: NotificationType.ERROR,
+            priority: NotificationPriority.CRITICAL,
             title: 'Your Basil account is blocked',
             message:
               'You have abandoned 5 or more orders so your account is now blocked for one month',
@@ -94,6 +98,7 @@ export class UsersService extends TypeOrmCrudService<User> {
         await this.notificationsService.sendNotification(
           {
             type: NotificationType.ERROR,
+            priority: NotificationPriority.CRITICAL,
             title: 'You may be blocked',
             message:
               'You have abandoned 3 or more orders. This may result in a one-month suspension of your account',
@@ -125,6 +130,7 @@ export class UsersService extends TypeOrmCrudService<User> {
       await this.notificationsService.sendNotification(
         {
           type: NotificationType.SUCCESS,
+          priority: NotificationPriority.CRITICAL,
           title: 'You have been unlocked',
           message: `Welcome back! Review our policy terms to make good use of the app. Happy buying!`,
         },
