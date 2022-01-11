@@ -95,7 +95,7 @@ To pair your Basil account, send your token to the /pair command. You can find y
           return;
         } else {
           try {
-            await ctx.reply(`Your balance is:  ${user.balance}$`);
+            await ctx.reply(`Your balance is:  ${user.balance}€`);
           } catch (e) {
             await ctx.reply(`There was an error while processing your request`);
           }

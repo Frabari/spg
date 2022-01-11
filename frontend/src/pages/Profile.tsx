@@ -281,59 +281,6 @@ export const Profile = (props: { handleDrawerToggle: () => void }) => {
                 <FormControl
                   variant="outlined"
                   fullWidth
-                  error={!!form.errors?.avatar}
-                  disabled={!!pending}
-                >
-                  <TextField
-                    InputProps={{
-                      readOnly: true,
-                      endAdornment: (
-                        <IconButton
-                          color="primary"
-                          aria-label="upload picture"
-                          component="span"
-                          onMouseEnter={handlePopoverOpen}
-                          onMouseLeave={handlePopoverClose}
-                        >
-                          <Info sx={{ fontSize: 27 }}></Info>
-                          <Popover
-                            id="mouse-over-popover"
-                            sx={{
-                              pointerEvents: 'none',
-                            }}
-                            open={open}
-                            anchorEl={anchorEl}
-                            anchorOrigin={{
-                              vertical: 'bottom',
-                              horizontal: 'left',
-                            }}
-                            transformOrigin={{
-                              vertical: 'top',
-                              horizontal: 'left',
-                            }}
-                            onClose={handlePopoverClose}
-                            disableRestoreFocus
-                          >
-                            <Typography sx={{ p: 1 }}>
-                              Use it on telegram
-                            </Typography>
-                          </Popover>
-                        </IconButton>
-                      ),
-                    }}
-                    id="telegram-token"
-                    type="text"
-                    value={form.values.id}
-                    label="Telegram token"
-                    name="Telegram token"
-                  />
-                  <FormHelperText>{form.errors?.avatar}</FormHelperText>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <FormControl
-                  variant="outlined"
-                  fullWidth
                   error={!!form.errors?.telegramToken}
                   disabled={!!pending}
                 >
