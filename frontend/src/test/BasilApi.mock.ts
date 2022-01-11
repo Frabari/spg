@@ -3,6 +3,7 @@ import {
   Order,
   Product,
   ProductId,
+  Role,
   Transaction,
   User,
   UserId,
@@ -35,6 +36,7 @@ const mockUsers = [
   {
     id: 31,
     name: 'Luigi',
+    role: Role.FARMER,
   },
 ];
 const mockOrders = [
@@ -113,8 +115,14 @@ jest.mock('../api/BasilApi', () => {
       mockUser = { ...mockUser, ..._user };
       return Promise.resolve(mockUser);
     },
+    updateProfile: (_user: Partial<User>) => {
+      mockUser = { ...mockUser, ..._user };
+      return Promise.resolve(mockUser);
+    },
     getUsers: () => Promise.resolve(mockUsers),
+    getFarmers: () => Promise.resolve(mockUsers),
     getProduct: (id?: ProductId) => Promise.resolve(mockProduct),
+    getStockItem: (id?: ProductId) => Promise.resolve(mockProduct),
     createStockItem: (_product: Partial<Product>) => {
       mockProduct = { ...mockProduct, ..._product };
       return Promise.resolve(mockProduct);
