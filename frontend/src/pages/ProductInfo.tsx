@@ -159,13 +159,13 @@ export const ProductInfo = () => {
                       component="div"
                       display="inline"
                     >
-                      {product.farmer.name + ' ' + product.farmer.surname}
+                      {product?.farmer.name + ' ' + product?.farmer.surname}
                     </Typography>
                   </Typography>
                 </Grid>
                 <Grid item xs={2} sm={1}>
                   <Avatar
-                    src={product.farmer.avatar}
+                    src={product?.farmer.avatar}
                     sx={{ boxShadow: 2, right: 0 }}
                   />
                 </Grid>
@@ -180,7 +180,7 @@ export const ProductInfo = () => {
                 justifyItems="center"
               >
                 <Grid item xs={4}>
-                  <Img width="800" src={product.image} />
+                  <Img width="800" src={product?.image} />
                 </Grid>
                 <Grid item xs={8}>
                   <Grid
@@ -205,7 +205,7 @@ export const ProductInfo = () => {
                             fontSize={40}
                             component="div"
                           >
-                            {product.name}
+                            {product?.name}
                           </Typography>
                         </Grid>
                         <Grid item>
@@ -232,7 +232,7 @@ export const ProductInfo = () => {
                         fontSize={20}
                         pr={{ xs: 2, md: 8 }}
                       >
-                        {product.description}
+                        {product?.description}
                       </Typography>
                     </Grid>
                     <Grid item>
@@ -243,7 +243,7 @@ export const ProductInfo = () => {
                         display="inline"
                         fontWeight="bold"
                       >
-                        € {product.price}
+                        € {product?.price}
                       </Typography>
                       <Typography
                         align="left"
@@ -252,7 +252,7 @@ export const ProductInfo = () => {
                         display="inline"
                         fontWeight="bold"
                       >
-                        /{product.baseUnit}
+                        /{product?.baseUnit}
                       </Typography>
                     </Grid>
                     <Grid item display={!profile && 'none'}>
@@ -263,7 +263,7 @@ export const ProductInfo = () => {
                         justifyItems="center"
                         alignItems="center"
                       >
-                        {date >= from && date <= to ? (
+                        {date >= from && date <= to && !profile?.blockedAt ? (
                           <>
                             <Grid item xs={12} sm={4}>
                               <TextField
@@ -277,7 +277,7 @@ export const ProductInfo = () => {
                                 helperText="Select the desired quantity"
                               >
                                 {Array.from(
-                                  { length: product.available },
+                                  { length: product?.available },
                                   (v, k) => k + 1,
                                 ).map(option => (
                                   <MenuItem key={option} value={option}>
