@@ -25,6 +25,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { Search } from '../components/Search';
 import { roles } from '../constants';
 import { useUsers } from '../hooks/useUsers';
 
@@ -71,22 +72,6 @@ const columns: {
     width: 100,
   },
 ];
-
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: '16px',
-  backgroundColor: '#ffffff',
-  '&:hover': {
-    backgroundColor: '#f7f7f7',
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
   padding: theme.spacing(0, 2),
@@ -195,7 +180,7 @@ export const AdminUsers = (props: { handleDrawerToggle: () => void }) => {
         >
           Users
         </Typography>
-        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
+        <Search sx={{ ml: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>

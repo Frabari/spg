@@ -22,11 +22,9 @@ import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
 const ProductCard = ({
   product,
-  setBalanceWarning,
   onSelect,
 }: {
   product?: Product;
-  setBalanceWarning?: (bol: boolean) => void;
   onSelect: (product: Product) => void;
 }) => {
   const { data: basket } = useBasket();
@@ -34,10 +32,7 @@ const ProductCard = ({
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   const { data: date } = useDate();
-
   const { enqueueNotification } = useNotifications();
-
-  if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
 
   const handleInfo = () => {
     if (!onSelect) {
@@ -78,7 +73,6 @@ const ProductCard = ({
         });
       }
     }
-    if (setBalanceWarning) setBalanceWarning(basket.insufficientBalance);
   };
 
   return (

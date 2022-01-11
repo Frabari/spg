@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -15,7 +15,6 @@ import {
   Grid,
   IconButton,
   MenuItem,
-  Paper,
   Stack,
   TextField,
   Typography,
@@ -32,11 +31,9 @@ import { EmptyState } from './EmptyState';
 
 const ProductCard = ({
   product,
-  setBalanceWarning,
   onSelect,
 }: {
   product?: Product;
-  setBalanceWarning?: (bol: boolean) => void;
   onSelect: (product: Product) => void;
 }) => {
   const { data: basket } = useBasket();
@@ -46,13 +43,9 @@ const ProductCard = ({
   const { data: date } = useDate();
   const { enqueueNotification } = useNotifications();
 
-  if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
-
   const handleInfo = () => {
     if (!onSelect) {
-      navigate(`/products/${product.id}`, {
-        state: { product: product },
-      });
+      navigate(`/products/${product.id}`);
     }
   };
 
@@ -86,60 +79,57 @@ const ProductCard = ({
         });
       }
     }
-    if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
   };
 
   return (
-    <>
-      <Card sx={{ height: '100%' }}>
-        <CardMedia
-          component="img"
-          height="175px"
-          image={product.image}
-          onClick={handleInfo}
-          sx={!onSelect ? { cursor: 'pointer' } : {}}
-        />
-        <CardContent
-          sx={
-            !onSelect
-              ? { cursor: 'pointer', height: '120px' }
-              : { height: '120px' }
-          }
-          onClick={handleInfo}
+    <Card sx={{ height: '100%' }}>
+      <CardMedia
+        component="img"
+        height="175px"
+        image={product.image}
+        onClick={handleInfo}
+        sx={!onSelect ? { cursor: 'pointer' } : {}}
+      />
+      <CardContent
+        sx={
+          !onSelect
+            ? { cursor: 'pointer', height: '120px' }
+            : { height: '120px' }
+        }
+        onClick={handleInfo}
+      >
+        <Typography gutterBottom variant="h5" component="div" align="center">
+          {product.name}
+        </Typography>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          align="center"
+          my={1}
         >
-          <Typography gutterBottom variant="h5" component="div" align="center">
-            {product.name}
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            align="center"
-            my={1}
-          >
-            {product?.available} units
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            align="center"
-            fontWeight="bold"
-          >
-            € {product.price}/{product?.baseUnit}
-          </Typography>
-        </CardContent>
-        {date >= from && date <= to && !profile?.blockedAt ? (
-          <CardActions sx={{ display: !profile && 'none' }}>
-            <Box marginLeft="auto" padding="0.5rem">
-              <IconButton onClick={() => handleSelect(product)}>
-                <AddIcon />
-              </IconButton>
-            </Box>
-          </CardActions>
-        ) : (
-          ''
-        )}
-      </Card>
-    </>
+          {product?.available} units
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="center"
+          fontWeight="bold"
+        >
+          € {product.price}/{product?.baseUnit}
+        </Typography>
+      </CardContent>
+      {date >= from && date <= to && !profile?.blockedAt ? (
+        <CardActions sx={{ display: !profile && 'none' }}>
+          <Box marginLeft="auto" padding="0.5rem">
+            <IconButton onClick={() => handleSelect(product)}>
+              <AddIcon />
+            </IconButton>
+          </Box>
+        </CardActions>
+      ) : (
+        ''
+      )}
+    </Card>
   );
 };
 
@@ -150,7 +140,6 @@ export const ProductsByFarmer = ({
   search,
   queryParams,
   setSearchParams,
-  setBalanceWarning,
 }: {
   farmer?: string;
   filter?: string;
@@ -159,7 +148,6 @@ export const ProductsByFarmer = ({
   handleDelete?: () => void;
   queryParams?: URLSearchParams;
   setSearchParams?: (params: any) => void;
-  setBalanceWarning?: (bol: boolean) => void;
 }) => {
   const { data: date } = useDate();
   const { data: products } = useProducts();
@@ -201,7 +189,7 @@ export const ProductsByFarmer = ({
     }
   };
 
-  if (!products?.length) {
+  if (products && !products.length) {
     return <EmptyState type="error" hint="There are no products available" />;
   }
 
@@ -243,16 +231,13 @@ export const ProductsByFarmer = ({
               </Alert>
             </Collapse>
           </Stack>
-        ) : (
-          ''
-        )}
+        ) : null}
         <Grid item xs={12} md={3}>
           <Autocomplete
             sx={{ width: '100%' }}
             multiple
-            id="tags-outlined"
             value={farmers.filter(
-              f => farmer && farmer.split('-').indexOf(String(f.id)) >= 0,
+              f => farmer && farmer.split(',').indexOf(String(f.id)) >= 0,
             )}
             options={farmers}
             getOptionLabel={(option: User) =>
@@ -267,7 +252,7 @@ export const ProductsByFarmer = ({
                     .map(u => {
                       return String((u as User).id);
                     })
-                    .join('-')
+                    .join(',')
                     .toString(),
                 });
               } else {
@@ -288,7 +273,6 @@ export const ProductsByFarmer = ({
         <Grid item xs={12} md={3}>
           <TextField
             sx={{ width: '100%' }}
-            id="outlined-select-sort"
             select
             value={sortOption}
             size="small"
@@ -302,7 +286,6 @@ export const ProductsByFarmer = ({
             ))}
           </TextField>
         </Grid>
-        <Grid item xs={12} md={6}></Grid>
       </Grid>
       {farmers
         ?.filter(
@@ -328,69 +311,33 @@ export const ProductsByFarmer = ({
           );
         })
         .map(f => (
-          <>
-            <Grid
-              borderRadius="16px"
-              spacing="2rem"
-              margin="1rem"
+          <Fragment key={f.id}>
+            <Box
               width="auto"
+              borderRadius="16px"
               sx={{
-                backgroundColor: 'white',
+                backgroundColor: '#f5f5f5',
+                mt: 4,
+                mb: 6,
               }}
             >
-              <Grid
-                container
-                direction="row"
-                margin="0"
-                width="100%"
-                spacing={2}
+              <Box
                 sx={{
+                  width: '100%',
                   backgroundImage: `url(${f.companyImage})`,
                   backgroundRepeat: 'no-repeat',
-                  backgroundSize: '100%',
-                  backgroundPositionY: '50%',
+                  backgroundSize: 'cover',
+                  backgroundPosition: '50%',
                   borderTopLeftRadius: '16px',
                   borderTopRightRadius: '16px',
+                  boxShadow: 'inset 0 0 0 2000px rgba(0,0,0,0.5)',
+                  boxSizing: 'border-box',
+                  p: 4,
+                  pb: 8,
                 }}
               >
-                <Paper
-                  sx={{
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    width: '100%',
-                    padding: '2rem',
-                    borderTopLeftRadius: '16px',
-                    borderTopRightRadius: '16px',
-                    borderBottomLeftRadius: '0px',
-                    borderBottomRightRadius: '0px',
-                  }}
-                >
-                  <Grid
-                    container
-                    direction="row"
-                    justifyContent="end"
-                    alignContent="center"
-                    xs={12}
-                    sm={12}
-                  >
-                    <Typography
-                      gutterBottom
-                      variant="h6"
-                      component="div"
-                      display="inline"
-                      fontSize="1rem"
-                      color="white"
-                      marginBottom={0}
-                      alignSelf="center"
-                      justifySelf="center"
-                    >
-                      {f?.name + ' ' + f?.surname}
-                    </Typography>
-                    <Avatar
-                      src={f?.avatar}
-                      sx={{ boxShadow: 2, right: 0, ml: 1 }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={8}>
+                <Grid container direction="row" alignItems="start">
+                  <Grid item flexGrow={1}>
                     <Typography
                       align="left"
                       fontWeight="bold"
@@ -402,9 +349,7 @@ export const ProductsByFarmer = ({
                     >
                       {f?.companyName}
                     </Typography>
-                  </Grid>
 
-                  <Grid item xs={12} sm={12}>
                     <Typography
                       align="left"
                       gutterBottom
@@ -416,8 +361,34 @@ export const ProductsByFarmer = ({
                       {f?.address?.province}
                     </Typography>
                   </Grid>
-                </Paper>
-              </Grid>
+                  <Grid item>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        display="inline"
+                        fontSize="1rem"
+                        color="white"
+                        marginBottom={0}
+                        alignSelf="center"
+                        justifySelf="center"
+                      >
+                        {f?.name + ' ' + f?.surname}
+                      </Typography>
+                      <Avatar
+                        src={f?.avatar}
+                        sx={{ boxShadow: 2, right: 0, ml: 1 }}
+                      />
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
               <Grid
                 container
                 display="grid"
@@ -435,14 +406,13 @@ export const ProductsByFarmer = ({
                   ?.filter(p => filter === '' || p.category.slug === filter)
                   ?.sort((a, b) => sortProducts(a, b))
                   .map(p => (
-                    <>
+                    <Fragment key={p.id}>
                       {date >= from && date <= to ? (
                         <Grid item>
                           <ProductCard
                             key={p.id}
                             product={p}
                             onSelect={onSelect}
-                            setBalanceWarning={setBalanceWarning}
                           />
                         </Grid>
                       ) : (
@@ -451,15 +421,14 @@ export const ProductsByFarmer = ({
                             key={p.id}
                             product={p}
                             onSelect={onSelect}
-                            setBalanceWarning={setBalanceWarning}
                           />
                         </Grid>
                       )}
-                    </>
+                    </Fragment>
                   ))}
               </Grid>
-            </Grid>
-          </>
+            </Box>
+          </Fragment>
         ))}
     </>
   );

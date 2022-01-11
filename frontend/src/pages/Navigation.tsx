@@ -104,7 +104,7 @@ export const NavTabs = () => {
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
       <Tabs value={value} variant="scrollable" scrollButtons="auto">
-        <LinkTab slug="all" label="all" />
+        <LinkTab slug="all" label="All" />
         {categories?.map(c => (
           <LinkTab key={c.id} label={c.name} slug={c.slug} />
         ))}
@@ -145,14 +145,9 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 export interface NavBarProps {
   handleSearch?: (search: string) => void;
   onProducts?: boolean;
-  balanceWarning?: boolean;
 }
 
-export const NavBar = ({
-  handleSearch,
-  onProducts,
-  balanceWarning,
-}: NavBarProps) => {
+export const NavBar = ({ handleSearch, onProducts }: NavBarProps) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] =
@@ -531,7 +526,7 @@ export const NavBar = ({
           setShowBasket(false);
         }}
       >
-        <Box>
+        <Box height="100%" sx={{ display: 'flex', flexDirection: 'column' }}>
           <Grid container direction="row" spacing={1}>
             <Grid item xs={1}>
               <IconButton
@@ -554,10 +549,7 @@ export const NavBar = ({
               </Typography>
             </Grid>
           </Grid>
-          <Basket
-            balanceWarning={balanceWarning}
-            setShowBasket={setShowBasket}
-          />
+          <Basket setShowBasket={setShowBasket} />
         </Box>
       </Drawer>
     </>

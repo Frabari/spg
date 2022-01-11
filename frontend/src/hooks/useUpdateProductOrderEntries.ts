@@ -4,6 +4,7 @@ import {
   ProductId,
   updateProductOrderEntries,
 } from '../api/BasilApi';
+import { STOCK_QUERY } from './useStock';
 
 export const useUpdateProductOrderEntries = () => {
   const client = useQueryClient();
@@ -12,7 +13,7 @@ export const useUpdateProductOrderEntries = () => {
       updateProductOrderEntries(productId, dto),
     {
       onSuccess() {
-        return client.invalidateQueries('stock');
+        return client.invalidateQueries(STOCK_QUERY);
       },
     },
   );

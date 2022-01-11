@@ -3,7 +3,6 @@ import { Notification } from '../api/BasilApi';
 
 const { useGlobalState } = createGlobalState({
   notifications: [] as Notification[],
-  newNotification: null as Partial<Notification>,
 });
 
 export { useGlobalState };
