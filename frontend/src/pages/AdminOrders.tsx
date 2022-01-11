@@ -31,6 +31,7 @@ import { AdminAppBar } from '../components/AdminAppBar';
 import { orderStatuses } from '../constants';
 import { useDate } from '../hooks/useDate';
 import { useOrders } from '../hooks/useOrders';
+import { a11yProps } from '../utils';
 import { DeliveryOption } from './Checkout';
 
 const statusFilters = [
@@ -120,13 +121,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
   },
 }));
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
 
 export const AdminOrders = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();

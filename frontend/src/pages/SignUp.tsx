@@ -23,7 +23,7 @@ import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 import { useUpsertUser } from '../hooks/useUpsertUser';
 
-function OutlinedCard() {
+const OutlinedCard = () => {
   const [passwordCheck, setPasswordCheck] = useState('');
   const { pending } = usePendingState();
   const { upsertUser } = useUpsertUser();
@@ -38,7 +38,7 @@ function OutlinedCard() {
     } as Partial<User>,
     onSubmit: (values: Partial<User>, { setErrors }) => {
       upsertUser(values)
-        .then(u => {
+        .then(() => {
           toast.success(`Welcome ${values.name}!`);
           navigate('/login');
         })
@@ -248,9 +248,9 @@ function OutlinedCard() {
       </CardActions>
     </Card>
   );
-}
+};
 
-export default function SignUp() {
+export const SignUp = () => {
   const { data: profile, isLoading, error } = useProfile();
 
   if (profile && !isLoading && !error) {
@@ -299,4 +299,4 @@ export default function SignUp() {
       </Grid>
     </Grid>
   );
-}
+};

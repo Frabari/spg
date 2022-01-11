@@ -25,7 +25,7 @@ import { useLogin } from '../hooks/useLogin';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 
-function OutlinedCard() {
+const OutlinedCard = () => {
   const [show, setShow] = useState(false);
   const { pending } = usePendingState();
   const { mutateAsync: login } = useLogin();
@@ -171,9 +171,9 @@ function OutlinedCard() {
       </CardActions>
     </Card>
   );
-}
+};
 
-export default function Login(props: any) {
+export const Login = () => {
   const { data: profile } = useProfile();
 
   if (profile) {
@@ -222,4 +222,4 @@ export default function Login(props: any) {
       </Grid>
     </Grid>
   );
-}
+};

@@ -31,7 +31,7 @@ const Img = styled('img')({
   maxHeight: '100%',
 });
 
-export default function ProductInfo(props: any) {
+export const ProductInfo = () => {
   const [counter, setCounter] = useState(1);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -76,7 +76,7 @@ export default function ProductInfo(props: any) {
         `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
       );
     } else {
-      upsertEntry(product, counter).then(o => {
+      upsertEntry(product, counter).then(() => {
         toast.success(`${product.name} successfully added!`);
         navigate('/products');
       });
@@ -306,4 +306,4 @@ export default function ProductInfo(props: any) {
       </Container>
     )
   );
-}
+};

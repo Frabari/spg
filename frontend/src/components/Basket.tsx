@@ -20,7 +20,7 @@ import { Product } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
-function ProductCard(props: any) {
+const ProductCard = (props: any) => {
   const { upsertEntry, deleteEntry } = useUpdateBasket();
 
   const handleDeleteEntry = (product: Product) => {
@@ -125,9 +125,9 @@ function ProductCard(props: any) {
       </Card>
     </Grid>
   );
-}
+};
 
-export default function Basket({
+export const Basket = ({
   balanceWarning,
   setShowBasket,
 }: {
@@ -135,7 +135,7 @@ export default function Basket({
   search?: string;
   balanceWarning?: boolean;
   setShowBasket?: any;
-}) {
+}) => {
   const { data: basket } = useBasket();
 
   return (
@@ -262,4 +262,4 @@ export default function Basket({
       )}
     </>
   );
-}
+};

@@ -39,6 +39,7 @@ import { useProfile } from '../hooks/useProfile';
 import { useStock } from '../hooks/useStock';
 import { useUpdateProductOrderEntries } from '../hooks/useUpdateProductOrderEntries';
 import { useUsers } from '../hooks/useUsers';
+import { a11yProps } from '../utils';
 
 const columns: {
   key: keyof Product;
@@ -124,27 +125,12 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const Description = styled(Box)({
-  whiteSpace: 'nowrap',
-  textOverflow: 'ellipsis',
-  overflow: 'hidden',
-  maxWidth: 300,
-});
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
   profile: User;
 }) => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const [dto, setDto] = useState<Partial<User>>(profile as User);
   const { data: items } = useStock();
   const { mutateAsync: updateProductOrderEntries } =
     useUpdateProductOrderEntries();
@@ -166,10 +152,6 @@ export const AdminProducts = (props: {
       }
     }
   }, [items, sorting]);
-
-  useEffect(() => {
-    setDto(profile as User);
-  }, [profile]);
 
   const toggleSorting = (byKey: keyof Product) => () => {
     const { by, dir } = sorting;
@@ -311,7 +293,7 @@ export const AdminProducts = (props: {
   const showDeliveredEntriesAction =
     profile &&
     inSupplyDeliveryWindow &&
-    [(Role.MANAGER, Role.WAREHOUSE_MANAGER)].includes(profile.role);
+    [Role.MANAGER, Role.WAREHOUSE_MANAGER].includes(profile.role);
 
   return (
     <>

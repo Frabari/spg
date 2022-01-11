@@ -20,7 +20,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
-function ProductCard({
+const ProductCard = ({
   product,
   setBalanceWarning,
   onSelect,
@@ -28,7 +28,7 @@ function ProductCard({
   product?: Product;
   setBalanceWarning?: (bol: boolean) => void;
   onSelect: (product: Product) => void;
-}) {
+}) => {
   const { data: basket } = useBasket();
   const { upsertEntry } = useUpdateBasket();
   const { data: profile } = useProfile();
@@ -133,13 +133,13 @@ function ProductCard({
       </Card>
     </>
   );
-}
+};
 
-export default function ProductsGrid({
+export const ProductsGrid = ({
   onSelect,
 }: {
   onSelect: (product: Product) => void;
-}) {
+}) => {
   const { data: date } = useDate();
   const { data: farmers } = useFarmers();
 
@@ -282,4 +282,4 @@ export default function ProductsGrid({
         ))}
     </>
   );
-}
+};

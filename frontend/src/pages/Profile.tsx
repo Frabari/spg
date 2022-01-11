@@ -27,7 +27,7 @@ import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateProfile } from '../hooks/useUpdateProfile';
 
-export default function Profile(props: { handleDrawerToggle: () => void }) {
+export const Profile = (props: { handleDrawerToggle: () => void }) => {
   const { data: profile } = useProfile();
   const { mutate: updateProfile } = useUpdateProfile();
   const { pending } = usePendingState();
@@ -514,4 +514,4 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
       </Box>
     </>
   );
-}
+};

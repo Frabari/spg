@@ -30,7 +30,7 @@ import { useProfile } from '../hooks/useProfile';
 import { useUpdateBasket } from '../hooks/useUpdateBasket';
 import { EmptyState } from './EmptyState';
 
-function ProductCard({
+const ProductCard = ({
   product,
   setBalanceWarning,
   onSelect,
@@ -38,7 +38,7 @@ function ProductCard({
   product?: Product;
   setBalanceWarning?: (bol: boolean) => void;
   onSelect: (product: Product) => void;
-}) {
+}) => {
   const { data: basket } = useBasket();
   const { upsertEntry } = useUpdateBasket();
   const { data: profile } = useProfile();
@@ -77,7 +77,7 @@ function ProductCard({
       if (onSelect) {
         onSelect(product);
       } else {
-        upsertEntry(product, 1).then(o => {
+        upsertEntry(product, 1).then(() => {
           enqueueNotification({
             type: NotificationType.SUCCESS,
             title: product.name + ' successfully added!',
@@ -141,9 +141,9 @@ function ProductCard({
       </Card>
     </>
   );
-}
+};
 
-export default function ProductsByFarmer({
+export const ProductsByFarmer = ({
   farmer,
   filter,
   onSelect,
@@ -160,18 +160,19 @@ export default function ProductsByFarmer({
   queryParams?: URLSearchParams;
   setSearchParams?: (params: any) => void;
   setBalanceWarning?: (bol: boolean) => void;
-}) {
-  const { data: products } = useProducts();
+}) => {
   const { data: date } = useDate();
-
+  const { data: products } = useProducts();
+  const { data: farmers } = useFarmers();
   const [sortOption, setSortOption] = useState('');
+  const [open, setOpen] = useState(true);
+
   const sort = [
     'Highest price',
     'Lowest price',
     'Ascending name',
     'Descending name',
   ];
-
   const from = date.set({
     weekday: 6,
     hour: 9,
@@ -199,10 +200,6 @@ export default function ProductsByFarmer({
         else return 1;
     }
   };
-
-  const [open, setOpen] = useState(true);
-
-  const { data: farmers } = useFarmers();
 
   if (!products?.length) {
     return <EmptyState type="error" hint="There are no products available" />;
@@ -466,4 +463,4 @@ export default function ProductsByFarmer({
         ))}
     </>
   );
-}
+};

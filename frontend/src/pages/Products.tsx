@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { ArrowBack } from '@mui/icons-material';
 import { Box, Container, Grid, IconButton, Typography } from '@mui/material';
-import ProductsByFarmer from '../components/ProductsByFarmer';
+import { ProductsByFarmer } from '../components/ProductsByFarmer';
 import { useCategories } from '../hooks/useCategories';
-import NavigationBox from './Navigation';
-import ProductInfo from './ProductInfo';
+import { NavBar } from './Navigation';
+import { ProductInfo } from './ProductInfo';
 
 const Footer = () => {
   return (
@@ -43,9 +43,9 @@ const Footer = () => {
   );
 };
 
-export default function Products() {
+export const Products = () => {
   const { data: categories } = useCategories();
-  const [category, setCategory] = useState(0);
+  const [category] = useState(0);
   const [search, setSearch] = useState('');
   const [queryParams, setSearchParams] = useSearchParams();
   const [balanceWarning, setBalanceWarning] = useState(false);
@@ -56,15 +56,10 @@ export default function Products() {
 
   return (
     <>
-      <NavigationBox.NavBar
-        loggedIn={1}
-        products={true}
+      <NavBar
         handleSearch={handleSearch}
-        farmer={queryParams.get('farmer')}
-        setSearchParams={setSearchParams}
         balanceWarning={balanceWarning}
         onProducts={true}
-        setCategory={setCategory}
       />
       <Routes>
         <Route
@@ -82,7 +77,7 @@ export default function Products() {
                   {category !== 0 && (
                     <Grid item>
                       <IconButton component={Link} to={`/products`}>
-                        <ArrowBackIcon />
+                        <ArrowBack />
                       </IconButton>
                     </Grid>
                   )}
@@ -122,4 +117,4 @@ export default function Products() {
       </Routes>
     </>
   );
-}
+};
