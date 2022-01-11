@@ -1,7 +1,14 @@
 import { Exclude, Expose } from 'class-transformer';
 import { Allow, IsBoolean, IsInt, IsString, IsUrl, Min } from 'class-validator';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
+import { OrderEntry } from '../../orders/entities/order-entry.entity';
 import { User } from '../../users/entities/user.entity';
 import { ADMINS, Role, STAFF } from '../../users/roles.enum';
 
@@ -97,4 +104,8 @@ export class Product {
   @Expose()
   @IsString()
   image: string;
+
+  @OneToMany(() => OrderEntry, orderEntry => orderEntry.product)
+  @Expose()
+  orderEntries: OrderEntry[];
 }

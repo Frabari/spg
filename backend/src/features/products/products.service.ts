@@ -56,7 +56,7 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     );
   }
 
-  async checkProduct(dto: CreateProductDto, user: User) {
+  async validateCreateProductDto(dto: CreateProductDto, user: User) {
     if (user.role === Role.FARMER) {
       dto.farmer = user;
       dto.public = false;
@@ -74,7 +74,11 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     return dto;
   }
 
-  async checkProductsUpdate(id: ProductId, dto: UpdateProductDto, user: User) {
+  async validateUpdateProductDto(
+    id: ProductId,
+    dto: UpdateProductDto,
+    user: User,
+  ) {
     const product = await this.productsRepository.findOne(id, {
       relations: ['farmer'],
     });
@@ -173,5 +177,43 @@ export class ProductsService extends TypeOrmCrudService<Product> {
     }
 
     return dto;
+  }
+
+  getAllStockProducts(user) {
+    if (user.role === Role.FARMER) {
+      return this.productsRepository.find({
+        where: {
+          farmer: user.id,
+        },
+        relations: ['farmer', 'category'],
+      });
+    } else
+      return this.productsRepository.find({
+        relations: ['farmer', 'category'],
+      });
+  }
+
+  async getSingleStockProduct(user, id) {
+    if (user.role === Role.FARMER) {
+      const product = await this.productsRepository.findOne({
+        where: {
+          farmer: user.id,
+          id: id,
+        },
+        relations: ['farmer', 'category'],
+      });
+      if (!product) {
+        throw new BadRequestException({
+          constraints: {
+            reserved: 'Cannot retrieve this product',
+          },
+        });
+      } else {
+        return product;
+      }
+    } else
+      return this.productsRepository.findOne(id, {
+        relations: ['farmer', 'category'],
+      });
   }
 }

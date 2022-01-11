@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import {
   Link,
   Navigate,
@@ -25,16 +25,16 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import { logout, Role, User } from '../api/BasilApi';
+import { User } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
 import { Logo } from '../components/Logo';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { drawerWidth } from '../constants';
-import { usePendingState } from '../hooks/usePendingState';
+import { useLogout } from '../hooks/useLogout';
 import { useProfile } from '../hooks/useProfile';
 import { CustomerOrder } from './CustomerOrder';
 import { CustomerOrders } from './CustomerOrders';
-import Profile from './Profile';
+import { Profile } from './Profile';
 
 const pages = [
   {
@@ -51,8 +51,8 @@ const pages = [
 
 export const Customer = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { profile, load } = useProfile();
-  const { pending, setPending } = usePendingState();
+  const { data: profile } = useProfile();
+  const { mutateAsync: logout } = useLogout();
   const [queryParams] = useSearchParams();
   const isMobile = useMediaQuery('(max-width:760px)');
   const handleDrawerToggle = () => {
@@ -64,8 +64,6 @@ export const Customer = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      setPending(true);
-      load();
     } catch (e) {
       toast.error((e as ApiException).message);
     }
@@ -74,7 +72,7 @@ export const Customer = () => {
   const drawer = (
     <div>
       <Toolbar>
-        <IconButton href="/" sx={{ p: 0 }}>
+        <IconButton href="/products" sx={{ p: 0 }}>
           <Logo />
         </IconButton>
         <Typography variant="h6" component="h1" marginLeft="10px">
@@ -113,17 +111,13 @@ export const Customer = () => {
     </div>
   );
 
-  if (typeof profile === 'object' && profile.role === Role.CUSTOMER) {
-    return <Navigate to="/products" />;
-  }
-
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <CssBaseline />
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="Customer pages"
+        aria-label="Admin pages"
       >
         <Drawer
           variant="temporary"

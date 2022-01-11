@@ -2,10 +2,13 @@ import { MouseEvent, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFormik } from 'formik';
-import { Save } from '@mui/icons-material';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import {
+  AddCircleOutlined,
+  ArrowBack,
+  Save,
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -18,12 +21,13 @@ import {
   OutlinedInput,
   Paper,
   Typography,
+  Avatar,
 } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
 import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { usePendingState } from '../hooks/usePendingState';
-import { useTransaction } from '../hooks/useTransaction';
+import { useUpsertTransaction } from '../hooks/useUpsertTransaction';
+import { useUpsertUser } from '../hooks/useUpsertUser';
 import { useUser } from '../hooks/useUser';
 import { Balance } from './Balance';
 
@@ -31,10 +35,11 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
   const id = idParam === 'new' ? null : +idParam;
-  const { user, upsertUser, load } = useUser(id);
+  const { data: user } = useUser(id);
+  const { upsertUser } = useUpsertUser();
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
-  const { upsertTransaction } = useTransaction();
+  const { upsertTransaction } = useUpsertTransaction();
   const { pending } = usePendingState();
   const form = useFormik({
     initialValues: {
@@ -88,7 +93,6 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
         amount,
       })
         .then(() => {
-          load();
           toast.success(`Wallet updated`);
           navigate(`/admin/users/${user?.id}`);
           setOpen(false);
@@ -104,6 +108,9 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
+        <IconButton onClick={() => navigate('/admin/users')}>
+          <ArrowBack />
+        </IconButton>
         <Balance open={open} setOpen={setOpen} user={user} change={change} />
         <Typography
           variant="h6"
@@ -120,7 +127,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
           sx={{ display: { xs: 'flex', md: 'none' } }}
           className="save-icon-button"
           onClick={form.submitForm}
-          disabled={pending}
+          disabled={!!pending}
         >
           <Save />
         </IconButton>
@@ -131,7 +138,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
           }}
           variant="contained"
           onClick={form.submitForm}
-          disabled={pending}
+          disabled={!!pending}
           startIcon={<Save />}
         >
           <Typography display="inline" sx={{ textTransform: 'none' }}>
@@ -170,7 +177,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.name}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="name">Name</InputLabel>
                   <OutlinedInput
@@ -189,7 +196,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.surname}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="surname">Surname</InputLabel>
                   <OutlinedInput
@@ -208,7 +215,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.email}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="email">Email</InputLabel>
                   <OutlinedInput
@@ -227,7 +234,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.password}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="password">Password</InputLabel>
                   <OutlinedInput
@@ -258,7 +265,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.avatar}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="avatar">Avatar</InputLabel>
                   <OutlinedInput
@@ -272,36 +279,59 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                   <FormHelperText>{form.errors?.avatar}</FormHelperText>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                sx={{ display: user ? 'block' : 'none' }}
+              >
                 <FormControl
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.balance}
-                  disabled={pending}
+                  disabled={!!pending}
                 >
                   <InputLabel htmlFor="balance">Balance</InputLabel>
                   <OutlinedInput
-                    disabled
                     label="Balance"
                     value={(user as User)?.balance ?? ''}
                     readOnly={true}
                     startAdornment={
-                      <InputAdornment position="start"> € </InputAdornment>
+                      <InputAdornment position="start">€</InputAdornment>
                     }
                     endAdornment={
                       <InputAdornment position="end">
                         <IconButton
                           aria-label="manage profile wallet"
-                          color="success"
                           edge="end"
                           onClick={() => setOpen(true)}
                         >
-                          <AccountBalanceWalletIcon />
+                          <AddCircleOutlined />
                         </IconButton>
                       </InputAdornment>
                     }
                   />
                   <FormHelperText>{form.errors?.balance}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  error={!!form.errors?.phoneNumber}
+                  disabled={!!pending}
+                >
+                  <InputLabel htmlFor="phoneNumber">PhoneNumber</InputLabel>
+                  <OutlinedInput
+                    id="phonenumber"
+                    type="text"
+                    onChange={form.handleChange}
+                    value={form.values.phoneNumber ?? ''}
+                    label="PhoneNumber"
+                    name="phoneNumber"
+                  />
+                  <FormHelperText>{form.errors?.phoneNumber}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -327,7 +357,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.address}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Address</InputLabel>
                       <OutlinedInput
@@ -348,7 +378,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.zipCode}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Zip Code</InputLabel>
                       <OutlinedInput
@@ -369,7 +399,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.city}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">City</InputLabel>
                       <OutlinedInput
@@ -390,7 +420,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.province}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Province</InputLabel>
                       <OutlinedInput
@@ -411,7 +441,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                       variant="outlined"
                       fullWidth
                       error={!!form.errors?.address?.region}
-                      disabled={pending}
+                      disabled={!!pending}
                     >
                       <InputLabel htmlFor="address">Region</InputLabel>
                       <OutlinedInput

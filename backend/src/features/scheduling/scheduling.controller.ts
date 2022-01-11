@@ -10,11 +10,11 @@ export class SchedulingController {
 
   @Get('date')
   getDate() {
-    return this.schedulingService.getDate();
+    return { date: this.schedulingService.getDate() };
   }
 
   @Patch('date')
-  setDate(@Body() dto: SetDateDto) {
-    return this.schedulingService.setDate(dto.date);
+  async setDate(@Body() dto: SetDateDto) {
+    return { date: await this.schedulingService.setDate(dto.date) };
   }
 }

@@ -4,13 +4,15 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import { Order } from '../api/BasilApi';
 import { useOrder } from '../hooks/useOrder';
 import { useOrders } from '../hooks/useOrders';
+import { useUpsertOrder } from '../hooks/useUpsertOrder';
+import { wrapper } from './wrapper';
 
 test('create order', async () => {
   const order: Partial<Order> = {
     deliveryLocation: { city: 'Turin' },
   };
 
-  const { result } = renderHook(() => useOrder());
+  const { result } = renderHook(() => useUpsertOrder(), { wrapper });
   await act(async () =>
     expect(
       ((await result.current.upsertOrder(order)) as Order).deliveryLocation
@@ -24,7 +26,7 @@ test('update order', async () => {
     id: 30,
     deliveryLocation: { city: 'Milan' },
   };
-  const { result } = renderHook(() => useOrder(30));
+  const { result } = renderHook(() => useUpsertOrder(), { wrapper });
   await act(async () =>
     expect(
       ((await result.current.upsertOrder(order)) as Order).deliveryLocation
@@ -34,15 +36,15 @@ test('update order', async () => {
 });
 
 test('get order', async () => {
-  const { result } = renderHook(() => useOrder(30));
+  const { result } = renderHook(() => useOrder(30), { wrapper });
   await waitFor(() => {
-    expect(result.current.order.deliveryLocation.city).toEqual('Milan');
+    expect(result.current.data.deliveryLocation.city).toEqual('Milan');
   });
 });
 
 test('get orders', async () => {
-  const { result } = renderHook(() => useOrders());
+  const { result } = renderHook(() => useOrders(), { wrapper });
   await waitFor(() =>
-    expect(result.current.orders.find(o => o.id === 1).user.id).toEqual(30),
+    expect(result.current.data.find(o => o.id === 1).user.id).toEqual(30),
   );
 });

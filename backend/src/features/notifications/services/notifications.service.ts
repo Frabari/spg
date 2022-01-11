@@ -1,15 +1,22 @@
 import { FindConditions, Repository } from 'typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserId } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
+import { User, UserId } from '../../users/entities/user.entity';
+import { UsersService } from '../../users/users.service';
 import {
   Notification,
   NotificationPriority,
   NotificationType,
-} from './entities/notification.entity';
-import { NotificationsGateway } from './notifications.gateway';
+} from '../entities/notification.entity';
+import { NotificationsGateway } from '../notifications.gateway';
+import { SendgridService } from './sendgrid.service';
+import { TelegramService } from './telegram.service';
+
+const emojis = {
+  [NotificationType.SUCCESS]: '\u{2705}',
+  [NotificationType.ERROR]: '\u{274C}',
+  [NotificationType.INFO]: '\u{2139}',
+};
 
 @Injectable()
 export class NotificationsService {
@@ -18,10 +25,12 @@ export class NotificationsService {
   constructor(
     @InjectRepository(Notification)
     private readonly notificationsRepository: Repository<Notification>,
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     @Inject(forwardRef(() => NotificationsGateway))
     private readonly notificationsGateway: NotificationsGateway,
-    private readonly mailerService: MailerService,
+    private readonly sendgridService: SendgridService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   activateUser(id: UserId) {
@@ -53,17 +62,26 @@ export class NotificationsService {
     if (!('priority' in notification)) {
       notification.priority = NotificationPriority.INFO;
     }
-    this.notificationsGateway.server
-      ?.in(loggedUsers.map(u => u.id.toString()))
-      .emit('notification', notification);
+    loggedUsers.forEach(u =>
+      this.notificationsGateway.server
+        ?.in(u.id.toString())
+        .emit('notification', notification),
+    );
     notification.deliveredTo = users;
     if (notification.priority === NotificationPriority.CRITICAL) {
       users?.forEach(u => {
-        this.mailerService.sendMail({
+        this.sendgridService.send({
+          from: 'basilthestore@gmail.com',
           to: u.email,
           subject: `New ${notification.type} notification from Basil`,
           text: notification.title + '\n\n' + notification.message,
         });
+        this.telegramService.send(
+          `${emojis[notification.type]} *${notification.title}* \n${
+            notification.message
+          } `,
+          u,
+        );
       });
     }
     if (notification.persistent) {

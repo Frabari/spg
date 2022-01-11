@@ -1,44 +1,38 @@
-import { useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import moment from 'moment';
 import AddIcon from '@mui/icons-material/Add';
 import {
+  Avatar,
   Box,
   Card,
   CardActions,
   CardContent,
   CardMedia,
-  Chip,
   Grid,
   IconButton,
-  MenuItem,
-  TextField,
+  Paper,
   Typography,
 } from '@mui/material';
-import { Product, User } from '../api/BasilApi';
+import { NotificationType, Product, User } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
-import { useProducts } from '../hooks/useProducts';
+import { useDate } from '../hooks/useDate';
+import { useFarmers } from '../hooks/useFarmers';
+import { useNotifications } from '../hooks/useNotifications';
 import { useProfile } from '../hooks/useProfile';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
-const { DateTime } = require('luxon');
-
-function ProductCard({
+const ProductCard = ({
   product,
-  setBalanceWarning,
-  setBasketListener,
   onSelect,
 }: {
   product?: Product;
-  setBalanceWarning?: (bol: boolean) => void;
-  setBasketListener?: (bol: boolean) => void;
   onSelect: (product: Product) => void;
-}) {
-  const { basket, upsertEntry } = useBasket();
-  const { profile } = useProfile();
+}) => {
+  const { data: basket } = useBasket();
+  const { upsertEntry } = useUpdateBasket();
+  const { data: profile } = useProfile();
   const navigate = useNavigate();
-
-  if (setBalanceWarning) setBalanceWarning(basket?.insufficientBalance);
+  const { data: date } = useDate();
+  const { enqueueNotification } = useNotifications();
 
   const handleInfo = () => {
     if (!onSelect) {
@@ -48,30 +42,42 @@ function ProductCard({
     }
   };
 
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
+
   const handleSelect = (product: Product) => {
-    if (
-      DateTime.now() >= moment().day('saturday').hour(9) ||
-      DateTime.now() <= moment().day('sunday').hour(23).minutes(0)
-    ) {
+    if (date < from || date > to) {
+      enqueueNotification({
+        type: NotificationType.ERROR,
+        title:
+          'You can add products to the basket only from Saturday 9am to Sunday 23pm',
+        message:
+          'You can add products to the basket only from Saturday 9am to Sunday 23pm',
+      });
+    } else {
       if (onSelect) {
         onSelect(product);
       } else {
-        upsertEntry(product, 1).then(o => {
-          setBasketListener(true);
-          toast.success(`${product.name} successfully added!`);
+        upsertEntry(product, 1).then(() => {
+          enqueueNotification({
+            type: NotificationType.SUCCESS,
+            title: product.name + ' successfully added!',
+            message: '',
+          });
         });
       }
-    } else {
-      toast.error(
-        `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
-      );
     }
-    if (setBalanceWarning) setBalanceWarning(basket.insufficientBalance);
   };
 
   return (
-    <Grid item lg={3} md={4} sm={6} xs={12} height={'425px'}>
-      <Card sx={{ height: '100%' }}>
+    <>
+      <Card sx={{ height: '350px' }}>
         <CardMedia
           component="img"
           height="175px"
@@ -104,143 +110,170 @@ function ProductCard({
             align="center"
             fontWeight="bold"
           >
-            € {product.price}/unit
+            € {product.price}/{product.baseUnit}
           </Typography>
         </CardContent>
-        <CardActions sx={{ display: !profile && 'none' }}>
-          <Box marginLeft="auto" padding="0.5rem">
-            <IconButton onClick={() => handleSelect(product)}>
-              <AddIcon />
-            </IconButton>
-          </Box>
-        </CardActions>
+        {date >= from && date <= to ? (
+          <CardActions sx={{ display: !profile && 'none' }}>
+            <Box marginLeft="auto" padding="0.5rem">
+              <IconButton onClick={() => handleSelect(product)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+          </CardActions>
+        ) : (
+          ''
+        )}
       </Card>
-    </Grid>
+    </>
   );
-}
+};
 
-export default function ProductsGrid({
-  farmer,
-  filter,
+export const ProductsGrid = ({
   onSelect,
-  search,
-  handleDelete,
-  setBalanceWarning,
-  basketListener,
-  setBasketListener,
 }: {
-  farmer?: User;
-  filter?: string;
-  search?: string;
   onSelect: (product: Product) => void;
-  handleDelete?: () => void;
-  setBalanceWarning?: (bol: boolean) => void;
-  basketListener?: boolean;
-  setBasketListener?: (bol: boolean) => void;
-}) {
-  const { products, loadProducts } = useProducts();
+}) => {
+  const { data: date } = useDate();
+  const { data: farmers } = useFarmers();
 
-  const [sortOption, setSortOption] = useState('');
-  const sort = [
-    'Highest price',
-    'Lowest price',
-    'Ascending name',
-    'Descending name',
-  ];
-
-  useEffect(() => {
-    if (basketListener) {
-      loadProducts();
-      setBasketListener(false);
-    }
-  }, [basketListener]);
-
-  const handleChange = (s: string) => {
-    setSortOption(s);
-  };
-
-  const sortProducts = (a: Product, b: Product) => {
-    switch (sortOption) {
-      case 'Lowest price':
-        return a.price - b.price;
-      case 'Highest price':
-        return b.price - a.price;
-      case 'Ascending name':
-        if (a.name < b.name) return -1;
-        else return 1;
-      case 'Descending name':
-        if (b.name < a.name) return -1;
-        else return 1;
-    }
-  };
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
 
   return (
     <>
-      <Grid container direction="row">
-        <Grid item xs={12} sm={11}>
-          {farmer && (
-            <Chip
-              sx={{ m: 2 }}
-              onDelete={handleDelete}
-              variant="outlined"
-              label={`Product by ${farmer.name} ${farmer.surname}`}
-            />
-          )}
-        </Grid>
-        <Grid item xs={12} sm={1} display={onSelect ? 'none' : 'block'}>
-          <TextField
-            id="outlined-select-sort"
-            select
-            value={sortOption}
-            size="small"
-            label="Sort by"
-            sx={{
-              width: '200px',
-              float: { xs: 'left', sm: 'right' },
-              mr: 2,
-              ml: 2,
-            }}
-            onChange={e => handleChange(e.target.value)}
-          >
-            {sort.map(option => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      </Grid>
-      <Grid
-        container
-        direction="row"
-        spacing="2rem"
-        padding="1rem"
-        alignItems="center"
-        justifyItems="center"
-        width="auto"
-      >
-        {products
-          ?.filter(p => !filter || p.category.slug === filter)
-          ?.filter(
-            p => !search || p.name.toLowerCase().includes(search.toLowerCase()),
-          )
-          ?.filter(
-            p =>
-              !farmer ||
-              p.farmer.email.toLowerCase() === farmer.email.toLowerCase(),
-          )
-          ?.filter(p => p.available > 0)
-          ?.sort((a, b) => sortProducts(a, b))
-          .map(p => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              onSelect={onSelect}
-              setBalanceWarning={setBalanceWarning}
-              setBasketListener={setBasketListener}
-            />
-          ))}
-      </Grid>
+      {farmers
+        ?.filter(f => f.products.filter(p => p.available > 0).length > 0)
+        ?.map((f: User) => (
+          <>
+            <Grid
+              borderRadius="16px"
+              spacing="2rem"
+              margin="1rem"
+              width="auto"
+              sx={{ backgroundColor: '#fafafa' }}
+            >
+              <Grid
+                container
+                direction="row"
+                margin="0"
+                width="100%"
+                spacing={2}
+                sx={{
+                  backgroundImage: `url(${f.companyImage})`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '100%',
+                  backgroundPositionY: '50%',
+                  borderTopLeftRadius: '16px',
+                  borderTopRightRadius: '16px',
+                }}
+              >
+                <Paper
+                  sx={{
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    width: '100%',
+                    padding: '2rem',
+                    borderTopLeftRadius: '16px',
+                    borderTopRightRadius: '16px',
+                    borderBottomLeftRadius: '0px',
+                    borderBottomRightRadius: '0px',
+                  }}
+                >
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="end"
+                    alignContent="center"
+                    xs={12}
+                    sm={12}
+                  >
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      display="inline"
+                      fontSize="1rem"
+                      color="white"
+                      alignSelf="center"
+                      justifySelf="center"
+                      marginBottom={0}
+                    >
+                      {f.name + ' ' + f.surname}
+                    </Typography>
+                    <Avatar
+                      src={f.avatar}
+                      sx={{ boxShadow: 2, right: 0, ml: 1 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={8}>
+                    <Typography
+                      align="left"
+                      fontWeight="bold"
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      fontSize="1.5rem"
+                      color="white"
+                    >
+                      {f?.companyName}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={12}>
+                    <Typography
+                      align="left"
+                      gutterBottom
+                      component="div"
+                      fontSize="9"
+                      color="white"
+                    >
+                      {f?.address?.address}, {f?.address?.city},{' '}
+                      {f?.address?.province}
+                    </Typography>
+                  </Grid>
+                </Paper>
+              </Grid>
+
+              <Grid
+                container
+                display="grid"
+                gap={2.5}
+                gridTemplateColumns="repeat(auto-fill, minmax(10rem, 1fr))"
+                padding="1rem"
+              >
+                {f.products
+                  ?.filter(p => p.available > 0)
+                  ?.map(p => (
+                    <>
+                      {date >= from && date <= to ? (
+                        <Grid item>
+                          <ProductCard
+                            key={p.id}
+                            product={p}
+                            onSelect={onSelect}
+                          />
+                        </Grid>
+                      ) : (
+                        <Grid item>
+                          <ProductCard
+                            key={p.id}
+                            product={p}
+                            onSelect={onSelect}
+                          />
+                        </Grid>
+                      )}
+                    </>
+                  ))}
+              </Grid>
+            </Grid>
+          </>
+        ))}
     </>
   );
-}
+};

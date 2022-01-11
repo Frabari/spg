@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import moment from 'moment';
-import { Add } from '@mui/icons-material';
+import { Add, Check, MoveToInbox } from '@mui/icons-material';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Alert,
@@ -10,9 +10,11 @@ import {
   Grid,
   IconButton,
   InputBase,
+  Menu,
   MenuItem,
+  Tab,
   TableSortLabel,
-  TextField,
+  Tabs,
   Typography,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
@@ -23,14 +25,22 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import { Product, Role, User } from '../api/BasilApi';
+import {
+  OrderEntryStatus,
+  Product,
+  Role,
+  User,
+  StockItem,
+} from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { Search } from '../components/Search';
 import { useCategories } from '../hooks/useCategories';
-import { useProducts } from '../hooks/useProducts';
+import { useDate } from '../hooks/useDate';
 import { useProfile } from '../hooks/useProfile';
+import { useStock } from '../hooks/useStock';
+import { useUpdateProductOrderEntries } from '../hooks/useUpdateProductOrderEntries';
 import { useUsers } from '../hooks/useUsers';
-
-const { DateTime } = require('luxon');
+import { a11yProps } from '../utils';
 
 const columns: {
   key: keyof Product;
@@ -76,22 +86,6 @@ const columns: {
   },
 ];
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: '16px',
-  backgroundColor: '#ffffff',
-  '&:hover': {
-    backgroundColor: '#f7f7f7',
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
 const SearchIconWrapper = styled('div')(({ theme }) => ({
   padding: theme.spacing(0, 2),
   height: '100%',
@@ -116,45 +110,33 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const Description = styled(Box)({
-  whiteSpace: 'nowrap',
-  textOverflow: 'ellipsis',
-  overflow: 'hidden',
-  maxWidth: 300,
-});
-
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
   profile: User;
 }) => {
   const navigate = useNavigate();
-  const { profile } = useProfile();
-  const [dto, setDto] = useState<Partial<User>>(profile as User);
-  const { products } = useProducts(true);
-  const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
+  const { data: profile } = useProfile();
+  const { data: items } = useStock();
+  const { mutateAsync: updateProductOrderEntries } =
+    useUpdateProductOrderEntries();
+  const [sortedProducts, setSortedProducts] = useState<StockItem[]>([]);
   const [sorting, setSorting] = useState<{
     by: keyof Product;
     dir: 'asc' | 'desc';
   }>({ by: null, dir: 'asc' });
 
   useEffect(() => {
-    if (products?.length) {
+    if (items?.length) {
       const { by, dir } = sorting;
       if (by != null) {
         const mul = dir === 'asc' ? -1 : 1;
-        const sorted = [...products].sort((a, b) =>
-          a[by] < b[by] ? mul : -mul,
-        );
+        const sorted = [...items].sort((a, b) => (a[by] < b[by] ? mul : -mul));
         setSortedProducts(sorted);
       } else {
-        setSortedProducts(products);
+        setSortedProducts(items);
       }
     }
-  }, [products, sorting]);
-
-  useEffect(() => {
-    setDto(profile as User);
-  }, [profile]);
+  }, [items, sorting]);
 
   const toggleSorting = (byKey: keyof Product) => () => {
     const { by, dir } = sorting;
@@ -166,15 +148,11 @@ export const AdminProducts = (props: {
 
   const handleChange = (value: any) => {
     setSortedProducts(
-      products.filter(
+      items.filter(
         p =>
-          p.name.toLocaleLowerCase().includes(value.toLocaleLowerCase()) ||
-          p.category.name
-            .toLocaleLowerCase()
-            .includes(value.toLocaleLowerCase()) ||
-          p.category.slug
-            .toLocaleLowerCase()
-            .includes(value.toLocaleLowerCase()),
+          p.name.toLowerCase().includes(value.toLowerCase()) ||
+          p.category.name.toLowerCase().includes(value.toLowerCase()) ||
+          p.category.slug.toLowerCase().includes(value.toLowerCase()),
       ),
     );
   };
@@ -183,8 +161,39 @@ export const AdminProducts = (props: {
     farmer: 'all',
   });
   const [farmers, setFarmers] = useState(null);
-  const { users } = useUsers();
-  const sort = useCategories();
+  const { data: users } = useUsers();
+  const { data: categories } = useCategories();
+  const { data: date } = useDate();
+
+  const [value, setValue] = React.useState(0);
+
+  const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
+
+  // category column filter
+  const [categoryAnchorEl, categorySetAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const openCategory = Boolean(categoryAnchorEl);
+  const categoryHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    categorySetAnchorEl(event.currentTarget);
+  };
+  const categoryHandleClose = () => {
+    categorySetAnchorEl(null);
+  };
+
+  // farmer column filter
+  const [farmerAnchorEl, farmerSetAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const openFarmer = Boolean(farmerAnchorEl);
+  const farmerHandleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    farmerSetAnchorEl(event.currentTarget);
+  };
+  const farmerHandleClose = () => {
+    farmerSetAnchorEl(null);
+  };
 
   useEffect(() => {
     if (users) {
@@ -192,11 +201,19 @@ export const AdminProducts = (props: {
     }
   }, [users]);
 
+  const handleStatusSearchParams = () => {
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      status: OrderEntryStatus.CONFIRMED,
+    });
+  };
+
   const handleCategorySearchParams = (category: string) => {
     setSearchParams({
       ...Object.fromEntries(searchParams.entries()),
       category: category,
     });
+    categoryHandleClose();
   };
 
   const handleFarmerSearchParams = (f: string) => {
@@ -212,7 +229,56 @@ export const AdminProducts = (props: {
         farmer: farmer.name + ' ' + farmer.surname,
       });
     }
+    farmerHandleClose();
   };
+
+  const fromAvailability = date.set({
+    weekday: 1,
+    hour: 18,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const toAvailability = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+
+  const fromReserved =
+    date.weekday === 1 && date.hour <= 9
+      ? date
+          .set({
+            weekday: 7,
+            hour: 23,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          })
+          .minus({ weeks: 1 })
+      : date.set({
+          weekday: 7,
+          hour: 23,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        });
+  const toReserved = fromReserved.plus({ hours: 10 });
+  const supplyDeliveryDeadline = toReserved.plus({ hours: 33 });
+  const inPreSalesWindow = date >= fromAvailability && date <= toAvailability;
+  const inConfirmationWindow = date >= fromReserved && date <= toReserved;
+  const inSupplyDeliveryWindow =
+    date >= toReserved && date <= supplyDeliveryDeadline;
+  const showConfirmEntriesAction =
+    profile &&
+    inConfirmationWindow &&
+    [Role.MANAGER, Role.FARMER].includes(profile.role);
+  const showDeliveredEntriesAction =
+    profile &&
+    inSupplyDeliveryWindow &&
+    [Role.MANAGER, Role.WAREHOUSE_MANAGER].includes(profile.role);
 
   return (
     <>
@@ -227,7 +293,7 @@ export const AdminProducts = (props: {
         >
           Products
         </Typography>
-        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
+        <Search sx={{ ml: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -252,12 +318,40 @@ export const AdminProducts = (props: {
           href="/admin/products/new"
           startIcon={<Add />}
         >
-          <Typography display="inline" sx={{ textTransform: 'none' }}>
+          <Typography display="inline" fontWeight="bold">
             Create product
           </Typography>
         </Button>
       </AdminAppBar>
-      <Box sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1 }}>
+      <Box
+        sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
+      >
+        <Box sx={{ borderBottom: 'none', borderColor: 'divider' }}>
+          <Tabs
+            value={value}
+            onChange={handleChangeTab}
+            aria-label="basic tabs example"
+            variant="scrollable"
+          >
+            <Tab
+              label="Show all"
+              {...a11yProps(0)}
+              onClick={() =>
+                setSearchParams({
+                  category: 'all',
+                  filter: 'all',
+                  status: 'all',
+                })
+              }
+            />
+            <Tab
+              label="Show products to be delivered"
+              {...a11yProps(1)}
+              onClick={() => handleStatusSearchParams()}
+            />
+          </Tabs>
+        </Box>
+
         <TableContainer
           component={Paper}
           sx={{ width: '100%', height: '100%' }}
@@ -270,9 +364,14 @@ export const AdminProducts = (props: {
                     <TableCell
                       key={c.key}
                       sortDirection={sorting.by === c.key ? sorting.dir : false}
-                      sx={{ width: c.width }}
                     >
-                      <Grid container direction="column" spacing={1}>
+                      <Grid
+                        container
+                        direction="row"
+                        spacing={1}
+                        justifyItems="center"
+                        alignItems="center"
+                      >
                         <Grid item>
                           {c.sortable ? (
                             <TableSortLabel
@@ -289,44 +388,59 @@ export const AdminProducts = (props: {
                           )}
                         </Grid>
                         <Grid item>
-                          {c.key === 'farmer' ? (
-                            <TextField
-                              id="outlined-select-farmer"
-                              select
-                              value={searchParams.get('farmer')}
-                              label="Filter by farmer"
-                              size="small"
-                              sx={{ width: '175px' }}
-                              onChange={e =>
-                                handleFarmerSearchParams(e.target.value)
-                              }
-                            >
-                              <MenuItem key="all" value="all">
-                                {'All'}
-                              </MenuItem>
-                              {farmers?.map((option: User) => (
-                                <MenuItem key={option.id} value={option.email}>
-                                  {option.name} {option.surname}
+                          {c.key === 'farmer' && (
+                            <>
+                              <IconButton onClick={farmerHandleClick}>
+                                <FilterAltIcon />
+                              </IconButton>
+                              <Menu
+                                id="farmer-menu"
+                                anchorEl={farmerAnchorEl}
+                                open={openFarmer}
+                                onClose={farmerHandleClose}
+                                MenuListProps={{
+                                  'aria-labelledby': 'basic-button',
+                                }}
+                              >
+                                <MenuItem
+                                  key="all"
+                                  value="all"
+                                  onClick={() =>
+                                    handleFarmerSearchParams('all')
+                                  }
+                                >
+                                  {'All'}
                                 </MenuItem>
-                              ))}
-                            </TextField>
-                          ) : (
-                            <></>
+                                {farmers?.map((option: User) => (
+                                  <MenuItem
+                                    key={option.id}
+                                    value={option.email}
+                                    onClick={() =>
+                                      handleFarmerSearchParams(option.email)
+                                    }
+                                  >
+                                    {option.name} {option.surname}
+                                  </MenuItem>
+                                ))}
+                              </Menu>
+                            </>
                           )}
                         </Grid>
                       </Grid>
                     </TableCell>
-                  ) : (c.key === 'farmer' && props.profile.role === 'farmer') ||
-                    (c.key === 'description' &&
-                      props.profile.role === 'warehouse_manager') ? (
-                    <></>
-                  ) : (
+                  ) : c.key === 'description' ? null : c.key === 'farmer' &&
+                    props.profile.role === 'farmer' ? null : (
                     <TableCell
                       key={c.key}
                       sortDirection={sorting.by === c.key ? sorting.dir : false}
-                      sx={{ width: c.width }}
                     >
-                      <Grid container direction="column" spacing={1}>
+                      <Grid
+                        container
+                        direction="row"
+                        spacing={1}
+                        justifyItems="center"
+                        alignItems="center"
+                      >
                         <Grid item>
                           {c.sortable ? (
                             <TableSortLabel
@@ -343,29 +457,42 @@ export const AdminProducts = (props: {
                           )}
                         </Grid>
                         <Grid item>
-                          {c.key === 'category' ? (
-                            <TextField
-                              id="outlined-select-category"
-                              select
-                              value={searchParams.get('category')}
-                              label="Filter by category"
-                              size="small"
-                              sx={{ width: '175px' }}
-                              onChange={e =>
-                                handleCategorySearchParams(e.target.value)
-                              }
-                            >
-                              <MenuItem key="all" value="all">
-                                All
-                              </MenuItem>
-                              {sort.categories.map(option => (
-                                <MenuItem key={option.id} value={option.slug}>
-                                  {option.name}
+                          {c.key === 'category' && (
+                            <>
+                              <IconButton onClick={categoryHandleClick}>
+                                <FilterAltIcon />
+                              </IconButton>
+                              <Menu
+                                id="category-menu"
+                                anchorEl={categoryAnchorEl}
+                                open={openCategory}
+                                onClose={categoryHandleClose}
+                                MenuListProps={{
+                                  'aria-labelledby': 'basic-button',
+                                }}
+                              >
+                                <MenuItem
+                                  key="all"
+                                  value="all"
+                                  onClick={() =>
+                                    handleCategorySearchParams('all')
+                                  }
+                                >
+                                  All
                                 </MenuItem>
-                              ))}
-                            </TextField>
-                          ) : (
-                            <></>
+                                {categories.map(option => (
+                                  <MenuItem
+                                    key={option.id}
+                                    value={option.slug}
+                                    onClick={() =>
+                                      handleCategorySearchParams(option.slug)
+                                    }
+                                  >
+                                    {option.name}
+                                  </MenuItem>
+                                ))}
+                              </Menu>
+                            </>
                           )}
                         </Grid>
                       </Grid>
@@ -373,15 +500,11 @@ export const AdminProducts = (props: {
                   ),
                 )}
                 {props.profile.role === 'farmer' ? (
-                  <TableCell>{'Notes'}</TableCell>
+                  <TableCell>Notes</TableCell>
                 ) : (
                   <></>
                 )}
-                {props.profile.role === 'warehouse_manager' ? (
-                  <TableCell>{'Actions'}</TableCell>
-                ) : (
-                  <></>
-                )}
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -399,6 +522,13 @@ export const AdminProducts = (props: {
                     p.farmer.name + ' ' + p.farmer.surname ===
                       searchParams.get('farmer'),
                 )
+                ?.filter(
+                  p =>
+                    !searchParams.get('status') ||
+                    searchParams.get('status') === 'all' ||
+                    //  @ts-ignore
+                    p.productEntryStatus === searchParams.get('status'),
+                )
                 ?.map(product => (
                   <TableRow
                     hover
@@ -407,15 +537,18 @@ export const AdminProducts = (props: {
                       '&:last-child td, &:last-child th': { border: 0 },
                       cursor: 'pointer',
                     }}
-                    onClick={() => navigate(`/admin/products/${product.id}`)}
+                    onClick={ev => {
+                      ev.preventDefault();
+                      navigate(`/admin/products/${product.id}`);
+                    }}
                   >
-                    <TableCell sx={{ py: 0 }}>
+                    <TableCell sx={{ py: 0, pt: 1 }}>
                       <img
                         src={product.image}
                         alt={product.name}
                         style={{
-                          width: 50,
-                          height: 50,
+                          width: 40,
+                          height: 40,
                           borderRadius: '50%',
                           objectFit: 'cover',
                         }}
@@ -429,37 +562,76 @@ export const AdminProducts = (props: {
                     >
                       {product.name}
                     </TableCell>
-                    {!(props.profile.role === 'warehouse_manager') && (
-                      <TableCell sx={{ pr: 0 }}>
-                        <Description>{product.description}</Description>
-                      </TableCell>
-                    )}
                     <TableCell>{product.price}</TableCell>
                     <TableCell>{product.category.name}</TableCell>
                     {props.profile.role === 'farmer' ? (
-                      <>
-                        <TableCell>
-                          {product.available === 0 &&
-                            DateTime.now() >= moment().day('sunday').hour(23) &&
-                            DateTime.now() <=
-                              moment().day('monday').hour(9).minutes(0) && (
-                              <Alert severity="warning">
-                                {'Remember to update the availability field'}
-                              </Alert>
-                            )}
-                        </TableCell>
-                      </>
+                      <TableCell width={300} padding="none">
+                        {product.available === 0 && inPreSalesWindow && (
+                          <Alert severity="warning" sx={{ py: 0.5 }}>
+                            Availability not provided
+                          </Alert>
+                        )}
+                        {inConfirmationWindow && (
+                          <Alert severity="warning" sx={{ py: 0.5 }}>
+                            Bookings pending confirmation
+                          </Alert>
+                        )}
+                      </TableCell>
                     ) : (
                       <>
                         <TableCell>
                           {product.farmer.name + ' ' + product.farmer.surname}
                         </TableCell>
-
-                        {props.profile.role === 'warehouse_manager' && (
-                          <TableCell>azioni da implementare</TableCell>
-                        )}
                       </>
                     )}
+                    <TableCell>
+                      {showConfirmEntriesAction &&
+                        product.orderEntries?.some(
+                          e => e.status !== OrderEntryStatus.CONFIRMED,
+                        ) && (
+                          <Button
+                            type="submit"
+                            onClick={ev => {
+                              ev.preventDefault();
+                              ev.stopPropagation();
+                              updateProductOrderEntries({
+                                productId: product.id,
+                                dto: {
+                                  status: OrderEntryStatus.CONFIRMED,
+                                },
+                              });
+                            }}
+                            startIcon={<Check />}
+                            color="info"
+                            variant="text"
+                          >
+                            Confirm entries
+                          </Button>
+                        )}
+                      {showDeliveredEntriesAction &&
+                        product.orderEntries?.some(
+                          e => e.status !== OrderEntryStatus.DELIVERED,
+                        ) && (
+                          <Button
+                            type="submit"
+                            onClick={ev => {
+                              ev.preventDefault();
+                              ev.stopPropagation();
+                              updateProductOrderEntries({
+                                productId: product.id,
+                                dto: {
+                                  status: OrderEntryStatus.DELIVERED,
+                                },
+                              });
+                            }}
+                            startIcon={<MoveToInbox />}
+                            color="info"
+                            variant="text"
+                          >
+                            Mark as delivered
+                          </Button>
+                        )}
+                    </TableCell>
                   </TableRow>
                 ))}
             </TableBody>

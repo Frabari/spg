@@ -18,12 +18,13 @@ import {
 } from '@mui/material';
 import { Product } from '../api/BasilApi';
 import { useBasket } from '../hooks/useBasket';
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
-function ProductCard(props: any) {
-  const { upsertEntry, deleteEntry, basket } = useBasket();
+const ProductCard = (props: any) => {
+  const { upsertEntry, deleteEntry } = useUpdateBasket();
 
   const handleDeleteEntry = (product: Product) => {
-    if (basket?.entries.length === 1) props.setShowBasket(false);
+    props.setShowBasket(false);
     deleteEntry(product);
   };
 
@@ -96,16 +97,22 @@ function ProductCard(props: any) {
                     <IconButton
                       disabled={props.quantity === 1}
                       onClick={() => upsertEntry(props.product, -1)}
+                      sx={{ mr: '8px' }}
                     >
                       <RemoveIcon />
                     </IconButton>
-                    <Typography variant="body2" display="inline">
+                    <Typography
+                      variant="body2"
+                      display="inline"
+                      alignSelf="center"
+                      textAlign="center"
+                    >
                       {props.quantity}
                     </Typography>
                     <IconButton
                       disabled={props.product.available === 0}
                       onClick={() => upsertEntry(props.product, 1)}
-                      sx={{ pl: 0 }}
+                      sx={{ ml: 0 }}
                     >
                       <AddIcon />
                     </IconButton>
@@ -118,36 +125,23 @@ function ProductCard(props: any) {
       </Card>
     </Grid>
   );
-}
+};
 
-export default function Basket({
-  filter,
-  search,
-  balanceWarning,
+export const Basket = ({
   setShowBasket,
 }: {
   filter?: string;
   search?: string;
-  balanceWarning?: boolean;
   setShowBasket?: any;
-}) {
-  const { basket } = useBasket();
+}) => {
+  const { data: basket } = useBasket();
 
   return (
-    <>
+    <Box position="relative" sx={{ flexGrow: 1 }}>
       {basket?.entries?.length !== 0 ? (
-        <>
-          <Grid
-            container
-            direction="column"
-            spacing="1rem"
-            paddingY="0.5rem"
-            paddingX="1rem"
-            alignItems="center"
-            justifyItems="center"
-            width="auto"
-          >
-            {balanceWarning && (
+        <Box maxHeight="80vh" sx={{ overflowY: 'auto' }}>
+          <Grid container sx={{ p: 2 }} direction="column" gap={2}>
+            {basket?.insufficientBalance && (
               <Alert severity="warning">
                 <AlertTitle>Warning</AlertTitle>
                 Insufficient balance — <strong>top it up!</strong>
@@ -163,17 +157,27 @@ export default function Basket({
                   price={e.product.price}
                   description={e.product.description}
                   product={e.product}
-                  balanceWarning={balanceWarning}
                   quantity={e.quantity}
                   setShowBasket={setShowBasket}
                 />
               ))}
           </Grid>
-          <Grid container direction="row" alignItems="center" spacing={2}>
+          <Grid
+            container
+            direction="row"
+            alignItems="center"
+            spacing={2}
+            sx={{
+              background: 'white',
+              position: 'absolute',
+              left: 0,
+              bottom: 0,
+              right: 0,
+            }}
+          >
             <Grid item xs={6}>
               <Box
                 sx={{
-                  float: 'left',
                   alignItems: 'center',
                   justifyItems: 'center',
                   m: 3,
@@ -199,46 +203,25 @@ export default function Basket({
                   mb={0}
                   ml={2}
                 >
-                  € {basket.total}
+                  € {basket?.total}
                 </Typography>
               </Box>
             </Grid>
             <Grid item xs={6}>
-              {balanceWarning ? (
-                <Button
-                  disabled
-                  component={Link}
-                  to={'/checkout'}
-                  variant="contained"
-                  sx={{ m: 3, ml: 0, float: 'right' }}
-                  endIcon={<ArrowForwardIcon />}
-                >
-                  Check out
-                </Button>
-              ) : (
-                <Button
-                  component={Link}
-                  to={'/checkout'}
-                  variant="contained"
-                  sx={{ m: 3, ml: 0, float: 'right' }}
-                  endIcon={<ArrowForwardIcon />}
-                >
-                  Check out
-                </Button>
-              )}
+              <Button
+                component={Link}
+                to={'/checkout'}
+                variant="contained"
+                sx={{ m: 3, ml: 0, float: 'right' }}
+                endIcon={<ArrowForwardIcon />}
+              >
+                Check out
+              </Button>
             </Grid>
           </Grid>
-        </>
+        </Box>
       ) : (
-        <Grid
-          container
-          direction="column"
-          paddingY="1rem"
-          alignItems="center"
-          justifyItems="center"
-          width="auto"
-          spacing={0}
-        >
+        <Grid container direction="column" p={2}>
           <Box
             component="img"
             sx={{
@@ -253,13 +236,13 @@ export default function Basket({
             fontSize="24px"
             marginTop="0px"
           >
-            {'YOUR BAG IS EMPTY'}
+            Your basket is empty
           </Typography>
           <Typography textAlign="center" variant="h6" fontSize="18px">
-            {'add some products'}
+            Add some products
           </Typography>
         </Grid>
       )}
-    </>
+    </Box>
   );
-}
+};

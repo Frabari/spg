@@ -15,6 +15,8 @@ export const ADMINS = [
   Role.EMPLOYEE,
 ];
 
+export const PRODUCTS_STAFF = ADMINS.concat(Role.FARMER);
+
 export const STAFF = ADMINS.concat(Role.RIDER);
 
 export const ALL = Object.values(Role);

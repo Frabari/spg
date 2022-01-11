@@ -1,26 +1,28 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
-import moment from 'moment';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Avatar,
+  Alert,
   Box,
   Button,
   Container,
   Chip,
   Grid,
+  Stack,
+  Collapse,
   Typography,
   TextField,
   MenuItem,
   IconButton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { useBasket } from '../hooks/useBasket';
+import { useDate } from '../hooks/useDate';
 import { useProduct } from '../hooks/useProduct';
 import { useProfile } from '../hooks/useProfile';
-
-const { DateTime } = require('luxon');
+import { useUpdateBasket } from '../hooks/useUpdateBasket';
 
 const Img = styled('img')({
   margin: 'auto',
@@ -29,14 +31,15 @@ const Img = styled('img')({
   maxHeight: '100%',
 });
 
-export default function ProductInfo(props: any) {
+export const ProductInfo = () => {
   const [counter, setCounter] = useState(1);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { profile } = useProfile();
-  const { product } = useProduct(+id);
-  const { upsertEntry } = useBasket();
+  const { data: profile } = useProfile();
+  const { data: product } = useProduct(+id);
+  const { upsertEntry } = useUpdateBasket();
   const [ready, setReady] = useState(false);
+  const { data: date } = useDate();
 
   useEffect(() => {
     if (product?.id) {
@@ -59,24 +62,72 @@ export default function ProductInfo(props: any) {
   };
 
   const handleClick = () => {
-    if (
-      DateTime.now() >= moment().day('saturday').hour(9) &&
-      DateTime.now() <= moment().day('sunday').hour(23).minutes(0)
-    ) {
-      upsertEntry(product, counter).then(o => {
-        toast.success(`${product.name} successfully added!`);
-        navigate('/products');
-      });
-    } else {
+    const from = date.set({
+      weekday: 6,
+      hour: 9,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const to = from.plus({ hour: 38 });
+
+    if (date < from || date > to) {
       toast.error(
         `You can add products to the basket only from Saturday 9am to Sunday 23pm`,
       );
+    } else {
+      upsertEntry(product, counter).then(() => {
+        toast.success(`${product.name} successfully added!`);
+        navigate('/products');
+      });
     }
   };
+
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
+
+  const [open, setOpen] = useState(true);
 
   return (
     ready && (
       <Container sx={{ mt: 18, mb: 9 }}>
+        {date < from || date > to ? (
+          <Stack sx={{ width: '100%' }} spacing={2}>
+            <Collapse in={open}>
+              <Alert
+                severity="info"
+                action={
+                  <IconButton
+                    aria-label="close"
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      setOpen(false);
+                    }}
+                  >
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                }
+                sx={{ mb: 2 }}
+              >
+                {' Products can be purchased from '}
+                {'Saturday'} {from.day}
+                {' (9:00 am)'}
+                {' to '}
+                {'Sunday'} {to.day}
+                {' (11:00 pm)'}
+              </Alert>
+            </Collapse>
+          </Stack>
+        ) : (
+          ''
+        )}
         <Box sx={style}>
           <Grid container direction="column" spacing={2}>
             <Grid item xs={12}>
@@ -108,13 +159,13 @@ export default function ProductInfo(props: any) {
                       component="div"
                       display="inline"
                     >
-                      {product.farmer.name + ' ' + product.farmer.surname}
+                      {product?.farmer.name + ' ' + product?.farmer.surname}
                     </Typography>
                   </Typography>
                 </Grid>
                 <Grid item xs={2} sm={1}>
                   <Avatar
-                    src={product.farmer.avatar}
+                    src={product?.farmer.avatar}
                     sx={{ boxShadow: 2, right: 0 }}
                   />
                 </Grid>
@@ -129,7 +180,7 @@ export default function ProductInfo(props: any) {
                 justifyItems="center"
               >
                 <Grid item xs={4}>
-                  <Img width="800" src={product.image} />
+                  <Img width="800" src={product?.image} />
                 </Grid>
                 <Grid item xs={8}>
                   <Grid
@@ -154,7 +205,7 @@ export default function ProductInfo(props: any) {
                             fontSize={40}
                             component="div"
                           >
-                            {product.name}
+                            {product?.name}
                           </Typography>
                         </Grid>
                         <Grid item>
@@ -181,7 +232,7 @@ export default function ProductInfo(props: any) {
                         fontSize={20}
                         pr={{ xs: 2, md: 8 }}
                       >
-                        {product.description}
+                        {product?.description}
                       </Typography>
                     </Grid>
                     <Grid item>
@@ -192,7 +243,7 @@ export default function ProductInfo(props: any) {
                         display="inline"
                         fontWeight="bold"
                       >
-                        € {product.price}
+                        € {product?.price}
                       </Typography>
                       <Typography
                         align="left"
@@ -201,7 +252,7 @@ export default function ProductInfo(props: any) {
                         display="inline"
                         fontWeight="bold"
                       >
-                        /unit
+                        /{product?.baseUnit}
                       </Typography>
                     </Grid>
                     <Grid item display={!profile && 'none'}>
@@ -212,32 +263,38 @@ export default function ProductInfo(props: any) {
                         justifyItems="center"
                         alignItems="center"
                       >
-                        <Grid item xs={12} sm={4}>
-                          <TextField
-                            id="outlined-select-quantity"
-                            select
-                            label="Quantity"
-                            value={counter}
-                            onChange={e =>
-                              handleChange(parseInt(e.target.value))
-                            }
-                            helperText="Select the desired quantity"
-                          >
-                            {Array.from(
-                              { length: product.available },
-                              (v, k) => k + 1,
-                            ).map(option => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </Grid>
-                        <Grid item xs={12} sm={8} mb={5}>
-                          <Button onClick={() => handleClick()}>
-                            Add to basket
-                          </Button>
-                        </Grid>
+                        {date >= from && date <= to && !profile?.blockedAt ? (
+                          <>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                id="outlined-select-quantity"
+                                select
+                                label="Quantity"
+                                value={counter}
+                                onChange={e =>
+                                  handleChange(parseInt(e.target.value))
+                                }
+                                helperText="Select the desired quantity"
+                              >
+                                {Array.from(
+                                  { length: product?.available },
+                                  (v, k) => k + 1,
+                                ).map(option => (
+                                  <MenuItem key={option} value={option}>
+                                    {option}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                            </Grid>
+                            <Grid item xs={12} sm={8} mb={5}>
+                              <Button onClick={() => handleClick()}>
+                                Add to basket
+                              </Button>
+                            </Grid>
+                          </>
+                        ) : (
+                          ''
+                        )}
                       </Grid>
                     </Grid>
                   </Grid>
@@ -249,4 +306,4 @@ export default function ProductInfo(props: any) {
       </Container>
     )
   );
-}
+};

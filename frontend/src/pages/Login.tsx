@@ -1,4 +1,5 @@
 import { MouseEvent, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import Visibility from '@mui/icons-material/Visibility';
@@ -18,29 +19,25 @@ import {
   OutlinedInput,
   Typography,
 } from '@mui/material';
-import { login, User } from '../api/BasilApi';
+import { User } from '../api/BasilApi';
 import { Logo } from '../components/Logo';
+import { useLogin } from '../hooks/useLogin';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 
-function OutlinedCard() {
-  const { load } = useProfile();
+const OutlinedCard = () => {
   const [show, setShow] = useState(false);
-  const { pending, setPending } = usePendingState();
+  const { pending } = usePendingState();
+  const { mutateAsync: login } = useLogin();
   const form = useFormik({
     initialValues: {
       email: null,
       password: null,
     } as Partial<User>,
-    onSubmit: (values: Partial<User>, { setErrors }) =>
-      login(values.email, values.password)
-        .then(p => {
-          setPending(true);
-          load();
-        })
-        .catch(e => {
-          setErrors(e.data?.constraints);
-        }),
+    onSubmit: (values: Partial<User>) =>
+      login({ username: values.email, password: values.password }).catch(() => {
+        toast.error('Cannot login, please check your credentials');
+      }),
   });
 
   const handleClickShowPassword = () => {
@@ -61,7 +58,12 @@ function OutlinedCard() {
           maxWidth: 300,
         }}
       >
-        <Box component="form" noValidate autoComplete="off">
+        <Box
+          component="form"
+          noValidate
+          autoComplete="off"
+          onSubmit={form.handleSubmit}
+        >
           <div>
             <Typography
               variant="h5"
@@ -75,7 +77,7 @@ function OutlinedCard() {
                 <FormControl
                   sx={{ width: 250 }}
                   error={!!form.errors?.email}
-                  disabled={pending}
+                  disabled={!!pending}
                   required
                 >
                   <InputLabel htmlFor="outlined-adornment-email">
@@ -97,7 +99,7 @@ function OutlinedCard() {
                   variant="outlined"
                   fullWidth
                   error={!!form.errors?.password}
-                  disabled={pending}
+                  disabled={!!pending}
                   required
                 >
                   <InputLabel htmlFor="outlined-adornment-password">
@@ -128,6 +130,7 @@ function OutlinedCard() {
               </Grid>
             </Grid>
           </div>
+          <input type="submit" style={{ display: 'none' }} />
         </Box>
       </CardContent>
       <CardActions>
@@ -142,7 +145,7 @@ function OutlinedCard() {
             <Button
               type="submit"
               variant="contained"
-              disabled={pending}
+              disabled={!!pending}
               onClick={form.submitForm}
               sx={{ px: 3 }}
             >
@@ -168,10 +171,10 @@ function OutlinedCard() {
       </CardActions>
     </Card>
   );
-}
+};
 
-export default function Login(props: any) {
-  const { profile } = useProfile();
+export const Login = () => {
+  const { data: profile } = useProfile();
 
   if (profile) {
     return <Navigate to="/products" />;
@@ -219,4 +222,4 @@ export default function Login(props: any) {
       </Grid>
     </Grid>
   );
-}
+};

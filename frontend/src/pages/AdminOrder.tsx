@@ -1,10 +1,11 @@
+import { ADMINS } from 'backend/dist/src/features/users/roles.enum';
 import { addDays } from 'date-fns';
-import * as React from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FormikErrors, useFormik } from 'formik';
 import { Add, Save } from '@mui/icons-material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { DateTimePicker } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -12,12 +13,14 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
   Container,
   Divider,
   Drawer,
   FormControl,
   FormHelperText,
   Grid,
+  IconButton,
   InputLabel,
   List,
   ListItem,
@@ -34,92 +37,36 @@ import {
 } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import { styled } from '@mui/material/styles';
 import {
-  getUser,
   Order,
   OrderEntry,
+  OrderEntryStatus,
   OrderStatus,
   Product,
-  User,
 } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
-import ProductsGrid from '../components/ProductsGrid';
+import { ProductsGrid } from '../components/ProductsGrid';
 import { orderStatuses } from '../constants';
+import { useDate } from '../hooks/useDate';
 import { useOrder } from '../hooks/useOrder';
+import { useProfile } from '../hooks/useProfile';
+import { useUpsertOrder } from '../hooks/useUpsertOrder';
+import { useUser } from '../hooks/useUser';
 import { useUsers } from '../hooks/useUsers';
 import { DeliveryOption } from './Checkout';
 
 const statuses = Object.values(orderStatuses);
-
-const IOSSwitch = styled((props: any) => (
-  <Switch
-    focusVisibleClassName=".Mui-focusVisible"
-    defaultChecked
-    disableRipple
-    {...props}
-    onChange={p => {
-      props.setCheck(p.target.checked);
-    }}
-  />
-))(({ theme }) => ({
-  width: 42,
-  height: 26,
-  padding: 0,
-  '& .MuiSwitch-switchBase': {
-    padding: 0,
-    margin: 2,
-    transitionDuration: '300ms',
-    '&.Mui-checked': {
-      transform: 'translateX(16px)',
-      color: '#fff',
-      '& + .MuiSwitch-track': {
-        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#65C466',
-        opacity: 1,
-        border: 0,
-      },
-      '&.Mui-disabled + .MuiSwitch-track': {
-        opacity: 0.5,
-      },
-    },
-    '&.Mui-focusVisible .MuiSwitch-thumb': {
-      color: '#33cf4d',
-      border: '6px solid #fff',
-    },
-    '&.Mui-disabled .MuiSwitch-thumb': {
-      color:
-        theme.palette.mode === 'light'
-          ? theme.palette.grey[100]
-          : theme.palette.grey[600],
-    },
-    '&.Mui-disabled + .MuiSwitch-track': {
-      opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
-    },
-  },
-  '& .MuiSwitch-thumb': {
-    boxSizing: 'border-box',
-    width: 22,
-    height: 22,
-  },
-  '& .MuiSwitch-track': {
-    borderRadius: 26 / 2,
-    backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
-    opacity: 1,
-    transition: theme.transitions.create(['background-color'], {
-      duration: 500,
-    }),
-  },
-}));
 
 export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   const navigate = useNavigate();
   const { id: idParam } = useParams();
   const [check, setCheck] = useState(true);
   const id = idParam === 'new' ? null : +idParam;
-  const { order, upsertOrder, pending } = useOrder(id);
-  const { users } = useUsers();
-  const [user, setUser] = useState<User>();
-  const [date, setDate] = useState<Date | null>(new Date());
+  const { data: order, isLoading } = useOrder(id);
+  const { upsertOrder } = useUpsertOrder();
+  const { data: users } = useUsers();
+  const { data: profile } = useProfile();
+  const { data: date } = useDate();
   const [selectingProduct, setSelectingProduct] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>(
     DeliveryOption.PICKUP,
@@ -148,20 +95,17 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         });
     },
   });
+  const { data: user } = useUser(form.values?.user?.id);
 
   useEffect(() => {
-    if (form.values.user.id !== null) {
-      getUser(form.values.user.id).then(u => {
-        setUser(u);
-      });
+    if (user?.address && deliveryOption === DeliveryOption.DELIVERY) {
+      form.setFieldValue('deliveryLocation', user.address);
     }
-  }, [form.values.user.id]);
+  }, [user]);
 
   useEffect(() => {
-    if (deliveryOption === 'delivery') {
-      getUser(form.values.user.id).then(u => {
-        form.setFieldValue('deliveryLocation', u.address);
-      });
+    if (deliveryOption === 'delivery' && ADMINS.includes(profile?.role)) {
+      form.setFieldValue('deliveryLocation', user?.address);
     }
   }, [deliveryOption]);
 
@@ -201,6 +145,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
   return (
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
+        <IconButton onClick={() => navigate('/admin/orders')}>
+          <ArrowBackIcon />
+        </IconButton>
         <Typography
           variant="h6"
           noWrap
@@ -215,7 +162,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
           sx={{ minWidth: 0, px: { xs: 1, sm: 2 } }}
           type="submit"
           variant="contained"
-          disabled={pending}
+          disabled={isLoading}
           onClick={form.submitForm}
           startIcon={<Save />}
         >
@@ -248,15 +195,13 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                 <FormControl
                   sx={{ width: 250 }}
                   error={!!form.errors?.user}
-                  disabled={pending}
+                  disabled={isLoading}
                 >
-                  <InputLabel id="order-user">User</InputLabel>
                   <Select
                     labelId="order-user"
-                    label="User"
                     required
                     value={
-                      users?.length && form.values?.user
+                      users?.length && form.values?.user?.id
                         ? form.values?.user?.id
                         : ''
                     }
@@ -270,14 +215,14 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>{form.errors?.user}</FormHelperText>
+                  <FormHelperText>{form.errors?.user?.id}</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item>
                 <FormControl
                   sx={{ width: 250 }}
                   error={!!form.errors?.status}
-                  disabled={id == null || pending}
+                  disabled={id == null || isLoading}
                 >
                   <InputLabel id="order-status">Status</InputLabel>
                   <Select
@@ -316,7 +261,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                 return (
                   <Fragment key={e.product.id}>
                     <ListItem>
-                      <FormControl error={!!quantityError} disabled={pending}>
+                      <FormControl error={!!quantityError} disabled={isLoading}>
                         <TextField
                           sx={{ width: '100px', mr: 2, pb: 0 }}
                           type="number"
@@ -348,6 +293,9 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                         primary={e.product.name}
                         secondary={`€ ${e.product.price} - ${e.product.baseUnit}`}
                       />
+                      {e.status === OrderEntryStatus.DRAFT && (
+                        <Chip color="warning" label="Not confirmed" />
+                      )}
                     </ListItem>
                     <Divider />
                   </Fragment>
@@ -386,13 +334,13 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   value === DeliveryOption.PICKUP
                     ? null
                     : order?.deliveryLocation ?? {
-                        name: (user as User).name,
-                        surname: (user as User).surname,
-                        address: (user as User)?.address.address,
-                        zipCode: (user as User)?.address.zipCode,
-                        city: (user as User)?.address.city,
-                        province: (user as User)?.address.province,
-                        region: (user as User)?.address.region,
+                        name: user?.name,
+                        surname: user?.surname,
+                        address: user?.address?.address,
+                        zipCode: user?.address?.zipCode,
+                        city: user?.address?.city,
+                        province: user?.address?.province,
+                        region: user?.address?.region,
                       },
                 );
               }}
@@ -408,14 +356,11 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
               {deliveryOption === DeliveryOption.DELIVERY && (
                 <FormControlLabel
                   control={
-                    <IOSSwitch
+                    <Switch
                       sx={{ m: 1, marginLeft: 10 }}
-                      setCheck={() => {
+                      onChange={(_, check) => {
                         if (!check) {
-                          form.setFieldValue(
-                            'deliveryLocation',
-                            (user as User).address,
-                          );
+                          form.setFieldValue('deliveryLocation', user?.address);
                         } else {
                           form.setFieldValue('deliveryLocation', null);
                         }
@@ -439,7 +384,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.name}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -462,7 +407,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.surname}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -485,7 +430,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.address}
                   >
                     <InputLabel htmlFor="outlined-adornment-address">
@@ -508,7 +453,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.zipCode}
                   >
                     <InputLabel htmlFor="outlined-adornment-zipcode">
@@ -531,7 +476,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.city}
                   >
                     <InputLabel htmlFor="outlined-adornment-city">
@@ -554,7 +499,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.province}
                   >
                     <InputLabel htmlFor="outlined-adornment-province">
@@ -577,7 +522,7 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    disabled={pending}
+                    disabled={isLoading}
                     error={!!form.errors?.deliveryLocation?.region}
                   >
                     <InputLabel htmlFor="outlined-adornment-region">
@@ -608,8 +553,8 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
                   label="Delivery date and time"
                   value={form.values?.deliverAt}
                   shouldDisableDate={deliveryDay}
-                  minDate={new Date()}
-                  maxDate={addDays(new Date(), 7)}
+                  minDate={new Date(date.toISODate())}
+                  maxDate={addDays(new Date(date.toISODate()), 7)}
                   minTime={new Date(0, 0, 0, 9)}
                   maxTime={new Date(0, 0, 0, 18, 0)}
                   onChange={newValue => {
@@ -629,14 +574,34 @@ export const AdminOrder = (props: { handleDrawerToggle: () => void }) => {
         open={selectingProduct}
         onClose={() => setSelectingProduct(false)}
       >
-        <Box sx={{ width: { xs: '60vw' } }}>
-          <Typography
-            variant="h5"
-            color="primary.main"
-            sx={{ p: 3, fontWeight: 'bold' }}
+        <Box sx={{ width: { xs: '100%' } }}>
+          <Grid
+            container
+            direction="row"
+            spacing={1}
+            justifyItems="center"
+            alignItems="center"
           >
-            Select a product
-          </Typography>
+            <Grid item xs={1}>
+              <IconButton
+                sx={{ margin: 1.5, mr: 0 }}
+                onClick={() => {
+                  setSelectingProduct(false);
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </Grid>
+            <Grid item xs={11}>
+              <Typography
+                variant="h5"
+                color="primary.main"
+                sx={{ m: 3, ml: 1, fontWeight: 'bold' }}
+              >
+                Select a product
+              </Typography>
+            </Grid>
+          </Grid>
           <ProductsGrid onSelect={onProductSelected} />
         </Box>
       </Drawer>

@@ -6,6 +6,7 @@ import {
   forwardRef,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,7 +15,7 @@ import {
   NotificationPriority,
   NotificationType,
 } from '../notifications/entities/notification.entity';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsService } from '../notifications/services/notifications.service';
 import { ProductId } from '../products/entities/product.entity';
 import { ProductsService } from '../products/products.service';
 import { TransactionsService } from '../transactions/transactions.service';
@@ -34,6 +35,8 @@ const statuses = Object.values(OrderStatus);
 
 @Injectable()
 export class OrdersService extends TypeOrmCrudService<Order> {
+  private logger = new Logger(OrdersService.name);
+
   constructor(
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
@@ -54,19 +57,21 @@ export class OrdersService extends TypeOrmCrudService<Order> {
    * @param user The authenticated user
    */
   async resolveBasket(user: User) {
+    const options = {
+      relations: ['entries', 'entries.product', 'user', 'deliveryLocation'],
+    };
     const basket = await this.ordersRepository.findOne(
       {
-        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+        status: OrderStatus.DRAFT,
         user,
       },
-      {
-        relations: ['entries', 'entries.product', 'user', 'deliveryLocation'],
-      },
+      options,
     );
     if (basket) {
       return basket;
     }
-    return this.ordersRepository.save({ user });
+    const newBasket = await this.ordersRepository.save({ user });
+    return this.ordersRepository.findOne(newBasket.id, options);
   }
 
   /**
@@ -150,10 +155,13 @@ export class OrdersService extends TypeOrmCrudService<Order> {
     isBasket = false,
   ) {
     const order = await this.ordersRepository.findOne(id, {
-      relations: ['entries', 'entries.product', 'user'],
+      relations: ['entries', 'entries.product', 'user', 'entries.order'],
     });
     if (!order) {
       throw new NotFoundException('OrderNotFound', `Order ${id} not found`);
+    }
+    if (order.status === OrderStatus.LOCKED) {
+      delete dto.entries;
     }
     if (isBasket) {
       if (order.user.id !== user.id) {
@@ -189,22 +197,19 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       }
     }
 
-    if (dto.entries?.length) {
-      const now = DateTime.now();
-      const from = now.set({
-        weekday: 6,
-        hour: 9,
-        minute: 0,
-        second: 0,
-        millisecond: 0,
-      });
-      const to = from.plus({ hour: 38 });
-      if (now < from || now > to) {
-        throw new BadRequestException(
-          'Order.ReserveOutsideOfSales',
-          'Cannot add products to an order while outside the sales window',
-        );
-      }
+    const now = DateTime.now();
+    const from = now.set({
+      weekday: 6,
+      hour: 9,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const to = from.plus({ hour: 38 });
+    if (now < from || now > to) {
+      delete dto.entries;
+    }
+    if (dto.entries) {
       for (let ei = 0; ei < dto.entries.length; ei++) {
         const entry = dto.entries[ei];
         if (entry.quantity < 1) {
@@ -226,7 +231,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             constraints: {
               entries: {
                 [ei]: {
-                  status: `You cannot edit this field since you are not a manager `,
+                  status: `Only admins can mark entries as delivered`,
                 },
               },
             },
@@ -251,6 +256,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         );
         let delta = 0;
         if (existingEntry) {
+          entry.id = existingEntry.id;
           delta = entry.quantity - existingEntry.quantity;
           if (product.available - delta < 0) {
             throw new BadRequestException({
@@ -264,6 +270,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
             });
           }
         } else {
+          delete entry.id;
           if (product.available < entry.quantity) {
             throw new BadRequestException({
               constraints: {
@@ -310,6 +317,20 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
+   * Set unretrieved orders
+   */
+  async closeDeliveries() {
+    return this.ordersRepository.update(
+      {
+        status: OrderStatus.DELIVERING,
+      },
+      {
+        status: OrderStatus.UNRETRIEVED,
+      },
+    );
+  }
+
+  /**
    * Removes all the draft (unconfirmed) order entries
    */
   async removeDraftOrderEntries() {
@@ -320,16 +341,22 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       relations: ['order', 'order.user'],
     });
     const users = new Set();
-    await this.orderEntriesRepository.remove(orderEntriesDraft).then(result => {
-      result.forEach(element => {
-        users.add(element.order.user);
+    this.logger.log(
+      `Removing draft order entries ${orderEntriesDraft.map(o => o.id)}`,
+    );
+    await this.orderEntriesRepository.remove(orderEntriesDraft).then(() => {
+      orderEntriesDraft.forEach(element => {
+        if (element.order) {
+          users.add(element.order?.user);
+        }
       });
     });
+
     await this.notificationsService.sendNotification(
       {
         type: NotificationType.ERROR,
         title: 'Order modified',
-        message: `Pay attention some entries of your order are deleted`,
+        message: `Some order entries were removed from your order because the producer couldn't confirm the availability.\nPlease log in to the app to see the updated order`,
         priority: NotificationPriority.CRITICAL,
       },
       { id: In([...users].map((element: User) => element.id)) },
@@ -356,16 +383,21 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   async closeBaskets() {
     const baskets = await this.ordersRepository.find({
       where: {
-        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+        status: OrderStatus.LOCKED,
       },
       relations: ['entries', 'entries.product', 'user'],
     });
+    this.logger.log(`Closing baskets ${baskets.map(b => b.id)}`);
     for (const basket of baskets) {
       if (basket.entries?.length) {
+        this.logger.log(`Setting order #${basket.id} to PENDING_PAYMENT`);
         await this.ordersRepository.update(basket.id, {
           status: OrderStatus.PENDING_PAYMENT,
         });
       } else {
+        this.logger.log(
+          `Setting order #${basket.id} to CANCELED because it has no entries`,
+        );
         await this.ordersRepository.update(basket.id, {
           status: OrderStatus.CANCELED,
         });
@@ -414,7 +446,10 @@ export class OrdersService extends TypeOrmCrudService<Order> {
           });
         } else {
           if (cancelOnInsufficientBalance) {
-            await this.ordersRepository.update(basket, {
+            this.logger.log(
+              `Cancelling basket #${basket.id} due to insufficient balance`,
+            );
+            await this.ordersRepository.update(basket.id, {
               status: OrderStatus.CANCELED,
             });
             await this.notificationsService.sendNotification(
@@ -472,7 +507,7 @@ export class OrdersService extends TypeOrmCrudService<Order> {
   }
 
   /**
-   * Updates all order entries containing a product
+   * Updates all order entries containing the given product
    */
   async updateProductOrderEntries(
     productId: ProductId,
@@ -488,5 +523,66 @@ export class OrdersService extends TypeOrmCrudService<Order> {
         ...dto,
       })),
     );
+  }
+
+  /**
+   * Sends a notification to users who have
+   * a scheduled pickup the next day
+   */
+  async sendPickupNotifications() {
+    const orders = await this.ordersRepository.find({
+      where: {
+        status: OrderStatus.PAID,
+        deliveryLocation: null,
+      },
+      relations: ['user'],
+    });
+    if (orders?.length) {
+      for (const o of orders) {
+        if (
+          DateTime.fromJSDate(o.deliverAt).day ===
+          DateTime.now().plus({ day: 1 }).day
+        ) {
+          await this.notificationsService.sendNotification(
+            {
+              type: NotificationType.INFO,
+              priority: NotificationPriority.CRITICAL,
+              title: 'Pickup soon',
+              message: `Tomorrow at ${o.deliverAt.toLocaleTimeString()} you have a pickup scheduled`,
+            },
+            o.user,
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Sends a reminder to users whose balance is
+   * insufficient to pay an open order
+   */
+  async sendInsufficientBalanceReminders() {
+    const os = await this.ordersRepository.find({
+      where: {
+        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+      },
+      relations: ['user', 'entries'],
+    });
+    const ordersWithEntries = os.filter(
+      o =>
+        o.entries?.length > 0 &&
+        this.checkOrderBalance(o, o.user).insufficientBalance,
+    );
+    for (const o of ordersWithEntries) {
+      await this.notificationsService.sendNotification(
+        {
+          type: NotificationType.INFO,
+          priority: NotificationPriority.CRITICAL,
+          title: 'Insufficient Balance',
+          message: `Remind to top-up your wallet in order to pay your order`,
+        },
+        o.user,
+      );
+    }
   }
 }

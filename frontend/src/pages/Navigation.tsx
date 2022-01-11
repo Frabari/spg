@@ -1,7 +1,12 @@
-import * as React from 'react';
-import { Fragment, useEffect, useState } from 'react';
+import {
+  Fragment,
+  MouseEvent as ReactMouseEvent,
+  useEffect,
+  useState,
+} from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { DateTime } from 'luxon';
 import {
   Person,
   ShoppingCart,
@@ -16,6 +21,9 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SearchIcon from '@mui/icons-material/Search';
+import { DateTimePicker } from '@mui/lab';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import {
   AppBar,
   Autocomplete,
@@ -42,39 +50,47 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { logout, NotificationType, Role } from '../api/BasilApi';
+import { NotificationType, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
-import Basket from '../components/Basket';
+import { Basket } from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { useBasket } from '../hooks/useBasket';
 import { useCategories } from '../hooks/useCategories';
+import { useDate } from '../hooks/useDate';
+import { useLogout } from '../hooks/useLogout';
 import { useNotifications } from '../hooks/useNotifications';
-import { usePendingState } from '../hooks/usePendingState';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
-import { useUsers } from '../hooks/useUsers';
+import { useUpdateDate } from '../hooks/useUpdateDate';
 
 interface LinkTabProps {
   label: string;
-  slug?: string;
-  handleFilter?: any;
+  slug: string;
 }
 
-function LinkTab({ slug, label, ...rest }: LinkTabProps) {
+const LinkTab = ({ label, slug }: LinkTabProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   return (
     <Tab
-      component={Link}
-      to={`/products${slug ? `?category=${slug}` : ''}`}
       label={label}
-      {...rest}
+      onClick={() => {
+        const newParams = {
+          ...Object.fromEntries(searchParams.entries()),
+          category: slug,
+        };
+        if (slug === 'all') {
+          delete newParams.category;
+        }
+        setSearchParams(newParams);
+      }}
     />
   );
-}
+};
 
-function NavTabs() {
-  const [value, setValue] = React.useState(0);
+export const NavTabs = () => {
+  const [value, setValue] = useState(0);
   const [queryParams] = useSearchParams();
-  const { categories } = useCategories();
+  const { data: categories } = useCategories();
 
   useEffect(() => {
     const categoryIndex = categories.findIndex(
@@ -88,14 +104,14 @@ function NavTabs() {
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
       <Tabs value={value} variant="scrollable" scrollButtons="auto">
-        <LinkTab key="all" label="all" />
+        <LinkTab slug="all" label="All" />
         {categories?.map(c => (
           <LinkTab key={c.id} label={c.name} slug={c.slug} />
         ))}
       </Tabs>
     </Toolbar>
   );
-}
+};
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   color: 'inherit',
@@ -126,41 +142,33 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   },
 }));
 
-function NavBar(props: any) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [anchorElNotifications, setAnchorElNotifications] =
-    React.useState<null | HTMLElement>(null);
-  const [list, setList] = useState([]);
-  const { profile, load } = useProfile();
-  const { setPending } = usePendingState();
-  const [showBasket, setShowBasket] = React.useState(false);
+export interface NavBarProps {
+  handleSearch?: (search: string) => void;
+  onProducts?: boolean;
+}
+
+export const NavBar = ({ handleSearch, onProducts }: NavBarProps) => {
   const navigate = useNavigate();
-  const { products } = useProducts();
-  const { users } = useUsers();
-  const { basket } = useBasket();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [anchorElNotifications, setAnchorElNotifications] =
+    useState<null | HTMLElement>(null);
+  const [anchorVC, setAnchorVC] = useState<null | HTMLElement>(null);
+  const { data: profile } = useProfile();
+  const { mutateAsync: logout } = useLogout();
+  const [showBasket, setShowBasket] = useState(false);
+  const { data: products } = useProducts();
+  const { data: basket } = useBasket();
   const { notifications } = useNotifications();
+  const { data: date } = useDate();
+  const [virtualDate, setVirtualDate] = useState(date);
+  const { mutate } = useUpdateDate();
 
-  useEffect(() => {
-    const u = users
-      .filter(u => u.role === Role.FARMER)
-      .map(user => ({
-        ...user,
-        type: 'Farmers',
-      }));
-    const p = products
-      .filter(product => product.available > 0)
-      .map(product => ({
-        ...product,
-        type: 'Products',
-      }));
-    setList([...p, ...u]);
-  }, [products, users]);
-
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenu = (event: ReactMouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuNotifications = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuNotifications = (event: ReactMouseEvent<HTMLElement>) => {
+    notifications.forEach(n => (n.read = true));
     setAnchorElNotifications(event.currentTarget);
   };
 
@@ -172,29 +180,153 @@ function NavBar(props: any) {
     setAnchorElNotifications(null);
   };
 
+  const handleVC = (event: ReactMouseEvent<HTMLElement>) => {
+    setAnchorVC(event.currentTarget);
+  };
+
+  const handleCloseVC = () => {
+    setAnchorVC(null);
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
-      setPending(true);
-      load();
       navigate('/');
     } catch (e) {
       toast.error((e as ApiException).message);
     }
   };
+
+  const from = date.set({
+    weekday: 6,
+    hour: 9,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const to = from.plus({ hour: 38 });
+
   return (
     <>
       <AppBar position="fixed" sx={{ borderBottom: '1px solid #f3f4f6' }}>
         <Container>
           <Toolbar sx={{ px: '0!important' }}>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorVC}
+              keepMounted
+              PaperProps={{
+                elevation: 0,
+                sx: {
+                  overflow: 'visible',
+                  filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                  mt: 1.5,
+                  '& .MuiAvatar-root': {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                  },
+                  '&:before': {
+                    content: '""',
+                    display: 'block',
+                    position: 'absolute',
+                    top: 0,
+                    right: 14,
+                    width: 10,
+                    height: 10,
+                    bgcolor: 'background.paper',
+                    transform: 'translateY(-50%) rotate(45deg)',
+                    zIndex: 0,
+                  },
+                },
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              open={Boolean(anchorVC)}
+              onClose={handleCloseVC}
+            >
+              <MenuItem>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DateTimePicker
+                    renderInput={props => <TextField {...props} />}
+                    value={virtualDate.toJSDate()}
+                    label="Virtual clock"
+                    minDate={new Date(virtualDate.toISODate())}
+                    onChange={newDate =>
+                      setVirtualDate(DateTime.fromJSDate(newDate))
+                    }
+                  />
+                </LocalizationProvider>
+              </MenuItem>
+              <Button
+                onClick={() => (virtualDate ? mutate(virtualDate) : null)}
+                sx={{ display: 'block', mx: 'auto', mb: 2 }}
+              >
+                Set date
+              </Button>
+            </Menu>
             <IconButton onClick={() => navigate('/products')}>
               <Logo />
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ ml: 1, mr: 'auto' }}>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ ml: 1, mr: 'auto' }}
+              onClick={handleVC}
+            >
               Basil
             </Typography>
+            <Box display={onProducts ? 'block' : 'none'}>
+              <StyledAutocomplete
+                disableClearable
+                freeSolo
+                options={products ?? []}
+                getOptionLabel={(option: any) => option?.name}
+                onChange={(event, value: any) => {
+                  handleSearch(value.name);
+                }}
+                renderOption={(props, option: any) => (
+                  <Box
+                    key={option.id}
+                    component="li"
+                    sx={{
+                      '& > img': { mr: 2, flexShrink: 0 },
+                    }}
+                    {...props}
+                  >
+                    <Avatar sx={{ m: 1 }} src={option?.image} />
+                    {option?.name}
+                  </Box>
+                )}
+                autoHighlight
+                renderInput={params => (
+                  <TextField
+                    onChange={e => handleSearch(e.target.value)}
+                    placeholder="Search..."
+                    sx={{ padding: 0 }}
+                    {...params}
+                    InputProps={{
+                      ...params.InputProps,
+                      autoComplete: 'new-password',
+                      startAdornment: (
+                        <InputAdornment position="start" sx={{ marginLeft: 1 }}>
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </Box>
             {!profile ? (
-              <Box sx={{ position: 'absolute', right: 0 }}>
+              <Box
+                sx={{
+                  display: { md: 'flex' },
+                  ml: 'auto',
+                  alignItems: 'center',
+                }}
+              >
                 <Button
                   component={Link}
                   to={'/login'}
@@ -213,78 +345,6 @@ function NavBar(props: any) {
               </Box>
             ) : (
               <>
-                <Box display={props.onProducts ? 'block' : 'none'}>
-                  <StyledAutocomplete
-                    id="free-solo-2-demo"
-                    disableClearable
-                    freeSolo
-                    options={
-                      props.farmer
-                        ? list.filter(
-                            option =>
-                              option.farmer?.email === props.farmer?.email,
-                          )
-                        : list
-                    }
-                    groupBy={(option: any) => option?.type}
-                    getOptionLabel={(option: any) =>
-                      option?.type === 'Farmers'
-                        ? option?.name + ' ' + option?.surname
-                        : option?.name
-                    }
-                    onChange={(event, value: any) => {
-                      if (value.type === 'Farmers') {
-                        props.setFarmer(value);
-                      } else {
-                        props.handleSearch(value.name);
-                      }
-                    }}
-                    renderOption={(props, option: any) => (
-                      <Box
-                        key={option.id}
-                        component="li"
-                        sx={{
-                          '& > img': { mr: 2, flexShrink: 0 },
-                        }}
-                        {...props}
-                      >
-                        <Avatar
-                          sx={{ m: 1 }}
-                          src={
-                            option?.type === 'Farmers'
-                              ? option?.avatar
-                              : option?.image
-                          }
-                        />
-                        {option?.type === 'Farmers'
-                          ? option?.name + ' ' + option?.surname
-                          : option?.name}
-                      </Box>
-                    )}
-                    autoHighlight
-                    renderInput={params => (
-                      <TextField
-                        onChange={e => props.handleSearch(e.target.value)}
-                        placeholder="Search..."
-                        sx={{ padding: 0 }}
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          autoComplete: 'new-password',
-                          startAdornment: (
-                            <InputAdornment
-                              position="start"
-                              sx={{ marginLeft: 1 }}
-                            >
-                              <SearchIcon />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-
                 <Box
                   sx={{
                     display: { md: 'flex' },
@@ -349,7 +409,11 @@ function NavBar(props: any) {
                     aria-label="show notifications"
                     onClick={handleMenuNotifications}
                   >
-                    <Badge badgeContent={notifications?.length}>
+                    <Badge
+                      badgeContent={
+                        notifications.filter(n => n.read === false).length
+                      }
+                    >
                       <NotificationsIcon />
                     </Badge>
                   </IconButton>
@@ -363,6 +427,12 @@ function NavBar(props: any) {
                         overflow: 'visible',
                         filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
                         mt: 3,
+                        '& .MuiAvatar-root': {
+                          width: 32,
+                          height: 32,
+                          ml: -0.5,
+                          mr: 1,
+                        },
                         '&:before': {
                           content: '""',
                           display: 'block',
@@ -384,12 +454,11 @@ function NavBar(props: any) {
                   >
                     <List
                       sx={{
-                        width: 300,
-                        maxWidth: 360,
+                        maxWidth: 500,
                         bgcolor: 'background.paper',
                         position: 'relative',
                         overflow: 'auto',
-                        maxHeight: 200,
+                        maxHeight: 500,
                         '& ul': { padding: 0 },
                       }}
                     >
@@ -420,9 +489,7 @@ function NavBar(props: any) {
                               </ListItemIcon>
                               <ListItemText
                                 primary={n.title}
-                                secondary={
-                                  <React.Fragment>{n.message}</React.Fragment>
-                                }
+                                secondary={<Fragment>{n.message}</Fragment>}
                               />
                             </ListItem>
                             <Divider variant="inset" component="li" />
@@ -431,16 +498,20 @@ function NavBar(props: any) {
                       )}
                     </List>
                   </Menu>
-                  <IconButton
-                    sx={{ display: !profile && 'none' }}
-                    size="large"
-                    aria-label="show cart"
-                    onClick={() => setShowBasket(true)}
-                  >
-                    <Badge badgeContent={basket?.entries?.length}>
-                      <ShoppingCart />
-                    </Badge>
-                  </IconButton>
+                  {date >= from && date <= to ? (
+                    <IconButton
+                      sx={{ display: !profile && 'none' }}
+                      size="large"
+                      aria-label="show cart"
+                      onClick={() => setShowBasket(true)}
+                    >
+                      <Badge badgeContent={basket?.entries?.length}>
+                        <ShoppingCart />
+                      </Badge>
+                    </IconButton>
+                  ) : (
+                    ''
+                  )}
                   <IconButton
                     sx={{ display: !profile && 'none' }}
                     size="large"
@@ -452,7 +523,7 @@ function NavBar(props: any) {
               </>
             )}
           </Toolbar>
-          {props.products && <NavTabs {...props} />}
+          {onProducts && <NavTabs />}
         </Container>
       </AppBar>
 
@@ -462,17 +533,15 @@ function NavBar(props: any) {
         open={showBasket}
         onClose={() => {
           setShowBasket(false);
-          if (props.setBasketListener) props.setBasketListener(true);
         }}
       >
-        <Box>
+        <Box height="100%" sx={{ display: 'flex', flexDirection: 'column' }}>
           <Grid container direction="row" spacing={1}>
             <Grid item xs={1}>
               <IconButton
                 sx={{ margin: 1.5 }}
                 onClick={() => {
                   setShowBasket(false);
-                  if (props.setBasketListener) props.setBasketListener(true);
                 }}
               >
                 <ArrowBackIcon />
@@ -489,15 +558,9 @@ function NavBar(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <Basket
-            balanceWarning={props.balanceWarning}
-            setShowBasket={setShowBasket}
-          />
+          <Basket setShowBasket={setShowBasket} />
         </Box>
       </Drawer>
     </>
   );
-}
-
-const NavigationBox = { NavTabs, NavBar };
-export default NavigationBox;
+};

@@ -6,7 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { mockNotificationsService } from '../../../test/utils';
 import { CategoriesModule } from '../categories/categories.module';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsService } from '../notifications/services/notifications.service';
 import { Order, OrderStatus } from '../orders/entities/order.entity';
 import { OrdersModule } from '../orders/orders.module';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -85,11 +85,26 @@ describe('ProductsService', () => {
         price: 10,
         available: 10,
       } as CreateProductDto;
-      const result = await service.checkProduct(dto, {
+      const result = await service.validateCreateProductDto(dto, {
         id: 1,
         role: Role.FARMER,
       } as User);
       expect(result).toBeDefined();
+    });
+
+    it('should block if the role is farmer and product not contains farmer', async () => {
+      const dto = {
+        name: 'onions',
+        description: 'very good onions',
+        price: 10,
+        available: 10,
+      } as CreateProductDto;
+      return expect(
+        service.validateCreateProductDto(dto, {
+          id: 1,
+          role: Role.RIDER,
+        } as User),
+      ).rejects.toThrowError(BadRequestException);
     });
 
     it('should limit the fields for farmers', async () => {
@@ -100,7 +115,7 @@ describe('ProductsService', () => {
         available: 10,
         reserved: 5,
       } as CreateProductDto;
-      const result = await service.checkProduct(dto, {
+      const result = await service.validateCreateProductDto(dto, {
         id: 1,
         role: Role.FARMER,
       } as User);
@@ -135,7 +150,7 @@ describe('ProductsService', () => {
         available: 10,
       });
       expect(
-        await service.checkProductsUpdate(
+        await service.validateUpdateProductDto(
           product.id,
           {
             ...product,
@@ -165,7 +180,7 @@ describe('ProductsService', () => {
         available: 10,
       });
       return expect(
-        service.checkProductsUpdate(
+        service.validateUpdateProductDto(
           100,
           {
             ...product,
@@ -196,7 +211,7 @@ describe('ProductsService', () => {
         farmer: user,
       });
       return expect(
-        service.checkProductsUpdate(
+        service.validateUpdateProductDto(
           product.id,
           {
             ...product,
@@ -228,7 +243,7 @@ describe('ProductsService', () => {
         price: 10,
         farmer: user,
       });
-      const updatedProduct = await service.checkProductsUpdate(
+      const updatedProduct = await service.validateUpdateProductDto(
         product.id,
         {
           ...product,
@@ -267,7 +282,7 @@ describe('ProductsService', () => {
         farmer: user,
       });
       return expect(
-        await service.checkProductsUpdate(
+        await service.validateUpdateProductDto(
           product.id,
           {
             ...product,
@@ -306,7 +321,7 @@ describe('ProductsService', () => {
         farmer: user,
       });
       expect(
-        await service.checkProductsUpdate(
+        await service.validateUpdateProductDto(
           product.id,
           {
             ...product,
@@ -383,7 +398,7 @@ describe('ProductsService', () => {
           },
         ],
       });
-      await service.checkProductsUpdate(
+      await service.validateUpdateProductDto(
         product.id,
         {
           reserved: 12,
@@ -400,6 +415,188 @@ describe('ProductsService', () => {
         relations: ['entries'],
       });
       expect(finalOrder2.entries.length).toEqual(0);
+    });
+  });
+
+  describe('getAllStockProducts', () => {
+    it('should validate if products belong to the farmer specified', async () => {
+      const email1 = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user1 = await entityManager.save(User, {
+        email: email1,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const email2 = 'test2@example.com';
+      const user2 = await entityManager.save(User, {
+        email: email2,
+        password: await hash(password, 10),
+        name: 'Miriam',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product1 = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+        farmer: user1,
+      });
+      const product2 = await entityManager.save(Product, {
+        name: 'apples',
+        description: 'very good apples',
+        baseUnit: '1Kg',
+        price: 5,
+        available: 5,
+        farmer: user2,
+      });
+      expect(
+        (await service.getAllStockProducts(user1)).every(
+          p => p.farmer.id === user1.id,
+        ),
+      );
+    });
+
+    it('should retrieve all products belong to all farmers', async () => {
+      const email1 = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user1 = await entityManager.save(User, {
+        email: email1,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const email2 = 'test2@example.com';
+      const user2 = await entityManager.save(User, {
+        email: email2,
+        password: await hash(password, 10),
+        name: 'Miriam',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const email3 = 'test3@example.com';
+      const user3 = await entityManager.save(User, {
+        email: email3,
+        password: await hash(password, 10),
+        name: 'William',
+        surname: 'Doe',
+        role: Role.MANAGER,
+      });
+      const product1 = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+        farmer: user1,
+      });
+      const product2 = await entityManager.save(Product, {
+        name: 'apples',
+        description: 'very good apples',
+        baseUnit: '1Kg',
+        price: 5,
+        available: 5,
+        farmer: user2,
+      });
+      expect(await service.getAllStockProducts(user3)).toHaveLength(2);
+    });
+  });
+
+  describe('getSingleStockProduct', () => {
+    it('should validate if a specified product belong to the farmer specified', async () => {
+      const email1 = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user1 = await entityManager.save(User, {
+        email: email1,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product1 = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+        farmer: user1,
+      });
+      expect(
+        (await service.getSingleStockProduct(user1, product1.id))?.id,
+      ).toEqual(product1.id);
+    });
+
+    it('should retrieve a specified product', async () => {
+      const email1 = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user1 = await entityManager.save(User, {
+        email: email1,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const email2 = 'test2@example.com';
+      const user2 = await entityManager.save(User, {
+        email: email2,
+        password: await hash(password, 10),
+        name: 'William',
+        surname: 'Doe',
+        role: Role.MANAGER,
+      });
+      const product1 = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+        farmer: user1,
+      });
+      expect(
+        (await service.getSingleStockProduct(user2, product1.id))?.id,
+      ).toEqual(product1.id);
+    });
+
+    it('should fail if not find a product that belongs to the farmer specified', async () => {
+      const email1 = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user1 = await entityManager.save(User, {
+        email: email1,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const email2 = 'tes2t@example.com';
+      const user2 = await entityManager.save(User, {
+        email: email2,
+        password: await hash(password, 10),
+        name: 'William',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product1 = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+        farmer: {
+          id: user2.id,
+        },
+      });
+      expect(
+        service.getSingleStockProduct(user1, product1.id),
+      ).rejects.toThrowError(BadRequestException);
     });
   });
 

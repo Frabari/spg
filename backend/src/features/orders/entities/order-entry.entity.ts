@@ -13,22 +13,8 @@ import { Order } from './order.entity';
 export type OrderEntryId = number;
 
 export enum OrderEntryStatus {
-  /**
-   * The user has added this item to the basket
-   * but the farmer hasn't confirmed it yet
-   */
   DRAFT = 'draft',
-
-  /**
-   * The farmer has confirmed the availability of
-   * this product
-   */
   CONFIRMED = 'confirmed',
-
-  /**
-   * The farmer has physically delivered this
-   * item to the warehouse
-   */
   DELIVERED = 'delivered',
 }
 
@@ -40,13 +26,15 @@ export class OrderEntry {
   /**
    * The order to which this entry belongs
    */
-  @ManyToOne(() => Order, order => order.entries)
+  @ManyToOne(() => Order, order => order.entries, {
+    orphanedRowAction: 'delete',
+  })
   order: Order;
 
   /**
    * The product
    */
-  @ManyToOne(() => Product)
+  @ManyToOne(() => Product, product => product.orderEntries)
   @IsNotEmpty()
   product: Product;
 
@@ -66,5 +54,5 @@ export class OrderEntry {
   @Column({ default: OrderEntryStatus.DRAFT })
   @IsString()
   @IsIn(Object.values(OrderEntryStatus))
-  status: OrderEntryStatus;
+  status?: OrderEntryStatus;
 }

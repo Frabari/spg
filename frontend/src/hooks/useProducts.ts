@@ -1,37 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { getProducts, Product } from '../api/BasilApi';
-import { ApiException } from '../api/createHttpClient';
-import { usePendingState } from './usePendingState';
+import { useQuery } from 'react-query';
+import { getProducts } from '../api/BasilApi';
 
-export const useProducts = (stock = false) => {
-  const { setPending: setGlobalPending } = usePendingState();
-  const [pending, setPending] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [error, setError] = useState<ApiException>(null);
+export const PRODUCTS_QUERY = 'products';
 
-  useEffect(() => {
-    setGlobalPending(pending);
-  }, [pending, setGlobalPending]);
-
-  const loadProducts = useRef<() => void>();
-  loadProducts.current = () => {
-    setPending(true);
-    getProducts(stock)
-      .then(setProducts)
-      .catch(e => {
-        setError(e);
-      })
-      .finally(() => setPending(false));
-  };
-
-  useEffect(() => {
-    setPending(true);
-    getProducts(stock)
-      .then(setProducts)
-      .catch(e => {
-        setError(e);
-      })
-      .finally(() => setPending(false));
-  }, [stock, setPending]);
-  return { products, loadProducts: loadProducts.current, pending, error };
+export const useProducts = () => {
+  return useQuery(PRODUCTS_QUERY, getProducts);
 };

@@ -7,7 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { UsersService } from '../users/users.service';
-import { NotificationsService } from './notifications.service';
+import { NotificationsService } from './services/notifications.service';
 
 @WebSocketGateway()
 export class NotificationsGateway
@@ -18,6 +18,7 @@ export class NotificationsGateway
   constructor(
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
   ) {}
 
@@ -34,7 +35,7 @@ export class NotificationsGateway
     if (!user) {
       client.disconnect();
     }
-    client.join(user.id.toString());
+    client.join(user?.id.toString());
     this.notificationsService.activateUser(user.id);
   }
 
