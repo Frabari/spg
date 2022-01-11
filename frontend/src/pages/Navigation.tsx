@@ -160,6 +160,7 @@ export const NavBar = ({ handleSearch, onProducts }: NavBarProps) => {
   const { data: basket } = useBasket();
   const { notifications } = useNotifications();
   const { data: date } = useDate();
+  const [virtualDate, setVirtualDate] = useState(date);
   const { mutate } = useUpdateDate();
 
   const handleMenu = (event: ReactMouseEvent<HTMLElement>) => {
@@ -249,13 +250,21 @@ export const NavBar = ({ handleSearch, onProducts }: NavBarProps) => {
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DateTimePicker
                     renderInput={props => <TextField {...props} />}
-                    value={date.toJSDate()}
+                    value={virtualDate.toJSDate()}
                     label="Virtual clock"
-                    minDate={new Date(date.toISODate())}
-                    onChange={newDate => mutate(DateTime.fromJSDate(newDate))}
+                    minDate={new Date(virtualDate.toISODate())}
+                    onChange={newDate =>
+                      setVirtualDate(DateTime.fromJSDate(newDate))
+                    }
                   />
                 </LocalizationProvider>
               </MenuItem>
+              <Button
+                onClick={() => (virtualDate ? mutate(virtualDate) : null)}
+                sx={{ display: 'block', mx: 'auto', mb: 2 }}
+              >
+                Set date
+              </Button>
             </Menu>
             <IconButton onClick={() => navigate('/products')}>
               <Logo />
