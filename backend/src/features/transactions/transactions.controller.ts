@@ -23,6 +23,13 @@ import { TransactionsService } from './transactions.service';
   dto: {
     create: CreateTransactionDto,
   },
+  query: {
+    join: {
+      user: {
+        eager: true,
+      },
+    },
+  },
 })
 @ApiTags(Transaction.name)
 @ApiBearerAuth()

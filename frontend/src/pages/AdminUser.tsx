@@ -1,13 +1,14 @@
 import { MouseEvent, useEffect, useState } from 'react';
-import * as React from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFormik } from 'formik';
-import { Save } from '@mui/icons-material';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import {
+  AddCircleOutlined,
+  ArrowBack,
+  Save,
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -20,8 +21,8 @@ import {
   OutlinedInput,
   Paper,
   Typography,
+  Avatar,
 } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
 import { User } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
 import { usePendingState } from '../hooks/usePendingState';
@@ -108,7 +109,7 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
     <>
       <AdminAppBar handleDrawerToggle={props.handleDrawerToggle}>
         <IconButton onClick={() => navigate('/admin/users')}>
-          <ArrowBackIcon />
+          <ArrowBack />
         </IconButton>
         <Balance open={open} setOpen={setOpen} user={user} change={change} />
         <Typography
@@ -293,22 +294,20 @@ export const AdminUser = (props: { handleDrawerToggle: () => void }) => {
                 >
                   <InputLabel htmlFor="balance">Balance</InputLabel>
                   <OutlinedInput
-                    disabled
                     label="Balance"
                     value={(user as User)?.balance ?? ''}
                     readOnly={true}
                     startAdornment={
-                      <InputAdornment position="start"> € </InputAdornment>
+                      <InputAdornment position="start">€</InputAdornment>
                     }
                     endAdornment={
                       <InputAdornment position="end">
                         <IconButton
                           aria-label="manage profile wallet"
-                          color="success"
                           edge="end"
                           onClick={() => setOpen(true)}
                         >
-                          <AccountBalanceWalletIcon />
+                          <AddCircleOutlined />
                         </IconButton>
                       </InputAdornment>
                     }

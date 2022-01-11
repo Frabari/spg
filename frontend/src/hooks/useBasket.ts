@@ -1,6 +1,8 @@
 import { useQuery } from 'react-query';
 import { getBasket } from '../api/BasilApi';
 
+export const BASKET_QUERY = 'basket';
+
 export const useBasket = () => {
-  return useQuery('basket', getBasket);
+  return useQuery(BASKET_QUERY, getBasket);
 };

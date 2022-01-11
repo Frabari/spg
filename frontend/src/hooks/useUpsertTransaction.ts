@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { createTransaction, Transaction } from '../api/BasilApi';
+import { USER_QUERY } from './useUser';
 
 export const useUpsertTransaction = () => {
   const client = useQueryClient();
@@ -9,7 +10,7 @@ export const useUpsertTransaction = () => {
       return createMutation.mutateAsync(transaction, {
         onSuccess(transaction) {
           if (transaction.user) {
-            return client.invalidateQueries(['user', transaction.user.id]);
+            return client.invalidateQueries([USER_QUERY, transaction.user.id]);
           }
         },
       });

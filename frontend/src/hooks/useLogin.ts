@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { login } from '../api/BasilApi';
+import { PROFILE_QUERY } from './useProfile';
 
 export const useLogin = () => {
   const client = useQueryClient();
@@ -8,7 +9,7 @@ export const useLogin = () => {
       login(username, password),
     {
       onSuccess() {
-        return client.invalidateQueries('profile');
+        return client.invalidateQueries(PROFILE_QUERY);
       },
     },
   );
