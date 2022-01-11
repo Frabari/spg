@@ -82,7 +82,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   });
 
   const handleSave = () => {
-    if (form.values?.reserved < item.reserved) {
+    if (form.values?.reserved < item?.reserved) {
       setOpen(true);
     } else form.submitForm();
   };
