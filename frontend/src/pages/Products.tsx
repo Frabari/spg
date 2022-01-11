@@ -11,7 +11,6 @@ const Footer = () => {
   return (
     <Box
       sx={{
-        width: '100%',
         background: '#f1f1f1',
         py: 8,
         px: 1,
@@ -48,7 +47,6 @@ export const Products = () => {
   const [category] = useState(0);
   const [search, setSearch] = useState('');
   const [queryParams, setSearchParams] = useSearchParams();
-  const [balanceWarning, setBalanceWarning] = useState(false);
 
   const handleSearch = (value: any) => {
     setSearch(value);
@@ -56,11 +54,7 @@ export const Products = () => {
 
   return (
     <>
-      <NavBar
-        handleSearch={handleSearch}
-        balanceWarning={balanceWarning}
-        onProducts={true}
-      />
+      <NavBar handleSearch={handleSearch} onProducts={true} />
       <Routes>
         <Route
           path="/"
@@ -106,7 +100,6 @@ export const Products = () => {
                   setSearchParams={setSearchParams}
                   search={search}
                   onSelect={null}
-                  setBalanceWarning={setBalanceWarning}
                 />
               </Container>
               <Footer />

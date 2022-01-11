@@ -128,31 +128,20 @@ const ProductCard = (props: any) => {
 };
 
 export const Basket = ({
-  balanceWarning,
   setShowBasket,
 }: {
   filter?: string;
   search?: string;
-  balanceWarning?: boolean;
   setShowBasket?: any;
 }) => {
   const { data: basket } = useBasket();
 
   return (
-    <>
+    <Box position="relative" sx={{ flexGrow: 1 }}>
       {basket?.entries?.length !== 0 ? (
-        <>
-          <Grid
-            container
-            direction="column"
-            spacing="1rem"
-            paddingY="0.5rem"
-            paddingX="1rem"
-            alignItems="center"
-            justifyItems="center"
-            width="auto"
-          >
-            {balanceWarning && (
+        <Box maxHeight="80vh" sx={{ overflowY: 'auto' }}>
+          <Grid container sx={{ p: 2 }} direction="column" gap={2}>
+            {basket?.insufficientBalance && (
               <Alert severity="warning">
                 <AlertTitle>Warning</AlertTitle>
                 Insufficient balance — <strong>top it up!</strong>
@@ -168,7 +157,6 @@ export const Basket = ({
                   price={e.product.price}
                   description={e.product.description}
                   product={e.product}
-                  balanceWarning={balanceWarning}
                   quantity={e.quantity}
                   setShowBasket={setShowBasket}
                 />
@@ -180,8 +168,11 @@ export const Basket = ({
             alignItems="center"
             spacing={2}
             sx={{
-              position: 'relative',
+              background: 'white',
+              position: 'absolute',
+              left: 0,
               bottom: 0,
+              right: 0,
             }}
           >
             <Grid item xs={6}>
@@ -212,7 +203,7 @@ export const Basket = ({
                   mb={0}
                   ml={2}
                 >
-                  € {basket.total}
+                  € {basket?.total}
                 </Typography>
               </Box>
             </Grid>
@@ -228,17 +219,9 @@ export const Basket = ({
               </Button>
             </Grid>
           </Grid>
-        </>
+        </Box>
       ) : (
-        <Grid
-          container
-          direction="column"
-          paddingY="1rem"
-          alignItems="center"
-          justifyItems="center"
-          width="auto"
-          spacing={0}
-        >
+        <Grid container direction="column" p={2}>
           <Box
             component="img"
             sx={{
@@ -253,13 +236,13 @@ export const Basket = ({
             fontSize="24px"
             marginTop="0px"
           >
-            {'YOUR BAG IS EMPTY'}
+            Your basket is empty
           </Typography>
           <Typography textAlign="center" variant="h6" fontSize="18px">
-            {'add some products'}
+            Add some products
           </Typography>
         </Grid>
       )}
-    </>
+    </Box>
   );
 };

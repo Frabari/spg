@@ -33,6 +33,7 @@ import {
   StockItem,
 } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { Search } from '../components/Search';
 import { useCategories } from '../hooks/useCategories';
 import { useDate } from '../hooks/useDate';
 import { useProfile } from '../hooks/useProfile';
@@ -84,22 +85,6 @@ const columns: {
     width: 100,
   },
 ];
-
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: '16px',
-  backgroundColor: '#ffffff',
-  '&:hover': {
-    backgroundColor: '#f7f7f7',
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
   padding: theme.spacing(0, 2),
@@ -308,7 +293,7 @@ export const AdminProducts = (props: {
         >
           Products
         </Typography>
-        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
+        <Search sx={{ ml: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -341,7 +326,7 @@ export const AdminProducts = (props: {
       <Box
         sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: '16px' }}>
+        <Box sx={{ borderBottom: 'none', borderColor: 'divider' }}>
           <Tabs
             value={value}
             onChange={handleChangeTab}
@@ -443,11 +428,8 @@ export const AdminProducts = (props: {
                         </Grid>
                       </Grid>
                     </TableCell>
-                  ) : c.key === 'description' ? (
-                    <></>
-                  ) : c.key === 'farmer' && props.profile.role === 'farmer' ? (
-                    <></>
-                  ) : (
+                  ) : c.key === 'description' ? null : c.key === 'farmer' &&
+                    props.profile.role === 'farmer' ? null : (
                     <TableCell
                       key={c.key}
                       sortDirection={sorting.by === c.key ? sorting.dir : false}
@@ -518,11 +500,11 @@ export const AdminProducts = (props: {
                   ),
                 )}
                 {props.profile.role === 'farmer' ? (
-                  <TableCell>{'Notes'}</TableCell>
+                  <TableCell>Notes</TableCell>
                 ) : (
                   <></>
                 )}
-                <TableCell>{'Actions'}</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
