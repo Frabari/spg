@@ -127,7 +127,7 @@ const ProductCard = ({
             € {product.price}/{product?.baseUnit}
           </Typography>
         </CardContent>
-        {date >= from && date <= to ? (
+        {date >= from && date <= to && !profile?.blockedAt ? (
           <CardActions sx={{ display: !profile && 'none' }}>
             <Box marginLeft="auto" padding="0.5rem">
               <IconButton onClick={() => handleSelect(product)}>
