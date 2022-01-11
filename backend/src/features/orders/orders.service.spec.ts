@@ -230,6 +230,7 @@ describe('OrdersService', () => {
         password: await hash(password, 10),
         name: 'John',
         surname: 'Doe',
+        role: Role.EMPLOYEE,
       });
 
       const order = await entityManager.save(Order, {
@@ -647,6 +648,46 @@ describe('OrdersService', () => {
           user,
         ),
       ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should not modify the OrderStatus', async () => {
+      const email = 'test@example.com';
+      const password = 'testpwd';
+      const entityManager = module.get(EntityManager);
+      const user = await entityManager.save(User, {
+        email,
+        password: await hash(password, 10),
+        name: 'John',
+        surname: 'Doe',
+        role: Role.FARMER,
+      });
+      const product = await entityManager.save(Product, {
+        name: 'onions',
+        description: 'very good onions',
+        baseUnit: '1Kg',
+        price: 10,
+        available: 10,
+      });
+      const order = await entityManager.save(Order, {
+        status: OrderStatus.DRAFT,
+        user: { id: user.id },
+        entries: [
+          {
+            product: {
+              id: product.id,
+            },
+            quantity: 5,
+          },
+        ],
+      });
+      const finalOrder = await service.validateUpdateDto(
+        order.id,
+        {
+          status: OrderStatus.COMPLETED,
+        } as UpdateOrderDto,
+        user,
+      );
+      expect(finalOrder.status).toBeUndefined();
     });
   });
 
