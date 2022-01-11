@@ -252,8 +252,7 @@ export const ProductsByFarmer = ({
                     .map(u => {
                       return String((u as User).id);
                     })
-                    .join(',')
-                    .toString(),
+                    .join(','),
                 });
               } else {
                 if (filter) {
@@ -307,7 +306,7 @@ export const ProductsByFarmer = ({
           return (
             farmer === null ||
             farmer === '' ||
-            farmer.split('-').includes(String(f.id))
+            farmer.split(',').includes(String(f.id))
           );
         })
         .map(f => (
