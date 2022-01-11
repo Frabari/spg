@@ -1,6 +1,8 @@
 import { useQuery } from 'react-query';
 import { getUser, UserId } from '../api/BasilApi';
 
+export const USER_QUERY = 'user';
+
 export const useUser = (id?: UserId) => {
-  return useQuery(['user', id], () => getUser(id));
+  return useQuery([USER_QUERY, id], () => getUser(id));
 };

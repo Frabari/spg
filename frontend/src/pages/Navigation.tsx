@@ -52,7 +52,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { NotificationType, Role } from '../api/BasilApi';
 import { ApiException } from '../api/createHttpClient';
-import Basket from '../components/Basket';
+import { Basket } from '../components/Basket';
 import { Logo } from '../components/Logo';
 import { useBasket } from '../hooks/useBasket';
 import { useCategories } from '../hooks/useCategories';
@@ -62,35 +62,32 @@ import { useNotifications } from '../hooks/useNotifications';
 import { useProducts } from '../hooks/useProducts';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateDate } from '../hooks/useUpdateDate';
-import { useUsers } from '../hooks/useUsers';
 
 interface LinkTabProps {
   label: string;
-  slug?: string;
-  handleFilter?: any;
+  slug: string;
 }
 
-function LinkTab({ slug, label, ...rest }: LinkTabProps) {
-  const [queryParams] = useSearchParams();
+const LinkTab = ({ label, slug }: LinkTabProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   return (
     <Tab
-      component={Link}
-      to={`/products?${
-        queryParams.get('farmer') != null
-          ? `farmer=${queryParams.get('farmer')}`
-          : ''
-      }${
-        slug
-          ? `${(queryParams.get('farmer') && '&') || ''}category=${slug}`
-          : ''
-      }`}
       label={label}
-      {...rest}
+      onClick={() => {
+        const newParams = {
+          ...Object.fromEntries(searchParams.entries()),
+          category: slug,
+        };
+        if (slug === 'all') {
+          delete newParams.category;
+        }
+        setSearchParams(newParams);
+      }}
     />
   );
-}
+};
 
-function NavTabs(props: any) {
+export const NavTabs = () => {
   const [value, setValue] = useState(0);
   const [queryParams] = useSearchParams();
   const { data: categories } = useCategories();
@@ -106,20 +103,15 @@ function NavTabs(props: any) {
     <Toolbar
       sx={{ width: '100%', minHeight: '0!important', px: '0!important' }}
     >
-      <Tabs
-        value={value}
-        variant="scrollable"
-        scrollButtons="auto"
-        onChange={props.setCategory(value)}
-      >
-        <LinkTab key="all" label="all" />
+      <Tabs value={value} variant="scrollable" scrollButtons="auto">
+        <LinkTab slug="all" label="All" />
         {categories?.map(c => (
           <LinkTab key={c.id} label={c.name} slug={c.slug} />
         ))}
       </Tabs>
     </Toolbar>
   );
-}
+};
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   color: 'inherit',
@@ -150,7 +142,13 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   },
 }));
 
-function NavBar(props: any) {
+export interface NavBarProps {
+  handleSearch?: (search: string) => void;
+  onProducts?: boolean;
+}
+
+export const NavBar = ({ handleSearch, onProducts }: NavBarProps) => {
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] =
     useState<null | HTMLElement>(null);
@@ -158,9 +156,7 @@ function NavBar(props: any) {
   const { data: profile } = useProfile();
   const { mutateAsync: logout } = useLogout();
   const [showBasket, setShowBasket] = useState(false);
-  const navigate = useNavigate();
   const { data: products } = useProducts();
-  const { data: users } = useUsers();
   const { data: basket } = useBasket();
   const { notifications } = useNotifications();
   const { data: date } = useDate();
@@ -272,15 +268,14 @@ function NavBar(props: any) {
             >
               Basil
             </Typography>
-            <Box display={props.onProducts ? 'block' : 'none'}>
+            <Box display={onProducts ? 'block' : 'none'}>
               <StyledAutocomplete
-                id="free-solo-2-demo"
                 disableClearable
                 freeSolo
-                options={products}
+                options={products ?? []}
                 getOptionLabel={(option: any) => option?.name}
                 onChange={(event, value: any) => {
-                  props.handleSearch(value.name);
+                  handleSearch(value.name);
                 }}
                 renderOption={(props, option: any) => (
                   <Box
@@ -298,7 +293,7 @@ function NavBar(props: any) {
                 autoHighlight
                 renderInput={params => (
                   <TextField
-                    onChange={e => props.handleSearch(e.target.value)}
+                    onChange={e => handleSearch(e.target.value)}
                     placeholder="Search..."
                     sx={{ padding: 0 }}
                     {...params}
@@ -519,7 +514,7 @@ function NavBar(props: any) {
               </>
             )}
           </Toolbar>
-          {props.products && <NavTabs {...props} />}
+          {onProducts && <NavTabs />}
         </Container>
       </AppBar>
 
@@ -529,17 +524,15 @@ function NavBar(props: any) {
         open={showBasket}
         onClose={() => {
           setShowBasket(false);
-          if (props.setBasketListener) props.setBasketListener(true);
         }}
       >
-        <Box>
+        <Box height="100%" sx={{ display: 'flex', flexDirection: 'column' }}>
           <Grid container direction="row" spacing={1}>
             <Grid item xs={1}>
               <IconButton
                 sx={{ margin: 1.5 }}
                 onClick={() => {
                   setShowBasket(false);
-                  if (props.setBasketListener) props.setBasketListener(true);
                 }}
               >
                 <ArrowBackIcon />
@@ -556,15 +549,9 @@ function NavBar(props: any) {
               </Typography>
             </Grid>
           </Grid>
-          <Basket
-            balanceWarning={props.balanceWarning}
-            setShowBasket={setShowBasket}
-          />
+          <Basket setShowBasket={setShowBasket} />
         </Box>
       </Drawer>
     </>
   );
-}
-
-const NavigationBox = { NavTabs, NavBar };
-export default NavigationBox;
+};

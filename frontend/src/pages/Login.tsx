@@ -1,4 +1,5 @@
 import { MouseEvent, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import Visibility from '@mui/icons-material/Visibility';
@@ -24,7 +25,7 @@ import { useLogin } from '../hooks/useLogin';
 import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 
-function OutlinedCard() {
+const OutlinedCard = () => {
   const [show, setShow] = useState(false);
   const { pending } = usePendingState();
   const { mutateAsync: login } = useLogin();
@@ -33,9 +34,9 @@ function OutlinedCard() {
       email: null,
       password: null,
     } as Partial<User>,
-    onSubmit: (values: Partial<User>, { setErrors }) =>
-      login({ username: values.email, password: values.password }).catch(e => {
-        setErrors(e.data?.constraints);
+    onSubmit: (values: Partial<User>) =>
+      login({ username: values.email, password: values.password }).catch(() => {
+        toast.error('Cannot login, please check your credentials');
       }),
   });
 
@@ -57,7 +58,12 @@ function OutlinedCard() {
           maxWidth: 300,
         }}
       >
-        <Box component="form" noValidate autoComplete="off">
+        <Box
+          component="form"
+          noValidate
+          autoComplete="off"
+          onSubmit={form.handleSubmit}
+        >
           <div>
             <Typography
               variant="h5"
@@ -124,6 +130,7 @@ function OutlinedCard() {
               </Grid>
             </Grid>
           </div>
+          <input type="submit" style={{ display: 'none' }} />
         </Box>
       </CardContent>
       <CardActions>
@@ -164,9 +171,9 @@ function OutlinedCard() {
       </CardActions>
     </Card>
   );
-}
+};
 
-export default function Login(props: any) {
+export const Login = () => {
   const { data: profile } = useProfile();
 
   if (profile) {
@@ -215,4 +222,4 @@ export default function Login(props: any) {
       </Grid>
     </Grid>
   );
-}
+};

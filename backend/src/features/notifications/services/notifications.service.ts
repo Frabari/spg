@@ -62,9 +62,11 @@ export class NotificationsService {
     if (!('priority' in notification)) {
       notification.priority = NotificationPriority.INFO;
     }
-    this.notificationsGateway.server
-      ?.in(loggedUsers.map(u => u.id.toString()))
-      .emit('notification', notification);
+    loggedUsers.forEach(u =>
+      this.notificationsGateway.server
+        ?.in(u.id.toString())
+        .emit('notification', notification),
+    );
     notification.deliveredTo = users;
     if (notification.priority === NotificationPriority.CRITICAL) {
       users?.forEach(u => {

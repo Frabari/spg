@@ -552,4 +552,33 @@ export class OrdersService extends TypeOrmCrudService<Order> {
       }
     }
   }
+
+  /**
+   * Sends a reminder to users whose balance is
+   * insufficient to pay an open order
+   */
+  async sendInsufficientBalanceReminders() {
+    const os = await this.ordersRepository.find({
+      where: {
+        status: In([OrderStatus.DRAFT, OrderStatus.LOCKED]),
+      },
+      relations: ['user', 'entries'],
+    });
+    const ordersWithEntries = os.filter(
+      o =>
+        o.entries?.length > 0 &&
+        this.checkOrderBalance(o, o.user).insufficientBalance,
+    );
+    for (const o of ordersWithEntries) {
+      await this.notificationsService.sendNotification(
+        {
+          type: NotificationType.INFO,
+          priority: NotificationPriority.CRITICAL,
+          title: 'Insufficient Balance',
+          message: `Remind to top-up your wallet in order to pay your order`,
+        },
+        o.user,
+      );
+    }
+  }
 }

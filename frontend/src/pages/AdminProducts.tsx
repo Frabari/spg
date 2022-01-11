@@ -33,12 +33,14 @@ import {
   StockItem,
 } from '../api/BasilApi';
 import { AdminAppBar } from '../components/AdminAppBar';
+import { Search } from '../components/Search';
 import { useCategories } from '../hooks/useCategories';
 import { useDate } from '../hooks/useDate';
 import { useProfile } from '../hooks/useProfile';
 import { useStock } from '../hooks/useStock';
 import { useUpdateProductOrderEntries } from '../hooks/useUpdateProductOrderEntries';
 import { useUsers } from '../hooks/useUsers';
+import { a11yProps } from '../utils';
 
 const columns: {
   key: keyof Product;
@@ -84,22 +86,6 @@ const columns: {
   },
 ];
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: '16px',
-  backgroundColor: '#ffffff',
-  '&:hover': {
-    backgroundColor: '#f7f7f7',
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
 const SearchIconWrapper = styled('div')(({ theme }) => ({
   padding: theme.spacing(0, 2),
   height: '100%',
@@ -124,27 +110,12 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const Description = styled(Box)({
-  whiteSpace: 'nowrap',
-  textOverflow: 'ellipsis',
-  overflow: 'hidden',
-  maxWidth: 300,
-});
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
 export const AdminProducts = (props: {
   handleDrawerToggle: () => void;
   profile: User;
 }) => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const [dto, setDto] = useState<Partial<User>>(profile as User);
   const { data: items } = useStock();
   const { mutateAsync: updateProductOrderEntries } =
     useUpdateProductOrderEntries();
@@ -166,10 +137,6 @@ export const AdminProducts = (props: {
       }
     }
   }, [items, sorting]);
-
-  useEffect(() => {
-    setDto(profile as User);
-  }, [profile]);
 
   const toggleSorting = (byKey: keyof Product) => () => {
     const { by, dir } = sorting;
@@ -311,7 +278,7 @@ export const AdminProducts = (props: {
   const showDeliveredEntriesAction =
     profile &&
     inSupplyDeliveryWindow &&
-    [(Role.MANAGER, Role.WAREHOUSE_MANAGER)].includes(profile.role);
+    [Role.MANAGER, Role.WAREHOUSE_MANAGER].includes(profile.role);
 
   return (
     <>
@@ -326,7 +293,7 @@ export const AdminProducts = (props: {
         >
           Products
         </Typography>
-        <Search sx={{ mr: 'auto', maxWidth: '250px' }}>
+        <Search sx={{ ml: 'auto', maxWidth: '250px' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -359,7 +326,7 @@ export const AdminProducts = (props: {
       <Box
         sx={{ p: { xs: 1, sm: 2 }, pt: { sm: 0 }, flexGrow: 1, minHeight: 0 }}
       >
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: '16px' }}>
+        <Box sx={{ borderBottom: 'none', borderColor: 'divider' }}>
           <Tabs
             value={value}
             onChange={handleChangeTab}
@@ -385,7 +352,10 @@ export const AdminProducts = (props: {
           </Tabs>
         </Box>
 
-        <TableContainer component={Paper} sx={{ width: '100%' }}>
+        <TableContainer
+          component={Paper}
+          sx={{ width: '100%', height: '100%' }}
+        >
           <Table aria-label="Products table" stickyHeader>
             <TableHead>
               <TableRow>
@@ -458,11 +428,8 @@ export const AdminProducts = (props: {
                         </Grid>
                       </Grid>
                     </TableCell>
-                  ) : c.key === 'description' ? (
-                    <></>
-                  ) : c.key === 'farmer' && props.profile.role === 'farmer' ? (
-                    <></>
-                  ) : (
+                  ) : c.key === 'description' ? null : c.key === 'farmer' &&
+                    props.profile.role === 'farmer' ? null : (
                     <TableCell
                       key={c.key}
                       sortDirection={sorting.by === c.key ? sorting.dir : false}
@@ -533,11 +500,11 @@ export const AdminProducts = (props: {
                   ),
                 )}
                 {props.profile.role === 'farmer' ? (
-                  <TableCell>{'Notes'}</TableCell>
+                  <TableCell>Notes</TableCell>
                 ) : (
                   <></>
                 )}
-                <TableCell>{'Actions'}</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

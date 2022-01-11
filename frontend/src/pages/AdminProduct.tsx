@@ -82,7 +82,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
   });
 
   const handleSave = () => {
-    if (form.values?.reserved < item.reserved) {
+    if (form.values?.reserved < item?.reserved) {
       setOpen(true);
     } else form.submitForm();
   };
@@ -381,7 +381,7 @@ export const AdminProduct = (props: { handleDrawerToggle: () => void }) => {
                       <MenuItem key={f.id} value={f.name + ' ' + f.surname}>
                         {f.name} {f.surname}
                       </MenuItem>
-                    ))}
+                    )) ?? <MenuItem />}
                   </TextField>
                   <FormHelperText>{form.errors?.farmer}</FormHelperText>
                 </FormControl>

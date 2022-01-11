@@ -50,6 +50,7 @@ export class SchedulingService {
   async dailyJob() {
     this.logger.log(`Daily job (@${new Date()})`);
     await this.ordersService.sendPickupNotifications();
+    await this.ordersService.sendInsufficientBalanceReminders();
     await this.usersService.unlockUsers();
   }
 

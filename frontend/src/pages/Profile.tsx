@@ -2,7 +2,7 @@ import { MouseEvent, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
-import { Save, Info } from '@mui/icons-material';
+import { Info, Save } from '@mui/icons-material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
@@ -12,12 +12,12 @@ import {
   FormHelperText,
   Grid,
   IconButton,
-  Popover,
-  TextField,
   InputAdornment,
   InputLabel,
   OutlinedInput,
   Paper,
+  Popover,
+  TextField,
   Typography,
 } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
@@ -27,7 +27,7 @@ import { usePendingState } from '../hooks/usePendingState';
 import { useProfile } from '../hooks/useProfile';
 import { useUpdateProfile } from '../hooks/useUpdateProfile';
 
-export default function Profile(props: { handleDrawerToggle: () => void }) {
+export const Profile = (props: { handleDrawerToggle: () => void }) => {
   const { data: profile } = useProfile();
   const { mutate: updateProfile } = useUpdateProfile();
   const { pending } = usePendingState();
@@ -262,6 +262,25 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                 <FormControl
                   variant="outlined"
                   fullWidth
+                  error={!!form.errors?.phoneNumber}
+                  disabled={!!pending}
+                >
+                  <InputLabel htmlFor="phonenumber">PhoneNumber</InputLabel>
+                  <OutlinedInput
+                    id="phonenumber"
+                    type="text"
+                    onChange={form.handleChange}
+                    value={form.values.phoneNumber ?? ''}
+                    label="PhoneNumber"
+                    name="phoneNumber"
+                  />
+                  <FormHelperText>{form.errors?.phoneNumber}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
                   error={!!form.errors?.telegramToken}
                   disabled={!!pending}
                 >
@@ -434,27 +453,6 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
                       </FormHelperText>
                     </FormControl>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
-                    <FormControl
-                      variant="outlined"
-                      fullWidth
-                      error={!!form.errors?.phoneNumber}
-                      disabled={!!pending}
-                    >
-                      <InputLabel htmlFor="phonenumber">PhoneNumber</InputLabel>
-                      <OutlinedInput
-                        id="phonenumber"
-                        type="text"
-                        onChange={form.handleChange}
-                        value={form.values.phoneNumber ?? ''}
-                        label="PhoneNumber"
-                        name="phoneNumber"
-                      />
-                      <FormHelperText>
-                        {form.errors?.phoneNumber}
-                      </FormHelperText>
-                    </FormControl>
-                  </Grid>
                 </Grid>
               </Grid>
             </Grid>
@@ -463,4 +461,4 @@ export default function Profile(props: { handleDrawerToggle: () => void }) {
       </Box>
     </>
   );
-}
+};

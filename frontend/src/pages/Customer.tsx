@@ -34,7 +34,7 @@ import { useLogout } from '../hooks/useLogout';
 import { useProfile } from '../hooks/useProfile';
 import { CustomerOrder } from './CustomerOrder';
 import { CustomerOrders } from './CustomerOrders';
-import Profile from './Profile';
+import { Profile } from './Profile';
 
 const pages = [
   {
