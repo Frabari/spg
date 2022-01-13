@@ -163,6 +163,10 @@ export const NavBar = ({ handleSearch, onProducts }: NavBarProps) => {
   const [virtualDate, setVirtualDate] = useState(date);
   const { mutate } = useUpdateDate();
 
+  useEffect(() => {
+    setVirtualDate(date);
+  }, [date]);
+
   const handleMenu = (event: ReactMouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
