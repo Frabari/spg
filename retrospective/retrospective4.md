@@ -54,8 +54,8 @@ sections:
   - Total hours estimated --> 0
   - Total hours spent --> 0
 - Code review
-  - Total hours estimated --> 25
-  - Total hours spent --> 30
+  - Total hours estimated --> 8
+  - Total hours spent --> 10
 - Technical Debt management:
   - Total hours estimated--> 8
   - Total hours spent--> 10
@@ -82,7 +82,7 @@ The issues we had in this sprint didn't give us enough time to better focus on t
 
 - Improvement goals for the next sprint and how to achieve them (technical tasks, team coordination, etc.)
 We should try to uniform the design and graphics of different pages and of notifications/toasts/alerts.
-When someone has a problem of any nature (technical or logical) when developing, should immediately ask others for help, so that encountered problems can be resolved sooner and faster, without getting breathless on the day of the delivery.
+When someone has a problem of any nature (technical or logical) when developing, should immediately ask others for help, so that encountered problems can be resolved sooner and faster.
 The Sonar Coverage didn't grow much, in fact we had to write more tests and improve it. 
 
 - One thing you are proud of as a Team!!
