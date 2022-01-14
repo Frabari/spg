@@ -54,8 +54,8 @@ sections:
   - Total hours estimated --> 0
   - Total hours spent --> 0
 - Code review
-  - Total hours estimated --> 25
-  - Total hours spent --> 30
+  - Total hours estimated --> 8
+  - Total hours spent --> 10
 - Technical Debt management:
   - Total hours estimated--> 8
   - Total hours spent--> 10
